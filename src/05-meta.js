@@ -63,35 +63,6 @@ function openDex(){
   openSheet('dex');
 }
 
-// ---------- 鳥園 ----------
-const DECOS=[
-  {need:5,  name:'餵食台', svg:'<svg viewBox="0 0 40 50" width="46" style="left:8%;bottom:12%"><rect x="18" y="16" width="4" height="34" fill="#8a5a3b"/><path d="M4 16 L36 16 L32 10 L8 10 Z" fill="#c98b55"/><rect x="6" y="16" width="28" height="4" fill="#a26a3f"/><circle cx="14" cy="15" r="1.6" fill="#e9c46a"/><circle cx="20" cy="14.5" r="1.6" fill="#e9c46a"/><circle cx="26" cy="15" r="1.6" fill="#e9c46a"/></svg>'},
-  {need:20, name:'鳥浴盆', svg:'<svg viewBox="0 0 50 34" width="58" style="left:44%;bottom:6%"><rect x="22" y="14" width="6" height="18" fill="#b8c4cf"/><ellipse cx="25" cy="12" rx="22" ry="7" fill="#d5dee6"/><ellipse cx="25" cy="10.5" rx="17" ry="4" fill="#7cc4f0"/><rect x="15" y="30" width="20" height="4" rx="2" fill="#b8c4cf"/></svg>'},
-  {need:45, name:'小鳥屋', svg:'<svg viewBox="0 0 40 60" width="48" style="right:8%;bottom:12%"><rect x="18" y="30" width="4" height="30" fill="#8a5a3b"/><path d="M6 14 L20 2 L34 14 Z" fill="#e05d4b"/><rect x="9" y="14" width="22" height="18" fill="#f2d39b"/><circle cx="20" cy="22" r="4" fill="#5a3b26"/></svg>'},
-  {need:80, name:'櫻花樹', svg:'<svg viewBox="0 0 80 90" width="110" style="left:-2%;bottom:20%"><rect x="36" y="50" width="8" height="40" fill="#7a5034"/><circle cx="40" cy="36" r="24" fill="#f7b8cc"/><circle cx="22" cy="44" r="15" fill="#f9c7d6"/><circle cx="58" cy="44" r="15" fill="#f4a9c0"/><circle cx="40" cy="20" r="13" fill="#fbd3df"/></svg>'},
-  {need:130,name:'風車',   svg:'<svg viewBox="0 0 50 70" width="54" style="right:30%;bottom:30%"><rect x="23" y="26" width="4" height="44" fill="#9aa7b4"/><g style="transform-origin:25px 25px;animation:spin 6s linear infinite"><path d="M25 25 L25 3 L33 18 Z" fill="#ff8f4f"/><path d="M25 25 L47 25 L32 33 Z" fill="#ffd93a"/><path d="M25 25 L25 47 L17 32 Z" fill="#7fd8c2"/><path d="M25 25 L3 25 L18 17 Z" fill="#3b93e6"/></g></svg><style>@keyframes spin{to{transform:rotate(360deg)}}</style>'},
-  {need:200,name:'彩虹',   svg:'<svg viewBox="0 0 200 100" width="300" style="left:8%;top:2%;opacity:.7"><g fill="none" stroke-width="7"><path d="M10 100 A90 90 0 0 1 190 100" stroke="#ff6b6b"/><path d="M17 100 A83 83 0 0 1 183 100" stroke="#ffb347"/><path d="M24 100 A76 76 0 0 1 176 100" stroke="#ffe066"/><path d="M31 100 A69 69 0 0 1 169 100" stroke="#7bd88f"/><path d="M38 100 A62 62 0 0 1 162 100" stroke="#6cb5ff"/><path d="M45 100 A55 55 0 0 1 155 100" stroke="#b28dff"/></g></svg>'},
-];
-let gardenTimer=null;
-function openGarden(){
-  const st=totalStars(), yard=$('yard');
-  $('gardenNote').textContent=`每次第一次過關、或解開每日一題，就會孵出一隻鳥住進來。現在有 ${PROG.aviary.length} 隻，累積 ${st} 顆星。`;
-  yard.innerHTML='<span class="sun"></span>'+DECOS.filter(d=>st>=d.need).map(d=>d.svg.replace('<svg ','<svg class="deco" ')).join('');
-  if(!PROG.aviary.length) yard.insertAdjacentHTML('beforeend','<div class="empty">還沒有鳥住進來。去過一關看看吧！</div>');
-  const birds=PROG.aviary.slice(-40).map(t=>{const b=document.createElement('span'); b.className='gb'; b.innerHTML=birdSVG(t);
-    b.style.left=(4+RNG()*86)+'%'; b.style.bottom=(4+RNG()*30)+'%'; b.dataset.t=t;
-    b.onclick=()=>{chirp(t,.06); b.classList.remove('hop'); void b.offsetWidth; b.classList.add('hop');};
-    yard.appendChild(b); return b;});
-  $('decoList').innerHTML=DECOS.map(d=>`<div class="${st>=d.need?'':'off'}"><b>${d.name}</b><span>${st>=d.need?'已放進鳥園':`需要 ${d.need} 顆星`}</span></div>`).join('');
-  clearInterval(gardenTimer);
-  gardenTimer=setInterval(()=>{ if($('garden').hidden){clearInterval(gardenTimer);return;}
-    const b=birds[rnd(birds.length)]; if(!b) return;
-    if(RNG()<.5){ b.classList.remove('hop'); void b.offsetWidth; b.classList.add('hop'); }
-    else { const x=4+RNG()*86, old=parseFloat(b.style.left); b.classList.toggle('flip',x<old); b.style.left=x+'%'; }
-  },700);
-  openSheet('garden');
-}
-
 // ---------- 成就 ----------
 const ACH=[
   {id:'first', name:'第一步', desc:'第一次過關', ok:()=>PROG.c.wins>=1},
@@ -106,6 +77,7 @@ const ACH=[
   {id:'dex5',  name:'賞鳥新手', desc:'圖鑑收集 5 種鳥', ok:()=>PROG.seen.length>=5},
   {id:'dexall',name:'賞鳥達人', desc:'圖鑑收集全部 9 種鳥', ok:()=>SPECIES_ORDER.every(t=>PROG.seen.includes(t))},
   {id:'yard20',name:'熱鬧的鳥園', desc:'鳥園裡住了 20 隻鳥', ok:()=>PROG.aviary.length>=20},
+  {id:'deco10',name:'鳥園設計師', desc:'鳥園裡擺了 10 樣東西', ok:()=>(PROG.gItems||[]).length>=10},
   {id:'l50',   name:'過半', desc:'通過第 50 關', ok:()=>!!PROG.stars[50]},
   {id:'l100',  name:'帝雉現身', desc:'通過第 100 關', ok:()=>!!PROG.stars[100]},
 ];

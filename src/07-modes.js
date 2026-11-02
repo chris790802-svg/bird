@@ -214,19 +214,19 @@ $('raceReady').onclick=()=>{ if(!RACE) return; RACE.ready=true; $('raceReady').d
 // ---------- 各模式的設定 ----------
 const MODES={
   level:{start:()=>startLevel(PROG.max),newText:'重玩',onNew:()=>startLevel(S.levelNo),next:()=>startLevel(S.levelNo+1),
-    win(){ const L=S.levelNo, st=starsFor(S.hints), first=!PROG.stars[L];
+    win(){ const L=S.levelNo, st=starsFor(S.hints), first=!PROG.stars[L], gain=Math.max(0,st-(PROG.stars[L]||0))*10;
       PROG.stars[L]=Math.max(PROG.stars[L]||0,st); PROG.max=Math.max(PROG.max,Math.min(LEVELS,L+1));
       const hatched=first?hatch(L===100?'E':undefined):undefined;
       return {title:L===100?'全部 100 關破關！':`第 ${L} 關過關！`,stars:st,msg:`用時 ${fmt(S.elapsed)}・${hintTxt()}`+(st<3?'・不用提示可以拿三顆星':''),
-        hatched,next:L<LEVELS,againText:'再玩一次'}; }},
+        hatched,seeds:gain,next:L<LEVELS,againText:'再玩一次'}; }},
   daily:{start:startDaily,newText:'重玩',onNew:()=>{ resetPlay(); },
     win(){ const key=S.P.label.key, st=starsFor(S.hints), rec=PROG.daily[key], first=!rec;
       if(!rec||S.hints<rec.h||(S.hints===rec.h&&S.elapsed<rec.t)) PROG.daily[key]={t:S.elapsed,h:S.hints,st};
       if(S.P.label.weekend) PROG.c.weekend=1;
       const hatched=first?hatch():undefined; saveProg(); postDaily(key,S.elapsed,S.hints);
-      return {title:S.P.label.weekend?'週末大盤完成！':'今天的題目解開了！',stars:st,msg:`用時 ${fmt(S.elapsed)}・${hintTxt()}・連續 ${streakNow()} 天`,hatched,againText:'再玩一次'}; }},
+      return {title:S.P.label.weekend?'週末大盤完成！':'今天的題目解開了！',stars:st,msg:`用時 ${fmt(S.elapsed)}・${hintTxt()}・連續 ${streakNow()} 天`,hatched,seeds:first?40:0,againText:'再玩一次'}; }},
   free:{start:freeNew,newText:'新局',onNew:freeNew,
-    win(){ return {title:'解開了！',msg:`${N}×${N}・${DIFFS[FREE.diff].name}・用時 ${fmt(S.elapsed)}・${hintTxt()}`,againText:'再出一題'}; }},
+    win(){ return {title:'解開了！',msg:`${N}×${N}・${DIFFS[FREE.diff].name}・用時 ${fmt(S.elapsed)}・${hintTxt()}`,seeds:5,againText:'再出一題'}; }},
   studio:{start:()=>startEdit(false),newText:'重玩',onNew:()=>{ if(S.editing) return; resetPlay(); },
     win(){ return {title:'解開了！',msg:`用時 ${fmt(S.elapsed)}・${hintTxt()}。把代碼分享給朋友，看誰比較快！`,againText:'再玩一次'}; }},
   race:{start:()=>{},newText:'重玩',onNew:()=>{},

@@ -109,6 +109,7 @@
       <span class="stars win-stars" id="winstars"></span>
       <span id="winmsg"></span>
       <span class="egg" id="winEgg" hidden></span>
+      <span class="win-seeds" id="winSeeds" hidden></span>
       <div class="win-btns"><button class="tool" id="again">再來一局</button><button class="tool primary" id="nextBtn">下一關</button></div>
     </div></div>
   </div>
@@ -159,11 +160,27 @@
 </div>
 
 <div class="sheet" id="garden" hidden role="dialog" aria-modal="true" aria-labelledby="garden-title">
-  <div class="sheet-card wide">
-    <div class="sheet-top"><h3 id="garden-title">我的鳥園</h3><button class="sheet-close" data-close="garden">關閉</button></div>
-    <p class="note" id="gardenNote"></p>
-    <div class="yard" id="yard"></div>
-    <div class="deco-list" id="decoList"></div>
+  <div class="sheet-card garden-card">
+    <div class="sheet-top">
+      <h3 id="garden-title">我的鳥園</h3>
+      <span class="seeds" title="種子"><span class="seed-ic" aria-hidden="true"></span><b id="seedN">0</b></span>
+      <button class="pill small" id="gEdit" aria-pressed="false">擺設</button>
+      <button class="sheet-close" data-close="garden">關閉</button>
+    </div>
+    <div class="yard-frame">
+      <div class="yard-scroll" id="yardScroll"><div class="yard-world" id="yard"></div></div>
+      <div class="g-fx" id="gFx" aria-hidden="true"></div>
+    </div>
+    <div class="g-bar" id="gBar"></div>
+    <div class="g-tabs" role="tablist">
+      <button class="g-tab" role="tab" data-t="fac">設施</button>
+      <button class="g-tab" role="tab" data-t="plant">植物</button>
+      <button class="g-tab" role="tab" data-t="view">景觀</button>
+      <button class="g-tab" role="tab" data-t="season">季節</button>
+      <button class="g-tab" role="tab" data-t="bag">背包</button>
+    </div>
+    <p class="note g-how">過關、解每日一題可以拿到種子：第一次過關 ★ 一顆 10 粒，每日一題 40 粒，自由練習 5 粒。</p>
+    <div class="g-list" id="gList"></div>
   </div>
 </div>
 

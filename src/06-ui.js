@@ -230,6 +230,7 @@ function onWin(){
   const egg=$('winEgg');
   if(res.hatched!==undefined){ egg.hidden=false; egg.innerHTML=birdDot(res.hatched)+`<span>孵出了一隻${SPECIES[res.hatched].name}，牠住進鳥園了！</span>`; birdify(egg); }
   else egg.hidden=true;
+  if(res.seeds){ addSeeds(res.seeds); $('winSeeds').hidden=false; $('winSeeds').innerHTML=`<span class="seed-ic"></span>獲得 ${res.seeds} 顆種子，可以到鳥園兌換東西`; } else $('winSeeds').hidden=true;
   $('again').textContent=res.againText||'再來一局'; $('nextBtn').hidden=!res.next; $('nextBtn').textContent=res.nextText||'下一關';
   $('winBirds').innerHTML=birdsIn(S.P).slice(0,4).map(t=>birdDot(t)).join(''); birdify($('winBirds'));
   $('win').hidden=false; saveProg(); save(); confetti();
