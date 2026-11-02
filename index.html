@@ -1,0 +1,1696 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="用小鳥當線索的數字推理遊戲：100 關、8 種鳥規則、每日一題、圖鑑與鳥園。">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.5 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>黑白點方陣</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap">
+<style>
+/* 版面：糖果盒——圓角托盤裡排著一顆顆小方糖，黑白點是有表情的小豆豆 */
+:root{
+  --paper:#eff6fd; --surface:#ffffff; --tray:#d6e8f8; --tile:#ffffff; --tile-given:#e9f2fb;
+  --ink:#27415d; --muted:#6c84a0; --line:#d3e2f1; --shadow:#bfd5ec;
+  --accent:#3b93e6; --accent-ink:#ffffff; --accent-soft:#dcecfb;
+  --mint:#7fd8c2; --mint-soft:#dff6ef; --butter:#fff0a8; --peer:#eef5fc; --sky:#b9dcff; --sky-ink:#174f8a;
+  --entry:#2a7fd6; --given:#27415d; --error:#e0503a; --error-soft:#ffe0d8;
+  --bean-black:#22364d; --bean-white:#ffffff; --bean-line:#22364d; --bean-wline:#22364d; --bird-line:#22364d; --blush:#9fd0ff;
+  --f-display:"Huninn","Zen Maru Gothic","PingFang TC","Microsoft JhengHei",sans-serif;
+  --f-body:"Huninn","Zen Maru Gothic","PingFang TC","Microsoft JhengHei",sans-serif;
+  --f-num:"Fredoka","Arial Rounded MT Bold","Huninn",sans-serif;
+  --bw:min(92vw,440px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#121b27; --surface:#1b2838; --tray:#0b121b; --tile:#203045; --tile-given:#293c53;
+  --ink:#e5effa; --muted:#9bb1c8; --line:#30445b; --shadow:#070c13;
+  --accent:#6cb5ff; --accent-ink:#0d1c2d; --accent-soft:#1d3856;
+  --mint:#6fcfb8; --mint-soft:#1f3f3a; --butter:#5c4d24; --peer:#22344a; --sky:#1e5288; --sky-ink:#dcefff;
+  --entry:#7fc1ff; --given:#e5effa; --error:#ff8a75; --error-soft:#4c2723;
+  --bean-black:#0a1119; --bean-white:#f3f8fe; --bean-line:#a7bfd8; --bean-wline:#f3f8fe; --bird-line:#c8d8ea; --blush:#6cb5ff;
+  color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --paper:#121b27; --surface:#1b2838; --tray:#0b121b; --tile:#203045; --tile-given:#293c53;
+  --ink:#e5effa; --muted:#9bb1c8; --line:#30445b; --shadow:#070c13;
+  --accent:#6cb5ff; --accent-ink:#0d1c2d; --accent-soft:#1d3856;
+  --mint:#6fcfb8; --mint-soft:#1f3f3a; --butter:#5c4d24; --peer:#22344a; --sky:#1e5288; --sky-ink:#dcefff;
+  --entry:#7fc1ff; --given:#e5effa; --error:#ff8a75; --error-soft:#4c2723;
+  --bean-black:#0a1119; --bean-white:#f3f8fe; --bean-line:#a7bfd8; --bean-wline:#f3f8fe; --bird-line:#c8d8ea; --blush:#6cb5ff;
+  color-scheme:dark;}
+html,body{background:var(--paper);color:var(--ink)}
+body{font-family:var(--f-body);line-height:1.6;
+  background-image:radial-gradient(var(--line) 1.5px,transparent 1.6px);background-size:22px 22px}
+.wrap{max-width:520px;margin:0 auto;padding-block:22px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:18px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--f-display);font-weight:400;font-size:1.9rem;margin:0;line-height:1.1;letter-spacing:.06em;
+  display:flex;align-items:center;gap:12px}
+h1 .pair{display:inline-flex;gap:4px;align-items:flex-end}
+h1 .pair .dot{position:relative;transform:none;width:34px;--n:1}
+@keyframes bob{50%{transform:translateY(-3px)}}
+.meta{display:flex;gap:8px;font-variant-numeric:tabular-nums}
+.chip{background:var(--surface);border-radius:999px;padding:4px 12px;font-size:.82rem;color:var(--muted);box-shadow:0 2px 0 var(--shadow);display:flex;gap:6px;align-items:baseline}
+.chip b{color:var(--ink);font-family:var(--f-num);font-weight:600;font-size:1rem}
+
+button:focus-visible{outline:3px solid var(--mint);outline-offset:2px}
+
+.board-wrap{position:relative;width:100%;max-width:440px;margin:6px auto}
+.board{position:relative;aspect-ratio:1;max-width:100%;display:grid;--n:6;grid-template-columns:repeat(var(--n),1fr);grid-template-rows:repeat(var(--n),1fr);
+  background:var(--tray);border-radius:22px;box-shadow:0 0 0 7px var(--tray),0 10px 0 4px var(--shadow);
+  user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.cell{position:relative;display:grid;place-items:center;cursor:pointer;
+  border:calc(var(--bw) / var(--n) * .055) solid transparent;background:var(--tile);background-clip:padding-box;
+  border-radius:calc(var(--bw) / var(--n) * .3);
+  font-family:var(--f-num);font-weight:600;font-size:min(calc(var(--bw) / var(--n) * .5),1.9rem);color:var(--entry);transition:background-color .15s}
+.cell.given{color:var(--given);background-color:var(--tile-given);font-weight:700}
+.cell.peer{background-color:var(--peer)}
+.cell.same{background-color:var(--mint-soft)}
+.cell.line{background-color:var(--sky);color:var(--sky-ink)}
+.cell.sel{background-color:var(--butter)}
+.cell.bad{color:var(--error);background-color:var(--error-soft)}
+.cell.sel.bad{background-color:var(--error-soft)}
+.notes{position:absolute;inset:6%;display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:1fr;
+  font-family:var(--f-num);font-size:min(calc(var(--bw) / var(--n) * .2),.75rem);color:var(--muted);font-weight:500}
+.notes span{display:grid;place-items:center}
+
+/* 小鳥：黑點是山雀，白點是玄鳳鸚鵡 */
+.dot{position:absolute;width:min(calc(var(--bw) / var(--n,6) * .4),26px);aspect-ratio:1;transform:translate(-50%,-50%);z-index:2;pointer-events:none;
+  box-sizing:border-box;display:inline-block;vertical-align:middle;border-radius:50%}
+.dot svg{width:100%;height:100%;overflow:visible;display:block}
+.bd-b{fill:var(--bean-black);stroke:var(--bean-line);stroke-width:1.2;stroke-linejoin:round}
+.bd-w{fill:var(--bean-white);stroke:var(--bean-wline);stroke-width:1.2;stroke-linejoin:round}
+.ck-w{fill:var(--bean-white)}
+.wing-b{fill:none;stroke:var(--bean-line);stroke-width:1;stroke-linecap:round;opacity:.55}
+.wing-w{fill:none;stroke:var(--bean-wline);stroke-width:1;stroke-linecap:round;opacity:.45}
+.eye-w{fill:var(--bean-white)} .eye-k{fill:#1b2633}
+.beak{fill:#f2a93b} .beak-w{fill:#b9a28a}
+.crest{fill:none;stroke:#f7c531;stroke-width:1.7;stroke-linecap:round}
+.face{fill:#ffe36e}
+.cheek{fill:#ff8f4f}
+.dot.bad{background:var(--error-soft);box-shadow:0 0 0 2px var(--error);animation:shake .4s}
+@keyframes shake{25%{translate:-2px 0}75%{translate:2px 0}}
+
+.win{position:absolute;inset:-7px;display:grid;place-items:center;background:color-mix(in srgb,var(--paper) 75%,transparent);z-index:5;border-radius:26px;text-align:center}
+.win > div{background:var(--surface);padding:22px 28px;border-radius:24px;display:flex;flex-direction:column;gap:10px;align-items:center;box-shadow:0 6px 0 var(--shadow);animation:popin .35s cubic-bezier(.3,1.6,.5,1)}
+.win strong{font-family:var(--f-display);font-weight:400;font-size:1.8rem;color:var(--accent)}
+.win .beans{display:flex;gap:6px}
+.win .beans .dot{position:relative;transform:none;width:38px;--n:1;animation:bob 1.2s ease-in-out infinite}
+.win .beans .dot:nth-child(2){animation-delay:.2s}
+@keyframes popin{from{transform:scale(.6);opacity:0}}
+
+.keys{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;max-width:440px;width:100%;margin:6px auto 0}
+.key,.tool{font:inherit;cursor:pointer;border:0;border-radius:14px;background:var(--surface);color:var(--ink);box-shadow:0 4px 0 var(--shadow);transition:transform .08s,box-shadow .08s}
+.key{font-family:var(--f-num);font-size:clamp(1.15rem,5vw,1.5rem);font-weight:600;padding-block:9px;color:var(--entry)}
+.key:active,.tool:active{transform:translateY(3px);box-shadow:0 1px 0 var(--shadow)}
+.tools{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-width:440px;width:100%;margin:0 auto}
+.tool{padding:9px 4px;font-size:.88rem}
+.tool[aria-pressed="true"]{background:var(--mint);color:#21413a}
+.primary{background:var(--accent);color:var(--accent-ink)}
+
+.rules{background:var(--surface);border-radius:20px;padding:16px 18px;box-shadow:0 3px 0 var(--shadow);display:flex;flex-direction:column;gap:10px;font-size:.93rem}
+.rules h2{font-family:var(--f-display);font-weight:400;font-size:1.15rem;margin:0;color:var(--accent)}
+.rules ul{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:9px}
+.rules li{display:flex;gap:10px;align-items:flex-start}
+.rules .sw{flex:none;width:22px;height:22px;margin-top:1px;position:relative;transform:none;--n:1}
+.rules .sw.n{border-radius:50%;border:2px dashed var(--muted)}
+.rules .sw.g{border-radius:5px;background:var(--tile-given);border:2px solid var(--tray)}
+.eg{font-family:var(--f-num);color:var(--muted)}
+.kbd{color:var(--muted);font-size:.8rem;margin:0}
+
+.tut-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.tut-step{display:flex;gap:5px}
+.tut-step i{width:9px;height:9px;border-radius:50%;background:var(--line);display:block}
+.tut-step i.on{background:var(--accent);width:22px;border-radius:999px}
+.tut-card h3{font-family:var(--f-display);font-weight:400;font-size:1.4rem;margin:0;line-height:1.3;text-wrap:balance;color:var(--accent)}
+.tut-card p{margin:0}
+.tut-card .q{font-weight:700}
+.mini{display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;padding:10px;max-width:100%;overflow-x:auto;background:var(--tray);border-radius:18px}
+.mini .mc{width:clamp(34px,10vw,46px);aspect-ratio:1;display:grid;place-items:center;font-family:var(--f-num);font-weight:700;font-size:1.35rem;background:var(--tile-given);border-radius:12px;flex:none}
+.mini .mc.ask{color:var(--entry);background:var(--butter);animation:bob 1.6s ease-in-out infinite}
+.mini .mc.ask.ok{animation:none;background:var(--mint-soft)}
+.mini .gap{width:clamp(16px,4.6vw,24px);display:grid;place-items:center;flex:none}
+.mini .gap .dot{position:relative;transform:none;width:22px;--n:1}
+.opts{display:flex;gap:8px;flex-wrap:wrap}
+.opts button{font:inherit;font-family:var(--f-num);font-weight:600;font-size:1.25rem;min-width:54px;padding:6px 12px;border-radius:14px;border:0;background:var(--paper);color:var(--ink);cursor:pointer;box-shadow:0 3px 0 var(--shadow)}
+.opts button.right{background:var(--mint);color:#21413a}
+.opts button.wrong{background:var(--error-soft);color:var(--error);animation:shake .4s}
+.fb{min-height:1.6em;font-size:.92rem}
+.fb.good{color:var(--ink)} .fb.good::before{content:"✓ ";color:var(--mint);font-weight:700}
+.fb.bad{color:var(--error)}
+.tut-nav{display:flex;justify-content:space-between;gap:8px}
+.tut-nav button{font:inherit;padding:9px 18px;border-radius:999px;border:0;background:var(--paper);color:var(--ink);cursor:pointer;box-shadow:0 3px 0 var(--shadow)}
+.tut-nav .go{background:var(--accent);color:var(--accent-ink)}
+.tut-nav button:disabled{opacity:.4;cursor:default}
+.howto{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+[hidden]{display:none!important}
+.tabs{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tabs .tab{font:inherit;cursor:pointer;border:0;border-radius:999px;padding:6px 16px;font-size:.92rem;background:var(--paper);color:var(--ink)}
+.tabs .tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);box-shadow:0 2px 0 var(--shadow)}
+.stage{display:flex;align-items:center;gap:8px}
+.nav{font:inherit;font-family:var(--f-num);font-weight:600;font-size:1.3rem;width:40px;height:40px;flex:none;border:0;border-radius:50%;background:var(--paper);color:var(--accent);cursor:pointer}
+.nav:disabled{opacity:.35;cursor:default}
+.stage-info{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;line-height:1.3;text-align:center}
+.stage-no{font-family:var(--f-display);font-size:1.35rem;color:var(--ink)}
+.stage-no b{font-family:var(--f-num);font-weight:700;color:var(--accent)}
+.stage-tag{font-size:.8rem;color:var(--muted)}
+.stars{color:var(--line);letter-spacing:2px;font-size:.95rem}
+.stars .on{color:#f5b82e}
+.prog{height:8px;border-radius:999px;background:var(--paper);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--accent);border-radius:999px;transition:width .4s}
+.prog-row{display:flex;align-items:center;gap:10px;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.prog-row .prog{flex:1}
+.chap h4{margin:0 0 8px;font-family:var(--f-display);font-weight:400;font-size:1rem;color:var(--ink);display:flex;gap:8px;align-items:baseline}
+.chap h4 span{font-size:.78rem;color:var(--muted);font-family:var(--f-body)}
+.lvgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.lv{font:inherit;cursor:pointer;border:0;border-radius:14px;background:var(--tile-given);color:var(--ink);padding:6px 0 4px;display:flex;flex-direction:column;align-items:center;gap:0;box-shadow:0 3px 0 var(--shadow)}
+.lv b{font-family:var(--f-num);font-weight:600;font-size:1.05rem}
+.lv .stars{font-size:.62rem;letter-spacing:0}
+.lv.cur{outline:3px solid var(--accent);outline-offset:1px}
+.lv:disabled{cursor:default;opacity:.4;box-shadow:none}
+.win-stars{font-size:1.8rem;letter-spacing:4px}
+.win-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.win-btns .tool{padding:9px 16px}
+#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:30}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- 新增：頂部功能列、分頁、面板 ---------- */
+h1 .pair .dot:nth-child(1){animation:bob 2.4s ease-in-out infinite}
+h1 .pair .dot:nth-child(2){animation:bob 2.4s ease-in-out infinite .3s}
+.ln{stroke:var(--bird-line);stroke-width:1.1;stroke-linejoin:round}
+.topbar{display:flex;gap:6px;flex-wrap:wrap}
+.ib{font:inherit;cursor:pointer;border:0;border-radius:999px;padding:5px 12px;font-size:.84rem;background:var(--surface);color:var(--ink);box-shadow:0 2px 0 var(--shadow)}
+.ib.mint{background:var(--mint-soft)}
+.ib[aria-pressed="false"]{color:var(--muted)}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;flex-wrap:nowrap}
+.tabs::-webkit-scrollbar{display:none}
+.tabs .tab{flex:none;font:inherit;cursor:pointer;border:0;border-radius:999px;padding:7px 15px;font-size:.92rem;background:var(--surface);color:var(--ink);box-shadow:0 2px 0 var(--shadow)}
+.tabs .tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.panel{background:var(--surface);border-radius:20px;padding:14px;box-shadow:0 3px 0 var(--shadow);display:flex;flex-direction:column;gap:10px}
+.panel h3.ph{margin:4px 0 0;font-family:var(--f-display);font-weight:400;font-size:1.05rem;color:var(--accent)}
+.note{color:var(--muted);font-size:.84rem;margin:0}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{font:inherit;cursor:pointer;border:0;border-radius:999px;padding:7px 14px;font-size:.88rem;background:var(--paper);color:var(--ink);box-shadow:0 2px 0 var(--shadow)}
+.pill.small{padding:4px 10px;font-size:.8rem}
+.pill.primary{background:var(--accent);color:var(--accent-ink)}
+.pill:disabled{opacity:.45;cursor:default}
+.field{font:inherit;font-family:var(--f-num);letter-spacing:.04em;flex:1;min-width:0;padding:8px 12px;border-radius:12px;border:2px solid var(--line);background:var(--paper);color:var(--ink);text-transform:uppercase}
+.field:focus{outline:none;border-color:var(--accent)}
+code{font-family:var(--f-num);font-weight:600;letter-spacing:.04em;color:var(--accent);word-break:break-all}
+.code-line{display:flex;gap:6px;align-items:center;font-size:.84rem;color:var(--muted);flex-wrap:wrap;min-width:0}
+.opt-row{display:flex;gap:8px;align-items:center}
+.opt-row.top{align-items:flex-start}
+.opt-row .lab{flex:none;width:2.4em;font-size:.8rem;color:var(--muted);padding-top:2px}
+.seg{display:flex;gap:5px;flex-wrap:wrap}
+.seg button{font:inherit;cursor:pointer;border:0;border-radius:999px;padding:5px 12px;font-size:.86rem;background:var(--paper);color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);box-shadow:0 2px 0 var(--shadow)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{font:inherit;cursor:pointer;border:2px solid transparent;border-radius:999px;padding:3px 10px 3px 4px;font-size:.82rem;background:var(--paper);color:var(--muted);display:flex;align-items:center;gap:5px}
+.chips button .dot{position:relative;transform:none;width:22px;--n:1}
+.chips button[aria-pressed="true"]{border-color:var(--accent);color:var(--ink);background:var(--accent-soft)}
+.chips button:disabled{cursor:default;opacity:.9}
+
+/* 闖關面板 */
+.stage{display:flex;align-items:center;gap:8px}
+.stage-ch{font-size:.78rem;color:var(--accent);letter-spacing:.06em}
+.prog-row .pill{flex:none}
+
+/* 每日 */
+.daily-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.daily-title{display:flex;flex-direction:column;line-height:1.3}
+.daily-title b{font-family:var(--f-num);font-size:1.25rem;font-weight:600}
+.eyebrow{font-size:.76rem;color:var(--accent);letter-spacing:.08em}
+.streak{display:flex;flex-direction:column;align-items:center;background:var(--accent-soft);border-radius:16px;padding:6px 14px;line-height:1.1}
+.streak b{font-family:var(--f-num);font-size:1.5rem;color:var(--accent)}
+.streak span{font-size:.72rem;color:var(--muted)}
+.leader{background:var(--paper);border-radius:14px;padding:10px 12px}
+.leader-head{display:flex;justify-content:space-between;font-size:.84rem;margin-bottom:4px;gap:8px}
+.leader ol{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:3px;font-size:.88rem}
+.leader li{font-variant-numeric:tabular-nums}
+.leader li .t{font-family:var(--f-num);font-weight:600;margin-left:6px}
+.leader li.me{color:var(--accent)}
+
+/* 競速 */
+.racers{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.racers li{display:grid;grid-template-columns:minmax(0,7em) 1fr auto;gap:8px;align-items:center;font-size:.86rem}
+.racers .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.racers .bar{height:10px;border-radius:999px;background:var(--paper);overflow:hidden}
+.racers .bar i{display:block;height:100%;background:var(--mint);transition:width .3s}
+.racers li.me .bar i{background:var(--accent)}
+.racers .st{font-family:var(--f-num);font-size:.82rem;color:var(--muted);min-width:4.5em;text-align:right}
+
+/* 本題的鳥（小圖） */
+.meta{flex-wrap:wrap}
+.birds-chip{gap:2px;align-items:center;padding:3px 8px}
+.birds-chip .dot{position:relative;transform:none;width:20px;--n:1}
+.birds-chip:empty{display:none}
+
+/* 棋盤上的鳥 */
+.dot.flap{animation:flap .5s ease-out}
+@keyframes flap{30%{transform:translate(-50%,-80%) rotate(-8deg) scale(1.15)}60%{transform:translate(-50%,-55%) rotate(5deg)}}
+.dot.fly{animation:fly .9s cubic-bezier(.3,.7,.4,1)}
+@keyframes fly{35%{transform:translate(-50%,-170%) scale(1.25) rotate(-10deg)}70%{transform:translate(-50%,-120%) scale(1.1) rotate(6deg)}}
+.dot.tilt{animation:tilt .7s ease-in-out}
+@keyframes tilt{20%{transform:translate(-50%,-50%) rotate(-28deg)}50%{transform:translate(-50%,-50%) rotate(-22deg)}80%{transform:translate(-50%,-50%) rotate(6deg)}}
+.owl{position:absolute;width:min(calc(var(--bw) / var(--n,6) * .5),32px);aspect-ratio:1;transform:translate(-50%,-50%);z-index:3;pointer-events:none}
+.owl svg{width:100%;height:100%;overflow:visible;display:block}
+.owl b{position:absolute;left:50%;top:-38%;transform:translateX(-50%);font-family:var(--f-num);font-weight:700;font-size:min(calc(var(--bw) / var(--n,6) * .2),.82rem);
+  background:var(--ink);color:var(--paper);border-radius:999px;padding:0 5px;line-height:1.5;min-width:1.6em;text-align:center}
+.owl.bad b{background:var(--error)}
+.cell.hint{box-shadow:inset 0 0 0 3px var(--accent)}
+.cell.edit{color:var(--ink)}
+
+/* 遮罩：出題中、倒數 */
+.cover{position:absolute;inset:-7px;z-index:6;display:grid;place-items:center;background:color-mix(in srgb,var(--paper) 80%,transparent);border-radius:26px}
+.cover > div{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--muted)}
+.cover .dot{position:relative;transform:none;width:44px;--n:1}
+.spin{animation:bob .8s ease-in-out infinite}
+#cdNum{font-family:var(--f-num);font-size:4rem;color:var(--accent)}
+
+/* 提示列 */
+.hintbar{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border-radius:18px;padding:10px 12px;box-shadow:0 3px 0 var(--shadow);border:2px solid var(--accent-soft);flex-wrap:wrap}
+.hintbar .hint-bird{position:relative;transform:none;width:30px;--n:1;flex:none}
+.hintbar p{margin:0;flex:1;min-width:12em;font-size:.9rem}
+.hint-btns{display:flex;gap:6px;margin-left:auto}
+
+/* 過關 */
+.win .beans .dot{position:relative;transform:none;width:38px;--n:1}
+.egg{display:flex;align-items:center;gap:8px;background:var(--accent-soft);border-radius:14px;padding:6px 12px;font-size:.88rem}
+.egg .dot{position:relative;transform:none;width:30px;--n:1;animation:popin .5s cubic-bezier(.3,1.6,.5,1)}
+
+/* 規則：本題的鳥 */
+.rules h2.sub{font-size:1rem;margin-top:4px}
+#ruleBirds .sw{width:26px;height:26px}
+
+/* ---------- 彈出視窗 ---------- */
+.sheet{position:fixed;inset:0;z-index:20;background:color-mix(in srgb,var(--ink) 40%,transparent);display:grid;place-items:center;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));overflow-y:auto}
+.sheet-card{background:var(--surface);color:var(--ink);border-radius:26px;width:100%;max-width:460px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 0 var(--shadow);animation:popin .3s cubic-bezier(.3,1.5,.5,1)}
+.sheet-card.wide{max-width:560px}
+.sheet-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sheet-top h3{margin:0;font-family:var(--f-display);font-weight:400;font-size:1.35rem;color:var(--accent)}
+.sheet-close{font:inherit;background:none;border:0;color:var(--muted);cursor:pointer;font-size:.88rem;padding:4px}
+.sheet-body{display:flex;flex-direction:column;gap:16px;max-height:min(66vh,600px);overflow-y:auto;padding-right:4px}
+.chap h4{margin:0 0 8px;font-family:var(--f-display);font-weight:400;font-size:1rem;color:var(--ink);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chap h4 .dot{position:relative;transform:none;width:24px;--n:1}
+.chap h4 span{font-size:.76rem;color:var(--muted);font-family:var(--f-body)}
+.lv:disabled{cursor:default;opacity:.35;box-shadow:none}
+.lv.boss{background:var(--sky)}
+
+/* 新鳥介紹 */
+.intro-card{align-items:center;text-align:center}
+.intro-bird{width:110px;height:110px;display:block;animation:bob 2s ease-in-out infinite}
+.intro-bird svg{width:100%;height:100%;overflow:visible}
+.intro-card h3{margin:0;font-family:var(--f-display);font-weight:400;font-size:1.6rem;color:var(--accent)}
+.intro-rule{font-size:1.1rem;margin:0}
+.intro-fact{font-size:.86rem;color:var(--muted);background:var(--paper);border-radius:14px;padding:10px 12px;margin:0;text-align:left}
+
+/* 圖鑑 */
+.dex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.dex-item{background:var(--paper);border-radius:18px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;min-width:0}
+.dex-item .pic{width:64px;height:64px;display:block}
+.dex-item .pic svg{width:100%;height:100%;overflow:visible}
+.dex-item b{font-family:var(--f-display);font-weight:400;font-size:1.05rem}
+.dex-item .tag{font-size:.72rem;color:var(--accent)}
+.dex-item p{margin:0;font-size:.78rem;color:var(--muted);text-align:left}
+.dex-item.locked .pic{filter:brightness(0) opacity(.18)}
+.dex-item.locked b{color:var(--muted)}
+
+/* 鳥園 */
+.yard{position:relative;height:260px;border-radius:20px;overflow:hidden;
+  background:linear-gradient(var(--sky) 0 58%,#9fd7a0 58% 100%)}
+.yard .sun{position:absolute;right:22px;top:16px;width:38px;height:38px;border-radius:50%;background:#ffe27a;box-shadow:0 0 0 8px rgba(255,226,122,.35)}
+.yard .gb{position:absolute;width:34px;height:34px;transform-origin:50% 100%;cursor:pointer;transition:left 1.6s ease-in-out}
+.yard .gb svg{width:100%;height:100%;overflow:visible}
+.yard .gb.hop{animation:hop .5s ease-out}
+.yard .gb.flip svg{transform:scaleX(-1)}
+@keyframes hop{40%{transform:translateY(-14px)}}
+.yard .deco{position:absolute;pointer-events:none}
+.yard .empty{position:absolute;inset:0;display:grid;place-items:center;color:#2b5a3a;font-size:.9rem;text-align:center;padding:20px}
+.deco-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.deco-list div{background:var(--paper);border-radius:14px;padding:8px 10px;font-size:.8rem;display:flex;flex-direction:column}
+.deco-list div b{font-size:.88rem}
+.deco-list div.off{color:var(--muted)}
+
+/* 成就 */
+.ach-list{display:flex;flex-direction:column;gap:8px}
+.ach-item{display:flex;gap:10px;align-items:center;background:var(--paper);border-radius:14px;padding:10px 12px}
+.ach-item .medal{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--line);color:var(--surface);font-family:var(--f-num);font-weight:700}
+.ach-item.got .medal{background:#f5b82e;color:#5a3a00}
+.ach-item div{display:flex;flex-direction:column;min-width:0}
+.ach-item b{font-size:.92rem}
+.ach-item span{font-size:.78rem;color:var(--muted)}
+
+/* 通知 */
+.toasts{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:min(92vw,420px)}
+.toast{background:var(--ink);color:var(--paper);border-radius:16px;padding:10px 14px;font-size:.88rem;display:flex;gap:10px;align-items:center;box-shadow:0 4px 0 var(--shadow);animation:popin .3s cubic-bezier(.3,1.5,.5,1)}
+.toast .dot{position:relative;transform:none;width:26px;--n:1}
+.toast.out{opacity:0;transition:opacity .4s}
+
+@media (max-width:420px){ h1{font-size:1.55rem} h1 .pair .dot{width:28px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span class="pair" aria-hidden="true"><span class="dot" data-bird="2"></span><span class="dot" data-bird="1"></span></span>黑白點方陣</h1>
+    <nav class="topbar" aria-label="功能">
+      <button class="ib" id="btn-dex">圖鑑</button>
+      <button class="ib" id="btn-garden">鳥園</button>
+      <button class="ib" id="btn-ach">成就</button>
+      <button class="ib" id="btn-sound" aria-pressed="true">音效開</button>
+      <button class="ib mint" id="learn">教學</button>
+    </nav>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="模式">
+    <button class="tab" role="tab" id="tab-level" data-mode="level" aria-selected="true">闖關</button>
+    <button class="tab" role="tab" id="tab-daily" data-mode="daily" aria-selected="false">每日一題</button>
+    <button class="tab" role="tab" id="tab-free" data-mode="free" aria-selected="false">自由練習</button>
+    <button class="tab" role="tab" id="tab-studio" data-mode="studio" aria-selected="false" hidden>工作室</button>
+    <button class="tab" role="tab" id="tab-race" data-mode="race" aria-selected="false" hidden>雙人競速</button>
+  </div>
+
+  <section class="panel" id="panel-level">
+    <div class="stage">
+      <button class="nav" id="prevLv" aria-label="上一關">‹</button>
+      <div class="stage-info">
+        <span class="stage-ch" id="stageCh"></span>
+        <span class="stage-no">第 <b id="stageNo">1</b> 關</span>
+        <span class="stage-tag"><span id="stageTag"></span> <span class="stars" id="stageStars"></span></span>
+      </div>
+      <button class="nav" id="nextLv" aria-label="下一關">›</button>
+    </div>
+    <div class="prog-row"><button class="pill" id="mapBtn">選關</button><div class="prog"><i id="progBar" style="width:0%"></i></div><span><b id="progN">0</b> / 100</span></div>
+  </section>
+
+  <section class="panel" id="panel-daily" hidden>
+    <div class="daily-head">
+      <div class="daily-title"><span class="eyebrow" id="dailyKind">每日一題</span><b id="dailyDate"></b></div>
+      <div class="streak"><b id="streakN">0</b><span>天連續</span></div>
+    </div>
+    <p class="note" id="dailyNote"></p>
+    <div class="leader" id="leader" hidden>
+      <div class="leader-head"><span>今日排行</span><span class="note" id="leaderNote"></span></div>
+      <ol id="leaderList"></ol>
+    </div>
+    <div class="row"><button class="pill" id="shareDaily" hidden>複製今天的成績</button><span class="note" id="shareMsg" aria-live="polite"></span></div>
+  </section>
+
+  <section class="panel" id="panel-free" hidden>
+    <div class="opt-row"><span class="lab">大小</span><div class="seg" id="freeSize"></div></div>
+    <div class="opt-row"><span class="lab">難度</span><div class="seg" id="freeDiff"></div></div>
+    <div class="opt-row top"><span class="lab">鳥</span><div class="chips" id="freeBirds"></div></div>
+    <div class="row"><button class="pill primary" id="freeGo">出一題新的</button><span class="code-line" hidden>題目代碼 <code id="freeCode">—</code><button class="pill small" id="freeCopy">複製</button></span></div>
+    <p class="note" id="freeMsg" aria-live="polite"></p>
+  </section>
+
+  <section class="panel" id="panel-studio" hidden>
+    <h3 class="ph">輸入題目代碼</h3>
+    <div class="row"><input id="codeIn" class="field" placeholder="例如 RSMB-CNHD-KKZL-SL" autocomplete="off" spellcheck="false"><button class="pill primary" id="codeGo">開始玩</button></div>
+    <p class="note" id="codeMsg" aria-live="polite">朋友分享給你的代碼貼在這裡，就能玩到同一題。</p>
+    <h3 class="ph">手作出題</h3>
+    <p class="note">在下面的棋盤填好一份完整答案，每列每行都不重複。接著選好要出現的鳥和難度，系統會幫你放鳥、確認只有一個解，再產生代碼。</p>
+    <div class="opt-row"><span class="lab">大小</span><div class="seg" id="studioSize"></div></div>
+    <div class="opt-row"><span class="lab">難度</span><div class="seg" id="studioDiff"></div></div>
+    <div class="opt-row top"><span class="lab">鳥</span><div class="chips" id="studioBirds"></div></div>
+    <div class="row wrap-row">
+      <button class="pill" id="studioEdit">開始填答案</button>
+      <button class="pill" id="studioRand">隨機填滿</button>
+      <button class="pill" id="studioClear">清空</button>
+      <button class="pill primary" id="studioMake">產生題目</button>
+    </div>
+    <p class="note" id="studioMsg" aria-live="polite"></p>
+  </section>
+
+  <section class="panel" id="panel-race" hidden>
+    <div id="raceOff">
+      <p class="note">兩個人各自打開這個頁面，輸入同一個房間代碼。兩邊都按「準備好了」，倒數三秒後同時開始，誰先解完誰贏。</p>
+      <div class="row"><input id="roomIn" class="field" placeholder="房間代碼" maxlength="12" autocomplete="off" spellcheck="false"><button class="pill primary" id="roomJoin">加入</button><button class="pill" id="roomNew">開新房間</button></div>
+    </div>
+    <div id="raceOn" hidden>
+      <div class="row"><span>房間 <code id="roomName"></code></span><button class="pill small" id="roomCopy">複製代碼</button><button class="pill small" id="roomLeave">離開</button></div>
+      <ul class="racers" id="racers"></ul>
+      <div class="row"><button class="pill primary" id="raceReady">準備好了</button><span class="note" id="raceStatus"></span></div>
+    </div>
+    <p class="note" id="raceMsg" aria-live="polite"></p>
+  </section>
+
+  <div class="meta"><span class="chip">時間 <b id="time">0:00</b></span><span class="chip">已填 <b id="filled">0</b>/<span id="total">36</span></span><span class="chip birds-chip" id="birdChip" aria-label="本題的鳥"></span></div>
+
+  <div class="board-wrap">
+    <div class="board" id="board" aria-label="棋盤"></div>
+    <div class="cover" id="loading" hidden><div><span class="dot spin" data-bird="1"></span><span id="loadingText">出題中…</span></div></div>
+    <div class="cover" id="countdown" hidden><div><strong id="cdNum">3</strong></div></div>
+    <div class="win" id="win" hidden><div>
+      <span class="beans" aria-hidden="true" id="winBirds"></span>
+      <strong id="wintitle">解開了！</strong>
+      <span class="stars win-stars" id="winstars"></span>
+      <span id="winmsg"></span>
+      <span class="egg" id="winEgg" hidden></span>
+      <div class="win-btns"><button class="tool" id="again">再來一局</button><button class="tool primary" id="nextBtn">下一關</button></div>
+    </div></div>
+  </div>
+
+  <div class="hintbar" id="hintbar" hidden role="status">
+    <span class="dot hint-bird" data-bird="5"></span>
+    <p id="hintText"></p>
+    <div class="hint-btns"><button class="pill small primary" id="hintFill">幫我填</button><button class="pill small" id="hintClose">知道了</button></div>
+  </div>
+
+  <div class="keys" id="keys"></div>
+  <div class="tools">
+    <button class="tool" id="notes" aria-pressed="false">筆記</button>
+    <button class="tool" id="erase">擦除</button>
+    <button class="tool" id="undo">復原</button>
+    <button class="tool" id="hint">提示</button>
+    <button class="tool primary" id="new">新局</button>
+  </div>
+
+  <section class="rules">
+    <h2>規則</h2>
+    <ul>
+      <li><span class="sw g"></span><span>每一列、每一行都要剛好填入 1 到 <span class="nmax">6</span>（棋盤幾格寬，就填到幾）。沒有宮格限制，這點和數獨不同。</span></li>
+      <li><span class="sw n"></span><span>鸚鵡和山雀<b>全部都畫出來了</b>。兩格之間沒有鸚鵡，就代表不是連續數；有山雀的題目裡，沒有山雀就代表不是兩倍。</span></li>
+      <li><span class="sw n"></span><span>其他的鳥只畫<b>一部分</b>，而且只會站在沒有鸚鵡、沒有山雀的地方。沒看到牠們，不代表那裡沒有這種關係。</span></li>
+    </ul>
+    <h2 class="sub">這一題的鳥</h2>
+    <ul id="ruleBirds"></ul>
+    <p class="kbd">鍵盤：方向鍵移動，數字鍵填數，N 切換筆記，H 提示，Backspace 擦除，Ctrl+Z 復原。</p>
+  </section>
+</div>
+
+<div class="sheet" id="map" hidden role="dialog" aria-modal="true" aria-labelledby="map-title">
+  <div class="sheet-card wide">
+    <div class="sheet-top"><h3 id="map-title">選擇關卡</h3><button class="sheet-close" data-close="map">關閉</button></div>
+    <div class="sheet-body" id="mapBody"></div>
+  </div>
+</div>
+
+<div class="sheet" id="intro" hidden role="dialog" aria-modal="true" aria-labelledby="intro-title">
+  <div class="sheet-card intro-card">
+    <span class="eyebrow">新的鳥登場</span>
+    <span class="intro-bird" id="introBird"></span>
+    <h3 id="intro-title"></h3>
+    <p class="intro-rule" id="introRule"></p>
+    <p class="note" id="introEx"></p>
+    <p class="intro-fact" id="introFact"></p>
+    <button class="pill primary" id="introOk">知道了，開始</button>
+  </div>
+</div>
+
+<div class="sheet" id="dex" hidden role="dialog" aria-modal="true" aria-labelledby="dex-title">
+  <div class="sheet-card wide">
+    <div class="sheet-top"><h3 id="dex-title">鳥類圖鑑</h3><button class="sheet-close" data-close="dex">關閉</button></div>
+    <p class="note" id="dexNote"></p>
+    <div class="sheet-body dex-grid" id="dexBody"></div>
+  </div>
+</div>
+
+<div class="sheet" id="garden" hidden role="dialog" aria-modal="true" aria-labelledby="garden-title">
+  <div class="sheet-card wide">
+    <div class="sheet-top"><h3 id="garden-title">我的鳥園</h3><button class="sheet-close" data-close="garden">關閉</button></div>
+    <p class="note" id="gardenNote"></p>
+    <div class="yard" id="yard"></div>
+    <div class="deco-list" id="decoList"></div>
+  </div>
+</div>
+
+<div class="sheet" id="ach" hidden role="dialog" aria-modal="true" aria-labelledby="ach-title">
+  <div class="sheet-card wide">
+    <div class="sheet-top"><h3 id="ach-title">成就</h3><button class="sheet-close" data-close="ach">關閉</button></div>
+    <div class="sheet-body ach-list" id="achBody"></div>
+  </div>
+</div>
+
+<div class="sheet" id="tut" hidden role="dialog" aria-modal="true" aria-labelledby="tut-title">
+  <div class="sheet-card tut-card">
+    <div class="tut-top"><span class="tut-step" id="tut-step"></span><button class="sheet-close" id="tut-close">略過教學</button></div>
+    <h3 id="tut-title"></h3>
+    <div id="tut-body" style="display:flex;flex-direction:column;gap:12px"></div>
+    <div class="fb" id="tut-fb" aria-live="polite"></div>
+    <div class="tut-nav"><button id="tut-prev">上一步</button><button class="go" id="tut-next">下一步</button></div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+(()=>{
+// ===================== 01 核心：亂數、規則、唯一解檢查 =====================
+let RNG=Math.random;
+const rnd=n=>Math.floor(RNG()*n);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const range=n=>[...Array(n).keys()];
+const popc=m=>{let k=0;while(m){m&=m-1;k++}return k};
+const bitsOf=m=>{const o=[];for(let v=1;m;v++,m>>>=1)if(m&1)o.push(v);return o};
+const lowBit=m=>{let v=1;while(!(m&1)){m>>>=1;v++}return v};
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function hashStr(s){let h=2166136261;for(const ch of s){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+
+// 鳥的代號：邊上的鳥 1–7，貓頭鷹另外放在格子角落
+// 1 鸚鵡：差 1（全部畫出）  2 山雀：兩倍（全部畫出）
+// 3 綠繡眼：相加 = N+1   4 翠鳥：差 2   5 麻雀：同奇偶   6 台灣藍鵲：差 3   7 五色鳥：三倍
+// 3–7 只畫一部分，而且只會站在「沒有鸚鵡、沒有山雀」的邊上
+const EDGE_BIRDS=[1,2,3,4,5,6,7];
+function holds(t,a,b,n){
+  switch(t){
+    case 1:return Math.abs(a-b)===1;
+    case 2:return a===2*b||b===2*a;
+    case 3:return a+b===n+1;
+    case 4:return Math.abs(a-b)===2;
+    case 5:return (a-b)%2===0;
+    case 6:return Math.abs(a-b)===3;
+    case 7:return a===3*b||b===3*a;
+  }
+  return false;
+}
+// 這兩個數之間「一定要畫」的鳥：有山雀時兩倍優先，否則差 1 畫鸚鵡
+function fullBird(a,b,tit){return tit&&(a===2*b||b===2*a)?2:(Math.abs(a-b)===1?1:0)}
+function allowPair(t,a,b,n,tit){
+  const d=fullBird(a,b,tit);
+  if(t===1||t===2) return d===t;
+  if(d) return false;
+  return t===0||holds(t,a,b,n);
+}
+function allowTable(n,tit){
+  const A=[];
+  for(let t=0;t<=7;t++){A[t]=[0];for(let w=1;w<=n;w++){let m=0;for(let v=1;v<=n;v++)if(allowPair(t,v,w,n,tit))m|=1<<(v-1);A[t][w]=m;}}
+  return A;
+}
+
+// 題目物件：{n,tit,h,v,owls,sol,givens}；prep 補上推理用的結構（不存檔）
+function prep(P){
+  const n=P.n,NN=n*n;
+  P.NN=NN; P.A=allowTable(n,P.tit);
+  P.nb=range(NN).map(i=>{const r=i/n|0,c=i%n,o=[];
+    if(c>0)o.push([i-1,P.h[r][c-1]]); if(c<n-1)o.push([i+1,P.h[r][c]]);
+    if(r>0)o.push([i-n,P.v[r-1][c]]); if(r<n-1)o.push([i+n,P.v[r][c]]);
+    return o;});
+  P.ow=(P.owls||[]).map(o=>({cells:[o.r*n+o.c,o.r*n+o.c+1,(o.r+1)*n+o.c,(o.r+1)*n+o.c+1],s:o.s}));
+  P.cellOw=range(NN).map(()=>[]); P.ow.forEach((o,k)=>o.cells.forEach(i=>P.cellOw[i].push(k)));
+  return P;
+}
+function owlMask(o,i,g,n){
+  let fs=0,e=0;
+  for(const j of o.cells) if(j!==i){ if(g[j]) fs+=g[j]; else e++; }
+  const rem=o.s-fs;
+  let lo=e?rem-e*n:rem, hi=e?rem-e:rem;
+  lo=Math.max(1,lo); hi=Math.min(n,hi);
+  if(lo>hi) return 0;
+  return ((1<<hi)-1)&~((1<<(lo-1))-1);
+}
+// 某一格在目前盤面下的基本候選數（同列、同行、旁邊已填格子的鳥、貓頭鷹）
+function baseCand(P,g,i,rowM,colM){
+  const n=P.n; let m=((1<<n)-1)&~rowM[i/n|0]&~colM[i%n];
+  for(const [j,t] of P.nb[i]){const w=g[j]; if(w) m&=P.A[t][w];}
+  for(const k of P.cellOw[i]) m&=owlMask(P.ow[k],i,g,n);
+  return m;
+}
+function lineMasks(P,g){
+  const n=P.n,rowM=Array(n).fill(0),colM=Array(n).fill(0);
+  for(let i=0;i<P.NN;i++) if(g[i]){const b=1<<(g[i]-1);rowM[i/n|0]|=b;colM[i%n]|=b;}
+  return [rowM,colM];
+}
+// 數解答數量（到 limit 為止）；超過搜尋預算視為「不唯一」
+function countSolutions(P,grid,limit=2,budget=250000){
+  const n=P.n,NN=P.NN,g=grid.slice();
+  const [rowM,colM]=lineMasks(P,g);
+  let count=0,nodes=0;
+  const go=()=>{
+    if(++nodes>budget){count=limit;return;}
+    let best=-1,bm=0,bn=99;
+    for(let i=0;i<NN;i++) if(!g[i]){const m=baseCand(P,g,i,rowM,colM),k=popc(m); if(k<bn){bn=k;best=i;bm=m; if(k<=1)break;}}
+    if(best<0){count++;return;}
+    if(bn===0) return;
+    const r=best/n|0,c=best%n;
+    for(let v=1;v<=n;v++) if(bm>>(v-1)&1){const b=1<<(v-1);
+      g[best]=v;rowM[r]|=b;colM[c]|=b; go(); g[best]=0;rowM[r]&=~b;colM[c]&=~b;
+      if(count>=limit) return;}
+  };
+  go(); return count;
+}
+function randomLatin(n){
+  const NN=n*n;
+  for(let tries=0;tries<60;tries++){
+    const g=Array(NN).fill(0),rowM=Array(n).fill(0),colM=Array(n).fill(0); let steps=0;
+    const go=i=>{ if(i===NN) return true; if(++steps>20000) return false;
+      const r=i/n|0,c=i%n;
+      for(const v of shuffle(range(n).map(x=>x+1))){const b=1<<(v-1); if(rowM[r]&b||colM[c]&b)continue;
+        g[i]=v;rowM[r]|=b;colM[c]|=b; if(go(i+1))return true; g[i]=0;rowM[r]&=~b;colM[c]&=~b;}
+      return false;};
+    if(go(0)) return g;
+  }
+  const rp=shuffle(range(n)),cp=shuffle(range(n)),sp=shuffle(range(n));
+  return range(NN).map(i=>sp[(rp[i/n|0]+cp[i%n])%n]+1);
+}
+function isLatin(g,n){
+  for(let k=0;k<n;k++){let r=0,c=0;for(let j=0;j<n;j++){const a=g[k*n+j],b=g[j*n+k];if(!a||!b||a>n||b>n)return false;r|=1<<(a-1);c|=1<<(b-1);} if(r!==(1<<n)-1||c!==(1<<n)-1)return false;}
+  return true;
+}
+// ===================== 02 模擬人類推理：評難度、教學提示 =====================
+// 技巧：1 單一候選  2 唯一位置  3 鄰格推理（看旁邊格子的可能性）  4 數對
+const TECH_NAME={1:'只剩一個可能',2:'唯一位置',3:'看鄰居的可能',4:'數對'};
+const TECH_W={1:1,2:2,3:6,4:12};
+function unitCells(n,u){return u<n?range(n).map(k=>u*n+k):range(n).map(k=>k*n+(u-n))}
+
+function logicSolve(P,start,maxPlace=Infinity){
+  const n=P.n,NN=P.NN,g=start.slice();
+  const [rowM,colM]=lineMasks(P,g);
+  const C=Array(NN).fill(0), elimTech=Array(NN).fill(0);
+  for(let i=0;i<NN;i++) if(!g[i]) C[i]=baseCand(P,g,i,rowM,colM);
+  const units=range(2*n).map(u=>unitCells(n,u));
+  const steps=[];
+  const place=(i,v,tech,info)=>{
+    g[i]=v; const b=1<<(v-1), r=i/n|0, c=i%n; rowM[r]|=b; colM[c]|=b; C[i]=0;
+    steps.push({i,v,tech,info});
+    for(let k=0;k<n;k++){const a=r*n+k,d=k*n+c; if(!g[a])C[a]&=~b; if(!g[d])C[d]&=~b;}
+    for(const [j,t] of P.nb[i]) if(!g[j]) C[j]&=P.A[t][v];
+    for(const k of P.cellOw[i]) for(const j of P.ow[k].cells) if(!g[j]) C[j]&=owlMask(P.ow[k],j,g,n);
+  };
+  const owlFeasible=(o,i,v)=>{let lo=v,hi=v;
+    for(const j of o.cells) if(j!==i){ if(g[j]){lo+=g[j];hi+=g[j];} else {const m=C[j]; if(!m) return false; lo+=lowBit(m); hi+=32-Math.clz32(m);} }
+    return lo<=o.s&&o.s<=hi;};
+  const arc=()=>{let changed=false;
+    for(let i=0;i<NN;i++) if(!g[i]){ const m=C[i]; let keep=0;
+      for(const v of bitsOf(m)){ let ok=true;
+        for(const [j,t] of P.nb[i]) if(!g[j]&&!(C[j]&P.A[t][v])){ok=false;break;}
+        if(ok) for(const k of P.cellOw[i]) if(!owlFeasible(P.ow[k],i,v)){ok=false;break;}
+        if(ok) keep|=1<<(v-1); }
+      if(keep!==m){C[i]=keep;elimTech[i]=Math.max(elimTech[i],3);changed=true;} }
+    return changed;};
+  const pairs=()=>{let changed=false;
+    for(const U of units){ const em=U.filter(i=>!g[i]);
+      for(let a=0;a<em.length;a++){ const ma=C[em[a]]; if(popc(ma)!==2) continue;
+        for(let b=a+1;b<em.length;b++) if(C[em[b]]===ma)
+          for(const i of em) if(i!==em[a]&&i!==em[b]&&(C[i]&ma)){C[i]&=~ma;elimTech[i]=Math.max(elimTech[i],4);changed=true;} } }
+    return changed;};
+
+  while(steps.length<maxPlace){
+    let empty=0; for(let i=0;i<NN;i++) if(!g[i]){ empty++; if(!C[i]) return {g,steps,stuck:true,contradiction:true}; }
+    if(!empty) return {g,steps,solved:true};
+    let found=false;
+    for(let i=0;i<NN;i++) if(!g[i]&&popc(C[i])===1){ place(i,lowBit(C[i]),Math.max(1,elimTech[i]),{kind:'single'}); found=true; break; }
+    if(found) continue;
+    outer: for(let u=0;u<units.length;u++){ const U=units[u];
+      for(let v=1;v<=n;v++){ const b=1<<(v-1); let cnt=0,at=-1,present=false;
+        for(const i of U){ if(g[i]===v){present=true;break;} if(!g[i]&&(C[i]&b)){cnt++;at=i;} }
+        if(!present&&cnt===1){ let t=2; for(const i of U) t=Math.max(t,elimTech[i]);
+          place(at,v,t,{kind:'hidden',unit:u<n?'row':'col',idx:u<n?u:u-n}); found=true; break outer; } } }
+    if(found) continue;
+    if(arc()) continue;
+    if(pairs()) continue;
+    return {g,steps,stuck:true,C};
+  }
+  return {g,steps,partial:true,C};
+}
+function gradePuzzle(P){
+  const r=logicSolve(P,P.givens);
+  let score=0,max=0; for(const s of r.steps){score+=TECH_W[s.tech]||1; max=Math.max(max,s.tech);}
+  if(!r.solved){score+=1000; max=5;}
+  return {score,max};
+}
+// ===================== 03 出題：關卡、每日一題、題目代碼 =====================
+// spec：{n, tit, partial:[鳥代號], owl, keep(開局給數字比例), density, minKeep}
+function buildPuzzle(spec,givenSol){
+  const n=spec.n, NN=n*n, sol=givenSol?givenSol.slice():randomLatin(n);
+  const dens=spec.density??0.75, tit=!!spec.tit, partial=spec.partial||[];
+  const pick=(a,b)=>{const d=fullBird(a,b,tit); if(d) return d;
+    const opts=partial.filter(t=>holds(t,a,b,n)); return opts.length&&RNG()<dens?opts[rnd(opts.length)]:0;};
+  const h=range(n).map(r=>range(n-1).map(c=>pick(sol[r*n+c],sol[r*n+c+1])));
+  const v=range(n-1).map(r=>range(n).map(c=>pick(sol[r*n+c],sol[(r+1)*n+c])));
+  const allOwls=[];
+  if(spec.owl) for(let r=0;r<n-1;r++) for(let c=0;c<n-1;c++) if(RNG()<0.5)
+    allOwls.push({r,c,s:sol[r*n+c]+sol[r*n+c+1]+sol[(r+1)*n+c]+sol[(r+1)*n+c+1],on:true});
+  const P={n,tit,h,v,sol};
+  const sync=()=>{P.owls=allOwls.filter(o=>o.on).map(({r,c,s})=>({r,c,s})); prep(P);};
+  sync();
+  // 1. 先拿掉開局數字（所有部分線索都在）
+  let grid=sol.slice(), givens=NN; const target=Math.round(NN*spec.keep);
+  for(const i of shuffle(range(NN))){
+    if(givens<=target) break;
+    const k=grid[i]; grid[i]=0;
+    if(countSolutions(P,grid)!==1) grid[i]=k; else givens--;
+  }
+  // 2. 再拿掉多餘的部分線索，讓留下來的鳥都有用；每種新鳥至少留 minKeep 隻
+  const minKeep=spec.minKeep??2, cnt={};
+  const items=[];
+  P.h.forEach((row,r)=>row.forEach((t,c)=>{if(t>=3){items.push({kind:'h',r,c,t});cnt[t]=(cnt[t]||0)+1;}}));
+  P.v.forEach((row,r)=>row.forEach((t,c)=>{if(t>=3){items.push({kind:'v',r,c,t});cnt[t]=(cnt[t]||0)+1;}}));
+  allOwls.forEach(o=>{items.push({kind:'o',o,t:'O'});cnt.O=(cnt.O||0)+1;});
+  for(const it of shuffle(items)){
+    if(cnt[it.t]<=minKeep) continue;
+    if(it.kind==='o') it.o.on=false; else P[it.kind][it.r][it.c]=0;
+    sync();
+    if(countSolutions(P,grid)===1) cnt[it.t]--;
+    else { if(it.kind==='o') it.o.on=true; else P[it.kind][it.r][it.c]=it.t; sync(); }
+  }
+  P.givens=grid;
+  return P;
+}
+function birdsIn(P){
+  const s=new Set(); P.h.flat().concat(P.v.flat()).forEach(t=>t&&s.add(t)); if(P.owls&&P.owls.length) s.add('O');
+  return [...s].sort((a,b)=>BIRD_ORDER.indexOf(a)-BIRD_ORDER.indexOf(b));
+}
+const BIRD_ORDER=[1,2,3,4,5,'O',6,7];
+// 產生多個候選題，依推理難度排序後挑一題
+function pickByDifficulty(spec,seed,K,t){
+  const cands=[];
+  for(let k=0;k<K;k++){
+    RNG=mulberry32(seed+k*104729);
+    try{ const P=buildPuzzle(spec); P.grade=gradePuzzle(P); cands.push(P); } finally{ RNG=Math.random; }
+  }
+  cands.sort((a,b)=>a.grade.score-b.grade.score);
+  return cands[Math.round(t*(K-1))];
+}
+
+// ---------- 闖關：8 章 100 關 ----------
+const lerp=(a,b,t)=>a+(b-a)*t;
+const CHAPTERS=[
+  {name:'鸚鵡的庭院',  bird:1,  from:1,  to:12,  spec:t=>({n:6,tit:false,partial:[],keep:lerp(.6,.14,t)})},
+  {name:'山雀的樹梢',  bird:2,  from:13, to:24,  spec:(t,L)=>L<=18?{n:6,tit:true,partial:[],keep:lerp(.33,.05,t*2)}:{n:7,tit:true,partial:[],keep:lerp(.28,0,(t-.5)*2)}},
+  {name:'綠繡眼的花叢',bird:3,  from:25, to:36,  spec:(t,L)=>L<=30?{n:6,tit:false,partial:[3],keep:lerp(.3,.05,t*2)}:{n:7,tit:true,partial:[3],keep:lerp(.22,0,(t-.5)*2)}},
+  {name:'翠鳥的溪邊',  bird:4,  from:37, to:48,  spec:t=>({n:7,tit:true,partial:[4],keep:lerp(.25,0,t)})},
+  {name:'麻雀的屋簷',  bird:5,  from:49, to:60,  spec:(t,L)=>({n:L<=54?7:8,tit:true,partial:[5],keep:L<=54?lerp(.22,.04,t*2):lerp(.2,0,(t-.5)*2)})},
+  {name:'貓頭鷹的夜晚',bird:'O',from:61, to:72,  spec:(t,L)=>({n:L<=66?7:8,tit:true,partial:[],owl:true,keep:L<=66?lerp(.2,.02,t*2):lerp(.18,0,(t-.5)*2)})},
+  {name:'台灣藍鵲的山林',bird:6,from:73, to:86,  spec:(t,L)=>L<=79?{n:8,tit:true,partial:[6],keep:lerp(.2,.03,t*2)}:{n:9,tit:true,partial:[6,3],keep:lerp(.18,0,(t-.5)*2)}},
+  {name:'五色鳥與帝雉',bird:7,  from:87, to:100, spec:(t,L)=>{
+    if(L===100) return {n:9,tit:true,partial:[3,4,5,6,7],owl:true,keep:0,density:.5,minKeep:1};
+    const mix=[[7],[7],[7,4],[7,5],[7,3],[7,6],[7,4,5],[7,3,6],[7],[7,5],[7,3,4],[7,6],[7,4,6]][L-87];
+    return {n:9,tit:true,partial:mix,owl:L%4===0,keep:lerp(.14,0,t)};}},
+];
+const LEVELS=100;
+function chapterOf(L){return CHAPTERS.find(c=>L>=c.from&&L<=c.to)}
+function levelSpec(L){const ch=chapterOf(L), t=ch.to===ch.from?1:(L-ch.from)/(ch.to-ch.from); return {...ch.spec(t,L),t,chapter:CHAPTERS.indexOf(ch)+1};}
+const LEVEL_CACHE=new Map();
+function generateLevel(L){
+  if(LEVEL_CACHE.has(L)) return LEVEL_CACHE.get(L);
+  const sp=levelSpec(L);
+  const K=sp.n<=6?5:sp.n<=7?4:sp.n<=8?3:2;
+  const P=pickByDifficulty(sp,L*7919+2026,K,sp.t);
+  P.label={kind:'level',L}; LEVEL_CACHE.set(L,P); return P;
+}
+
+// ---------- 每日一題（以台北時間為準，全世界同一題） ----------
+function todayKey(){
+  const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  return p; // YYYY-MM-DD
+}
+function dayOffset(key,d){const t=new Date(key+'T00:00:00Z');t.setUTCDate(t.getUTCDate()+d);return t.toISOString().slice(0,10);}
+function dailySpec(key){
+  const wd=new Date(key+'T00:00:00Z').getUTCDay();
+  if(wd===0||wd===6){
+    const wk=Math.floor(Date.parse(key)/864e5/7);
+    const pairs=[[3,7],[4,5],[6,7],[3,4],[5,6]];
+    return {n:9,tit:true,partial:pairs[wk%pairs.length],owl:wd===0,keep:.05,weekend:true};
+  }
+  const byDay={1:{partial:[3]},2:{partial:[4]},3:{partial:[5]},4:{partial:[],owl:true},5:{partial:[6]}}[wd];
+  return {n:7,tit:true,keep:.12,...byDay,weekend:false};
+}
+function generateDaily(key){
+  const sp=dailySpec(key);
+  const P=pickByDifficulty(sp,hashStr('daily:'+key),sp.n===9?2:3,.5);
+  P.label={kind:'daily',key,weekend:sp.weekend}; return P;
+}
+
+// ---------- 題目代碼（分享用）：大小、鳥、難度、種子，手作題另含解答 ----------
+const DIFFS=[{name:'簡單',keep:.35},{name:'普通',keep:.15},{name:'困難',keep:.05},{name:'極難',keep:0}];
+function codeSpec(o){return {n:o.n,tit:o.tit,partial:o.partial,owl:o.owl,keep:DIFFS[o.diff].keep}}
+function encodeCode(o){
+  const bytes=[1,o.n,(o.tit?1:0)|(o.owl?2:0)|(o.sol?4:0),o.partial.reduce((m,t)=>m|1<<t,0),o.diff,
+    (o.seed>>>24)&255,(o.seed>>>16)&255,(o.seed>>>8)&255,o.seed&255];
+  if(o.sol) for(let i=0;i<o.sol.length;i+=2) bytes.push((o.sol[i]<<4)|(o.sol[i+1]||0));
+  let x=1n; for(const b of bytes) x=(x<<8n)|BigInt(b);
+  return x.toString(36).toUpperCase().replace(/(.{4})(?=.)/g,'$1-');
+}
+function decodeCode(s){
+  try{
+    s=String(s).toLowerCase().replace(/[^0-9a-z]/g,''); if(!s||s.length>80) return null;
+    let x=0n; for(const ch of s) x=x*36n+BigInt(parseInt(ch,36));
+    const bytes=[]; while(x>1n){bytes.unshift(Number(x&255n)); x>>=8n;}
+    if(x!==1n||bytes[0]!==1||bytes.length<9) return null;
+    const n=bytes[1], fl=bytes[2], pm=bytes[3], diff=bytes[4];
+    if(n<4||n>9||diff>3) return null;
+    const seed=((bytes[5]<<24)|(bytes[6]<<16)|(bytes[7]<<8)|bytes[8])>>>0;
+    const partial=[3,4,5,6,7].filter(t=>pm>>t&1);
+    let sol=null;
+    if(fl&4){ sol=[]; for(let i=9;i<bytes.length;i++){sol.push(bytes[i]>>4,bytes[i]&15);} sol=sol.slice(0,n*n); if(!isLatin(sol,n)) return null; }
+    return {n,tit:!!(fl&1),owl:!!(fl&2),partial,diff,seed,sol};
+  }catch(e){return null}
+}
+function puzzleFromCode(o){
+  RNG=mulberry32(o.seed);
+  try{ const P=buildPuzzle(codeSpec(o),o.sol||null); P.label={kind:'custom',code:encodeCode(o)}; return P; } finally{ RNG=Math.random; }
+}
+function racePuzzle(room){
+  RNG=mulberry32(hashStr('race:'+room));
+  try{ const P=buildPuzzle({n:7,tit:true,partial:[3],keep:.14}); P.label={kind:'race',room}; return P; } finally{ RNG=Math.random; }
+}
+// ===================== 04 鳥：圖鑑資料、圖、叫聲 =====================
+// 每隻鳥都畫在 viewBox -2 -3 24 24 裡：圓身體、頭朝右
+const TAIL='<path d="M3 12.6 L-1.4 14.4 L-1 15.6 L3.2 16.4 Z" class="ln" fill="FILL"/>';
+const BODY='<circle cx="10" cy="11" r="8.4" class="ln" fill="FILL"/>';
+const svgWrap=(inner,extra='')=>`<svg viewBox="-2 -3 24 24" aria-hidden="true"${extra}>${inner}</svg>`;
+const SPECIES={
+  1:{key:'parrot',name:'玄鳳鸚鵡',role:'白點',rule:'兩格相差 1',ex:'3·4、5·6',
+     full:true,fact:'原產澳洲。頭上的黃色冠羽會隨心情豎起或放下，臉頰上有一塊橘色圓斑。',
+     svg:svgWrap(`<path d="M9 3.4 Q7.4 -1.4 11.6 -2.2" class="crest"/><path d="M10.8 3.2 Q10.6 -0.4 14 -0.8" class="crest"/>
+      <path d="M3 12.6 L-1.4 14.4 L-1 15.6 L3.2 16.4 Z" class="bd-w"/><circle cx="10" cy="11" r="8.4" class="bd-w"/>
+      <path d="M8.4 4.4 Q14.6 3 17.6 8.6 Q15.6 11 11.4 10.2 Q8.2 8.4 8.4 4.4 Z" fill="#ffe36e"/>
+      <circle cx="13.2" cy="12.2" r="2.3" fill="#ff8f4f"/><path d="M5 13.4 Q8.6 17.6 13.4 16.4" class="wing-w"/>
+      <circle cx="13.8" cy="7.5" r="1.05" class="eye-k"/><path d="M17.4 8.3 Q20.6 8.6 18 11 Z" fill="#b9a28a"/>`),
+     call:[[1500,2100,.09],[1700,2300,.11]]},
+  2:{key:'tit',name:'青背山雀',role:'黑點',rule:'一格剛好是另一格的兩倍',ex:'2·4、3·6',
+     full:true,fact:'台灣中低海拔山區常見。黑色頭頂配上白色大臉頰，常成群在樹梢間跳來跳去找蟲吃。',
+     svg:svgWrap(`<path d="M3 12.6 L-1.4 14.4 L-1 15.6 L3.2 16.4 Z" class="bd-b"/><circle cx="10" cy="11" r="8.4" class="bd-b"/>
+      <ellipse cx="10.4" cy="10.4" rx="3.9" ry="2.6" transform="rotate(-14 10.4 10.4)" class="ck-w"/>
+      <path d="M5 13.4 Q8.6 17.6 13.4 16.4" class="wing-b"/>
+      <circle cx="13.6" cy="7.7" r="1.35" class="eye-w"/><circle cx="13.9" cy="7.6" r=".7" class="eye-k"/>
+      <path d="M17.6 8.2 L21 9.4 L17.8 10.6 Z" fill="#f2a93b"/>`),
+     call:[[3200,2600,.05],[3200,2600,.05],[3000,2400,.07]]},
+  3:{key:'whiteeye',name:'綠繡眼',rule:'兩格相加剛好等於 N+1（N 是棋盤寬度）',ex:'6×6 裡 1·6、2·5、3·4',
+     fact:'眼睛外圍有一圈白色眼圈，所以叫綠繡眼。都市公園很常見，最愛鑽進花叢裡吸花蜜。',
+     svg:svgWrap(TAIL.replace('FILL','#8fbf45')+BODY.replace('FILL','#a6cf5d')+
+      `<ellipse cx="10.4" cy="14.8" rx="5.6" ry="3.2" fill="#f1ecb8"/><ellipse cx="15.2" cy="11.6" rx="2.6" ry="2" fill="#ffd93a"/>
+      <circle cx="13.7" cy="7.7" r="2.1" fill="#fff"/><circle cx="13.9" cy="7.7" r="1" class="eye-k"/>
+      <path d="M17.6 8.6 L20.8 9.3 L17.7 10.1 Z" fill="#4a4a4a"/>`),
+     call:[[2800,3400,.04],[3000,3500,.04],[2900,3400,.04],[3100,3600,.05]]},
+  4:{key:'kingfisher',name:'翠鳥',rule:'兩格相差剛好 2',ex:'1·3、4·6',
+     fact:'背上是閃亮的藍色，肚子是橘色。會停在水邊的樹枝上，看準了就俯衝進水裡抓魚。',
+     svg:svgWrap(TAIL.replace('FILL','#2a7fc4')+BODY.replace('FILL','#2f8fd8')+
+      `<ellipse cx="10.6" cy="14.6" rx="6.2" ry="3.6" fill="#f08a3c"/><ellipse cx="12" cy="9.8" rx="2.5" ry="1.3" fill="#f08a3c"/>
+      <circle cx="15.8" cy="11.2" r="1.2" fill="#fff"/><circle cx="13.8" cy="7.3" r="1.1" class="eye-k"/>
+      <path d="M17 7.6 L23.6 9.3 L17.2 10.6 Z" fill="#2b2b2b"/>`),
+     call:[[3600,3400,.06],[3700,3400,.06]]},
+  5:{key:'sparrow',name:'麻雀',rule:'兩格同為奇數，或同為偶數',ex:'1·5、2·6',
+     fact:'臉頰上有一個黑色小斑點，是辨認牠的重點。總是成群住在人類房子附近，城市鄉下都看得到。',
+     svg:svgWrap(TAIL.replace('FILL','#8a5a3b')+BODY.replace('FILL','#d8b58a')+
+      `<path d="M2.4 8.6 Q3.6 2.6 10 2.6 Q16.4 2.6 18.2 8.2 Q12 6.6 2.4 8.6 Z" fill="#8a5a3b"/>
+      <ellipse cx="12.6" cy="10.6" rx="3.2" ry="2.3" fill="#fff6e8"/><circle cx="12.4" cy="11" r=".95" fill="#2a2018"/>
+      <ellipse cx="16.2" cy="12.8" rx="1.4" ry="1.9" fill="#2a2018"/>
+      <circle cx="14" cy="7.6" r="1" class="eye-k"/><path d="M17.6 8.4 L20.4 9.4 L17.8 10.4 Z" fill="#3a3a3a"/>`),
+     call:[[2200,1700,.07],[2300,1800,.07]]},
+  O:{key:'owl',name:'領角鴞',role:'貓頭鷹',rule:'站在四格交界，頭上的數字是這四格的總和',ex:'四格 1、2、3、4 → 10',
+     fact:'台灣低海拔最常見的貓頭鷹，頭上有兩撮像耳朵的羽毛。白天躲著睡覺，晚上出來抓老鼠和昆蟲。',
+     svg:svgWrap(`<path d="M4.6 5 L4.4 -.8 L8.6 3.6 Z" fill="#8a6240" class="ln"/><path d="M15.4 5 L15.6 -.8 L11.4 3.6 Z" fill="#8a6240" class="ln"/>
+      <circle cx="10" cy="11" r="8.4" class="ln" fill="#a87d52"/>
+      <ellipse cx="10" cy="9.4" rx="6.8" ry="4.8" fill="#ead6b4"/>
+      <circle cx="7.2" cy="9" r="2.3" fill="#ffcc3a"/><circle cx="12.8" cy="9" r="2.3" fill="#ffcc3a"/>
+      <circle cx="7.3" cy="9" r="1.2" class="eye-k"/><circle cx="12.7" cy="9" r="1.2" class="eye-k"/>
+      <path d="M9.2 10.8 L10.8 10.8 L10 12.8 Z" fill="#6b4a2c"/>
+      <path d="M6.4 15.4 l1 .9 l1 -.9 M9.6 16.4 l1 .9 l1 -.9 M12.4 15.4 l1 .9 l1 -.9" stroke="#7a5634" stroke-width=".7" fill="none"/>`),
+     call:[[420,380,.32],[400,360,.4]],wave:'sine'},
+  6:{key:'magpie',name:'台灣藍鵲',role:'台灣特有種',rule:'兩格相差剛好 3',ex:'1·4、3·6',
+     fact:'台灣特有種，有一條長長的藍尾巴，嘴和腳是紅色的。喜歡成群活動，家族成員還會一起幫忙照顧寶寶。',
+     svg:svgWrap(`<path d="M3.6 12 L-6.4 18.4 L-5.4 20 L4 15.8 Z" fill="#2a5fc0" class="ln"/>
+      <path d="M-6.4 18.4 L-8 19.6 L-7 21 L-5.4 20 Z" fill="#fff" class="ln"/>
+      <circle cx="10" cy="11" r="8.4" class="ln" fill="#2f6ad0"/>
+      <path d="M9.6 2.6 A8.4 8.4 0 0 1 18.3 9.6 Q13 12.4 8.4 9.2 Q7.4 5.6 9.6 2.6 Z" fill="#1b2230"/>
+      <circle cx="13.8" cy="7.2" r="1.25" fill="#ffdf4a"/><circle cx="13.9" cy="7.2" r=".65" class="eye-k"/>
+      <path d="M17.6 8 L21.6 9.4 L17.8 10.8 Z" fill="#e23b2e"/>`),
+     call:[[900,650,.08],[880,640,.08],[900,620,.1]],wave:'sawtooth'},
+  7:{key:'barbet',name:'五色鳥',role:'台灣特有種',rule:'一格剛好是另一格的三倍',ex:'1·3、2·6、3·9',
+     fact:'台灣特有種，頭上有藍、黃、紅、黑好幾種顏色。會在樹幹上啄洞做窩，叫聲「郭、郭、郭」很像在敲木魚。',
+     svg:svgWrap(TAIL.replace('FILL','#3f9a45')+BODY.replace('FILL','#4caf50')+
+      `<ellipse cx="13.6" cy="7.6" rx="3.8" ry="3.2" fill="#2f8fd8"/><ellipse cx="15.2" cy="11.8" rx="2.6" ry="1.9" fill="#ffd93a"/>
+      <circle cx="16.8" cy="9.6" r="1.05" fill="#e23b2e"/><path d="M11 4.4 Q13.4 3.4 16 4.6" stroke="#1b2230" stroke-width="1.1" fill="none"/>
+      <circle cx="13.8" cy="7.5" r="1" class="eye-k"/><path d="M17.2 7.8 L21.2 9.2 L17.4 10.8 Z" fill="#333"/>`),
+     call:[[620,600,.12],[620,600,.12],[620,600,.12],[620,600,.12]],wave:'triangle',gap:.12},
+  E:{key:'pheasant',name:'帝雉',role:'傳說',rule:'通過第 100 關才會出現',ex:'',
+     fact:'台灣特有種，住在中高海拔的森林。雄鳥全身深藍黑色，眼睛周圍是紅色的，曾經被印在一千元鈔票上。',
+     svg:svgWrap(`<path d="M3.4 12.4 L-7.4 15.2 L-7 17 L3.6 16.2 Z" fill="#1d2440" class="ln"/>
+      <path d="M-1.6 13.6 L-1.2 16.6 M-4.4 14.4 L-4.1 16.9" stroke="#fff" stroke-width=".9"/>
+      <circle cx="10" cy="11" r="8.4" class="ln" fill="#2c3460"/>
+      <path d="M5 13 Q8.6 17.2 13.4 16" stroke="#9fb0e0" stroke-width=".9" fill="none"/>
+      <ellipse cx="13.8" cy="7.6" rx="2.7" ry="2.1" fill="#e23b2e"/><circle cx="13.9" cy="7.6" r=".9" class="eye-k"/>
+      <path d="M17.6 8.4 L20.6 9.4 L17.8 10.4 Z" fill="#d9d2c0"/>`),
+     call:[[500,900,.18],[700,500,.14]],wave:'triangle'},
+};
+const SPECIES_ORDER=[1,2,3,4,5,'O',6,7,'E'];
+const birdSVG=t=>(SPECIES[t]||SPECIES[1]).svg;
+// 頁面上靜態的 <span class="dot" data-bird="..."> 換成小鳥圖
+function birdify(root=document){root.querySelectorAll('[data-bird]').forEach(d=>{if(!d.firstChild)d.innerHTML=birdSVG(isNaN(+d.dataset.bird)?d.dataset.bird:+d.dataset.bird);});}
+
+// ---------- 叫聲：用 Web Audio 即時合成，不需要音檔 ----------
+let AC=null;
+function audio(){ if(!PROG.sound) return null;
+  try{ if(!AC){const C=window.AudioContext||window.webkitAudioContext; if(!C) return null; AC=new C();}
+    if(AC.state==='suspended') AC.resume(); return AC; }catch(e){return null} }
+function chirp(t,vol=.05){
+  const ac=audio(); const sp=SPECIES[t]; if(!ac||!sp) return;
+  let at=ac.currentTime+.01; const gap=sp.gap??.05;
+  for(const [f0,f1,d] of sp.call){
+    const o=ac.createOscillator(), g=ac.createGain();
+    o.type=sp.wave||'sine'; o.frequency.setValueAtTime(f0,at); o.frequency.exponentialRampToValueAtTime(f1,at+d);
+    g.gain.setValueAtTime(0,at); g.gain.linearRampToValueAtTime(sp.wave==='sawtooth'?vol*.4:vol,at+.01); g.gain.exponentialRampToValueAtTime(.0001,at+d);
+    o.connect(g).connect(ac.destination); o.start(at); o.stop(at+d+.02); at+=d+gap;
+  }
+}
+function blip(f=660,d=.06,vol=.04,type='triangle'){const ac=audio(); if(!ac) return;
+  const o=ac.createOscillator(),g=ac.createGain(),at=ac.currentTime+.005; o.type=type; o.frequency.setValueAtTime(f,at);
+  g.gain.setValueAtTime(vol,at); g.gain.exponentialRampToValueAtTime(.0001,at+d); o.connect(g).connect(ac.destination); o.start(at); o.stop(at+d+.02);}
+// ===================== 05 進度、圖鑑、鳥園、成就 =====================
+const $=id=>document.getElementById(id);
+let PROG={max:1,stars:{},seen:[1],aviary:[],ach:{},daily:{},sound:true,c:{wins:0,shared:0,raceWins:0}};
+try{const d=JSON.parse(localStorage.getItem('kp4-prog')); if(d&&d.max) PROG={...PROG,...d,c:{...PROG.c,...(d.c||{})}};}catch(e){}
+function saveProg(){try{localStorage.setItem('kp4-prog',JSON.stringify(PROG))}catch(e){}}
+const starHTML=k=>[1,2,3].map(i=>`<span class="${i<=k?'on':''}">★</span>`).join('');
+const totalStars=()=>Object.values(PROG.stars).reduce((a,b)=>a+b,0)+Object.keys(PROG.daily).length;
+const birdDot=(t,cls='')=>`<span class="dot ${cls}" data-bird="${t}"></span>`;
+
+// ---------- 通知 ----------
+function toast(text,bird){
+  const el=document.createElement('div'); el.className='toast';
+  el.innerHTML=(bird!==undefined?birdDot(bird):'')+'<span></span>'; el.lastChild.textContent=text;
+  birdify(el); $('toasts').appendChild(el);
+  setTimeout(()=>{el.classList.add('out'); setTimeout(()=>el.remove(),450);},3200);
+}
+
+// ---------- 彈出視窗共用 ----------
+let lastFocus=null;
+function openSheet(id){lastFocus=document.activeElement; $(id).hidden=false; const b=$(id).querySelector('button'); b&&b.focus();}
+function closeSheet(id){$(id).hidden=true; if(lastFocus&&lastFocus.focus) lastFocus.focus();}
+document.addEventListener('click',e=>{const c=e.target.closest('[data-close]'); if(c) closeSheet(c.dataset.close);});
+document.querySelectorAll('.sheet').forEach(s=>{
+  s.addEventListener('keydown',e=>{if(e.key==='Escape'&&s.id!=='intro') closeSheet(s.id); e.stopPropagation();});
+  s.addEventListener('click',e=>{if(e.target===s&&s.id!=='intro'&&s.id!=='tut') closeSheet(s.id);});
+});
+
+// ---------- 新鳥登場 ----------
+let introQueue=[], introDone=null;
+function maybeIntro(P,then){
+  const list=birdsIn(P).filter(t=>!PROG.seen.includes(t));
+  if(!list.length){then&&then();return;}
+  introQueue=list; introDone=then; showIntro();
+}
+function showIntro(){
+  const t=introQueue.shift(), sp=SPECIES[t];
+  $('introBird').innerHTML=sp.svg; $('intro-title').textContent=sp.name+(sp.role?`（${sp.role}）`:'');
+  $('introRule').textContent=(t==='O'?'':'站在兩格之間：')+sp.rule;
+  $('introEx').textContent=sp.ex?'例如 '+sp.ex:'';
+  $('introFact').textContent=sp.fact;
+  PROG.seen.push(t); saveProg(); chirp(t,.06);
+  openSheet('intro');
+}
+$('introOk').onclick=()=>{ if(introQueue.length){showIntro();return;} closeSheet('intro'); const f=introDone; introDone=null; f&&f(); checkAch(); };
+
+// ---------- 孵蛋 ----------
+function hatch(force){
+  const pool=PROG.seen.filter(t=>t!=='E');
+  const t=force||pool[rnd(pool.length)]||1;
+  PROG.aviary.push(t); if(PROG.aviary.length>60) PROG.aviary.shift();
+  if(t==='E'&&!PROG.seen.includes('E')) PROG.seen.push('E');
+  saveProg(); return t;
+}
+
+// ---------- 圖鑑 ----------
+function openDex(){
+  const firstCh=t=>{const c=CHAPTERS.find(c=>c.bird===t); return c?`${c.name}・第 ${c.from} 關登場`:t==='E'?'通過第 100 關':'';};
+  const got=SPECIES_ORDER.filter(t=>PROG.seen.includes(t)).length;
+  $('dexNote').textContent=`已經認識 ${got} / ${SPECIES_ORDER.length} 種鳥。在關卡裡遇到新的鳥，就會收進圖鑑。`;
+  $('dexBody').innerHTML=SPECIES_ORDER.map(t=>{const sp=SPECIES[t], on=PROG.seen.includes(t);
+    return `<div class="dex-item${on?'':' locked'}"><span class="pic">${sp.svg}</span><b>${on?sp.name:'？？？'}</b><span class="tag">${firstCh(t)}</span>`+
+      (on?`<p><b style="font-size:.8rem">規則：</b>${sp.rule}</p><p>${sp.fact}</p>`:'<p>還沒遇過這種鳥。</p>')+'</div>';}).join('');
+  openSheet('dex');
+}
+
+// ---------- 鳥園 ----------
+const DECOS=[
+  {need:5,  name:'餵食台', svg:'<svg viewBox="0 0 40 50" width="46" style="left:8%;bottom:12%"><rect x="18" y="16" width="4" height="34" fill="#8a5a3b"/><path d="M4 16 L36 16 L32 10 L8 10 Z" fill="#c98b55"/><rect x="6" y="16" width="28" height="4" fill="#a26a3f"/><circle cx="14" cy="15" r="1.6" fill="#e9c46a"/><circle cx="20" cy="14.5" r="1.6" fill="#e9c46a"/><circle cx="26" cy="15" r="1.6" fill="#e9c46a"/></svg>'},
+  {need:20, name:'鳥浴盆', svg:'<svg viewBox="0 0 50 34" width="58" style="left:44%;bottom:6%"><rect x="22" y="14" width="6" height="18" fill="#b8c4cf"/><ellipse cx="25" cy="12" rx="22" ry="7" fill="#d5dee6"/><ellipse cx="25" cy="10.5" rx="17" ry="4" fill="#7cc4f0"/><rect x="15" y="30" width="20" height="4" rx="2" fill="#b8c4cf"/></svg>'},
+  {need:45, name:'小鳥屋', svg:'<svg viewBox="0 0 40 60" width="48" style="right:8%;bottom:12%"><rect x="18" y="30" width="4" height="30" fill="#8a5a3b"/><path d="M6 14 L20 2 L34 14 Z" fill="#e05d4b"/><rect x="9" y="14" width="22" height="18" fill="#f2d39b"/><circle cx="20" cy="22" r="4" fill="#5a3b26"/></svg>'},
+  {need:80, name:'櫻花樹', svg:'<svg viewBox="0 0 80 90" width="110" style="left:-2%;bottom:20%"><rect x="36" y="50" width="8" height="40" fill="#7a5034"/><circle cx="40" cy="36" r="24" fill="#f7b8cc"/><circle cx="22" cy="44" r="15" fill="#f9c7d6"/><circle cx="58" cy="44" r="15" fill="#f4a9c0"/><circle cx="40" cy="20" r="13" fill="#fbd3df"/></svg>'},
+  {need:130,name:'風車',   svg:'<svg viewBox="0 0 50 70" width="54" style="right:30%;bottom:30%"><rect x="23" y="26" width="4" height="44" fill="#9aa7b4"/><g style="transform-origin:25px 25px;animation:spin 6s linear infinite"><path d="M25 25 L25 3 L33 18 Z" fill="#ff8f4f"/><path d="M25 25 L47 25 L32 33 Z" fill="#ffd93a"/><path d="M25 25 L25 47 L17 32 Z" fill="#7fd8c2"/><path d="M25 25 L3 25 L18 17 Z" fill="#3b93e6"/></g></svg><style>@keyframes spin{to{transform:rotate(360deg)}}</style>'},
+  {need:200,name:'彩虹',   svg:'<svg viewBox="0 0 200 100" width="300" style="left:8%;top:2%;opacity:.7"><g fill="none" stroke-width="7"><path d="M10 100 A90 90 0 0 1 190 100" stroke="#ff6b6b"/><path d="M17 100 A83 83 0 0 1 183 100" stroke="#ffb347"/><path d="M24 100 A76 76 0 0 1 176 100" stroke="#ffe066"/><path d="M31 100 A69 69 0 0 1 169 100" stroke="#7bd88f"/><path d="M38 100 A62 62 0 0 1 162 100" stroke="#6cb5ff"/><path d="M45 100 A55 55 0 0 1 155 100" stroke="#b28dff"/></g></svg>'},
+];
+let gardenTimer=null;
+function openGarden(){
+  const st=totalStars(), yard=$('yard');
+  $('gardenNote').textContent=`每次第一次過關、或解開每日一題，就會孵出一隻鳥住進來。現在有 ${PROG.aviary.length} 隻，累積 ${st} 顆星。`;
+  yard.innerHTML='<span class="sun"></span>'+DECOS.filter(d=>st>=d.need).map(d=>d.svg.replace('<svg ','<svg class="deco" ')).join('');
+  if(!PROG.aviary.length) yard.insertAdjacentHTML('beforeend','<div class="empty">還沒有鳥住進來。去過一關看看吧！</div>');
+  const birds=PROG.aviary.slice(-40).map(t=>{const b=document.createElement('span'); b.className='gb'; b.innerHTML=birdSVG(t);
+    b.style.left=(4+RNG()*86)+'%'; b.style.bottom=(4+RNG()*30)+'%'; b.dataset.t=t;
+    b.onclick=()=>{chirp(t,.06); b.classList.remove('hop'); void b.offsetWidth; b.classList.add('hop');};
+    yard.appendChild(b); return b;});
+  $('decoList').innerHTML=DECOS.map(d=>`<div class="${st>=d.need?'':'off'}"><b>${d.name}</b><span>${st>=d.need?'已放進鳥園':`需要 ${d.need} 顆星`}</span></div>`).join('');
+  clearInterval(gardenTimer);
+  gardenTimer=setInterval(()=>{ if($('garden').hidden){clearInterval(gardenTimer);return;}
+    const b=birds[rnd(birds.length)]; if(!b) return;
+    if(RNG()<.5){ b.classList.remove('hop'); void b.offsetWidth; b.classList.add('hop'); }
+    else { const x=4+RNG()*86, old=parseFloat(b.style.left); b.classList.toggle('flip',x<old); b.style.left=x+'%'; }
+  },700);
+  openSheet('garden');
+}
+
+// ---------- 成就 ----------
+const ACH=[
+  {id:'first', name:'第一步', desc:'第一次過關', ok:()=>PROG.c.wins>=1},
+  {id:'ch1',   name:'鸚鵡的好朋友', desc:'完成第一章', ok:()=>range(12).every(k=>PROG.stars[k+1])},
+  {id:'star10',name:'星星收集家', desc:'拿到 10 個三星', ok:()=>Object.values(PROG.stars).filter(s=>s===3).length>=10},
+  {id:'nohint8',name:'自己來就好', desc:'不用提示解完一題 8×8 以上', ok:()=>!!PROG.c.nohint8},
+  {id:'nonote',name:'全靠腦袋', desc:'不開筆記解完一題 7×7 以上', ok:()=>!!PROG.c.nonote},
+  {id:'fast',  name:'快手', desc:'3 分鐘內、不用提示解完一題 7×7 以上', ok:()=>!!PROG.c.fast},
+  {id:'streak3',name:'每天來看看', desc:'每日一題連續 3 天', ok:()=>bestStreak()>=3},
+  {id:'streak7',name:'一週不間斷', desc:'每日一題連續 7 天', ok:()=>bestStreak()>=7},
+  {id:'weekend',name:'週末大盤', desc:'解開一次週末大盤', ok:()=>!!PROG.c.weekend},
+  {id:'dex5',  name:'賞鳥新手', desc:'圖鑑收集 5 種鳥', ok:()=>PROG.seen.length>=5},
+  {id:'dexall',name:'賞鳥達人', desc:'圖鑑收集全部 9 種鳥', ok:()=>SPECIES_ORDER.every(t=>PROG.seen.includes(t))},
+  {id:'yard20',name:'熱鬧的鳥園', desc:'鳥園裡住了 20 隻鳥', ok:()=>PROG.aviary.length>=20},
+  {id:'l50',   name:'過半', desc:'通過第 50 關', ok:()=>!!PROG.stars[50]},
+  {id:'l100',  name:'帝雉現身', desc:'通過第 100 關', ok:()=>!!PROG.stars[100]},
+];
+function checkAch(){
+  for(const a of ACH) if(!PROG.ach[a.id]&&a.ok()){ PROG.ach[a.id]=Date.now(); saveProg(); toast(`達成成就「${a.name}」`,2); blip(880,.12,.04); }
+}
+function openAch(){
+  const got=ACH.filter(a=>PROG.ach[a.id]).length;
+  $('achBody').innerHTML=`<p class="note">已達成 ${got} / ${ACH.length}</p>`+ACH.map((a,k)=>`<div class="ach-item${PROG.ach[a.id]?' got':''}"><span class="medal">${PROG.ach[a.id]?'★':k+1}</span><div><b>${a.name}</b><span>${a.desc}</span></div></div>`).join('');
+  openSheet('ach');
+}
+
+// ---------- 每日一題的連續天數 ----------
+function streakNow(){ let k=todayKey(); if(!PROG.daily[k]) k=dayOffset(k,-1); let n=0; while(PROG.daily[k]){n++;k=dayOffset(k,-1);} return n; }
+function bestStreak(){ const keys=Object.keys(PROG.daily).sort(); let best=0,cur=0,prev=null;
+  for(const k of keys){ cur=(prev&&dayOffset(prev,1)===k)?cur+1:1; best=Math.max(best,cur); prev=k; } return best; }
+// ===================== 06 遊戲畫面：棋盤、輸入、提示、過關 =====================
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const S={mode:'level',levelNo:1,P:null,vals:[],notes:[],sel:-1,noteMode:false,hist:[],t0:0,elapsed:0,done:false,hints:0,usedNotes:false,
+  editing:false,editVals:[],paused:false,prevLines:null};
+let N=6,NN=36;
+const boardEl=$('board'); let cells=[],edgeEls=[],owlEls=[],HINT=null;
+const posName=i=>`第 ${(i/N|0)+1} 列第 ${i%N+1} 格`;
+const listJoin=a=>a.join('、');
+
+function rawPuzzle(P){const {n,tit,h,v,owls,sol,givens,label}=P; return {n,tit,h,v,owls,sol,givens,label};}
+function setPuzzle(P){prep(P); S.P=P; N=P.n; NN=N*N;}
+function resetPlay(){
+  S.vals=S.P.givens.slice(); S.notes=Array(NN).fill(0); S.hist=[]; S.sel=S.vals.indexOf(0);
+  S.t0=Date.now(); S.elapsed=0; S.done=false; S.hints=0; S.usedNotes=false; S.editing=false;
+  hideHint(); $('win').hidden=true; buildBoard(); render(); save();
+}
+
+// ---------- 畫棋盤 ----------
+function buildBoard(){
+  boardEl.innerHTML=''; cells=[]; edgeEls=[]; owlEls=[];
+  boardEl.style.setProperty('--n',N);
+  $('total').textContent=NN; document.querySelectorAll('.nmax').forEach(e=>e.textContent=N);
+  for(let i=0;i<NN;i++){
+    const d=document.createElement('div'); d.className='cell'; d.setAttribute('role','button');
+    d.setAttribute('aria-label',posName(i));
+    d.addEventListener('pointerdown',()=>{S.sel=i; render();});
+    boardEl.appendChild(d); cells.push(d);
+  }
+  if(!S.editing){
+    const P=S.P;
+    const add=(t,x,y,a,b)=>{ if(!t) return; const d=document.createElement('span'); d.className='dot'; d.innerHTML=birdSVG(t);
+      d.style.left=x+'%'; d.style.top=y+'%'; boardEl.appendChild(d); edgeEls.push({el:d,a,b,t}); };
+    for(let r=0;r<N;r++) for(let c=0;c<N-1;c++) add(P.h[r][c],(c+1)/N*100,(r+.5)/N*100,r*N+c,r*N+c+1);
+    for(let r=0;r<N-1;r++) for(let c=0;c<N;c++) add(P.v[r][c],(c+.5)/N*100,(r+1)/N*100,r*N+c,(r+1)*N+c);
+    (P.owls||[]).forEach((o,k)=>{ const d=document.createElement('span'); d.className='owl'; d.innerHTML=birdSVG('O')+`<b>${o.s}</b>`;
+      d.style.left=(o.c+1)/N*100+'%'; d.style.top=(o.r+1)/N*100+'%'; boardEl.appendChild(d); owlEls.push({el:d,cells:P.ow[k].cells,s:o.s}); });
+  }
+  buildKeys(); renderBirdInfo();
+}
+function buildKeys(){
+  const k=$('keys'); k.innerHTML=''; k.style.gridTemplateColumns=`repeat(${N},1fr)`;
+  for(let n=1;n<=N;n++){const b=document.createElement('button'); b.className='key'; b.id='key'+n; b.textContent=n; b.onclick=()=>input(n); k.appendChild(b);}
+}
+function renderBirdInfo(){
+  const list=S.editing?[]:birdsIn(S.P);
+  $('birdChip').innerHTML=list.map(t=>birdDot(t)).join('');
+  $('ruleBirds').innerHTML=list.length?list.map(t=>{const sp=SPECIES[t];
+    return `<li><span class="sw dot" data-bird="${t}"></span><span><b>${sp.name}</b>：${sp.rule}${sp.full?'（全部畫出）':t==='O'?'':'（只畫一部分）'}。<span class="eg">例 ${sp.ex}</span></span></li>`;}).join('')
+    :'<li><span>編輯答案中，還沒有放鳥。</span></li>';
+  birdify($('birdChip')); birdify($('ruleBirds'));
+}
+
+// ---------- 檢查衝突 ----------
+function conflicts(){
+  const bad=new Set(), badE=new Set(), badO=new Set(), v=S.vals;
+  for(let i=0;i<NN;i++){ if(!v[i]) continue; const r=i/N|0,c=i%N;
+    for(let k=0;k<N;k++){const a=r*N+k,b=k*N+c; if(a!==i&&v[a]===v[i])bad.add(i); if(b!==i&&v[b]===v[i])bad.add(i);} }
+  edgeEls.forEach((e,k)=>{const a=v[e.a],b=v[e.b]; if(a&&b&&!allowPair(e.t,a,b,N,S.P.tit)){bad.add(e.a);bad.add(e.b);badE.add(k);}});
+  // 沒有鳥的邊：不可以是鸚鵡或山雀的關係
+  for(let i=0;i<NN;i++) if(v[i]) for(const [j,t] of S.P.nb[i]) if(t===0&&j>i&&v[j]&&!allowPair(0,v[i],v[j],N,S.P.tit)){bad.add(i);bad.add(j);}
+  owlEls.forEach((o,k)=>{ if(o.cells.every(j=>v[j])&&o.cells.reduce((s,j)=>s+v[j],0)!==o.s){badO.add(k); o.cells.forEach(j=>bad.add(j));} });
+  return {bad,badE,badO};
+}
+function lineKeysDone(){
+  const sol=S.P.sol, rowOK=[], colOK=[];
+  for(let k=0;k<N;k++){ rowOK[k]=range(N).every(j=>S.vals[k*N+j]===sol[k*N+j]); colOK[k]=range(N).every(j=>S.vals[j*N+k]===sol[j*N+k]); }
+  return {rowOK,colOK};
+}
+
+// ---------- 畫面更新 ----------
+function render(){
+  if(S.editing) return renderEdit();
+  const {bad,badE,badO}=conflicts(), sel=S.sel;
+  const {rowOK,colOK}=lineKeysDone();
+  const keys=new Set([...rowOK.flatMap((ok,k)=>ok?['r'+k]:[]),...colOK.flatMap((ok,k)=>ok?['c'+k]:[])]);
+  const fresh=S.prevLines?[...keys].filter(k=>!S.prevLines.has(k)):[]; S.prevLines=keys;
+  cells.forEach((d,i)=>{
+    const r=i/N|0,c=i%N,v=S.vals[i];
+    d.className='cell'+(S.P.givens[i]?' given':'')+(rowOK[r]||colOK[c]?' line':'')+(i===sel?' sel':'')
+      +(bad.has(i)&&!S.P.givens[i]?' bad':'')+(HINT&&HINT.i===i?' hint':'');
+    if(v) d.textContent=v;
+    else if(S.notes[i]) d.innerHTML='<div class="notes">'+range(N).map(k=>`<span>${(S.notes[i]>>k)&1?k+1:''}</span>`).join('')+'</div>';
+    else d.textContent='';
+  });
+  edgeEls.forEach((e,k)=>e.el.classList.toggle('bad',badE.has(k)));
+  owlEls.forEach((o,k)=>o.el.classList.toggle('bad',badO.has(k)));
+  $('filled').textContent=S.vals.filter(Boolean).length;
+  $('notes').setAttribute('aria-pressed',S.noteMode);
+  fresh.forEach(k=>celebrateLine(k[0]==='r',+k.slice(1)));
+  if(!S.done&&!S.paused&&S.vals.every(Boolean)&&bad.size===0) onWin();
+}
+function renderEdit(){
+  const v=S.editVals, bad=new Set();
+  for(let i=0;i<NN;i++){ if(!v[i]) continue; const r=i/N|0,c=i%N;
+    for(let k=0;k<N;k++){const a=r*N+k,b=k*N+c; if(a!==i&&v[a]===v[i])bad.add(i); if(b!==i&&v[b]===v[i])bad.add(i);} }
+  cells.forEach((d,i)=>{ d.className='cell edit'+(i===S.sel?' sel':'')+(bad.has(i)?' bad':''); d.textContent=v[i]||''; });
+  $('filled').textContent=v.filter(Boolean).length;
+}
+
+// ---------- 動畫與聲音 ----------
+function pop(el){ if(RM||!el||!el.animate) return; el.animate([{transform:'scale(.75)'},{transform:'scale(1.1)'},{transform:'scale(1)'}],{duration:260,easing:'ease-out'}); }
+function anim(el,cls){ if(RM) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); setTimeout(()=>el.classList.remove(cls),1000); }
+function celebrateLine(isRow,idx){
+  const inLine=j=>isRow?(j/N|0)===idx:j%N===idx;
+  range(N).forEach(j=>{const el=cells[isRow?idx*N+j:j*N+idx]; if(!RM&&el.animate) el.animate([{transform:'scale(1)'},{transform:'scale(1.12)'},{transform:'scale(1)'}],{duration:320,delay:j*45,easing:'ease-out'});});
+  const birds=edgeEls.filter(e=>inLine(e.a)&&inLine(e.b));
+  birds.forEach((e,k)=>setTimeout(()=>anim(e.el,'fly'),k*70));
+  if(birds.length) chirp(birds[rnd(birds.length)].t,.045); else blip(988,.1,.035);
+}
+function feedback(i){
+  const v=S.vals[i]; if(!v) return;
+  pop(cells[i]);
+  const mine=edgeEls.filter(e=>e.a===i||e.b===i);
+  if(v===S.P.sol[i]){
+    const happy=mine.filter(e=>S.vals[e.a]&&S.vals[e.b]);
+    happy.forEach(e=>anim(e.el,'flap'));
+    if(happy.length) chirp(happy[0].t,.04); else blip(740,.05,.03);
+  }else{
+    const {badE}=conflicts();
+    const sad=mine.filter(e=>badE.has(edgeEls.indexOf(e)));
+    sad.forEach(e=>anim(e.el,'tilt'));
+    blip(220,.12,.035,'sine');
+  }
+}
+
+// ---------- 輸入 ----------
+function push(){S.hist.push({v:S.vals.slice(),n:S.notes.slice()}); if(S.hist.length>300) S.hist.shift();}
+function place(i,n){
+  S.vals[i]=n; S.notes[i]=0; const r=i/N|0,c=i%N;
+  for(let k=0;k<N;k++){S.notes[r*N+k]&=~(1<<(n-1)); S.notes[k*N+c]&=~(1<<(n-1));}
+}
+function autoFill(i){ // 一列或一行只剩一格、其他都對 → 補上最後一格
+  const auto=[]; if(!S.vals[i]||S.vals[i]!==S.P.sol[i]) return auto;
+  const r=i/N|0,c=i%N;
+  for(const line of [range(N).map(k=>r*N+k),range(N).map(k=>k*N+c)]){
+    const empty=line.filter(j=>!S.vals[j]);
+    if(empty.length===1&&line.every(j=>!S.vals[j]||S.vals[j]===S.P.sol[j])){const j=empty[0]; place(j,S.P.sol[j]); auto.push(j);}
+  }
+  return auto;
+}
+function setValue(i,n){ // 提示或一般填入共用
+  push(); place(i,n); const auto=autoFill(i);
+  hideHint(); render(); save(); feedback(i); auto.forEach(j=>pop(cells[j])); afterMove();
+}
+function input(n){
+  const i=S.sel;
+  if(S.editing){ if(i<0||n>N) return; S.editVals[i]=S.editVals[i]===n?0:n; renderEdit(); saveEdit(); return; }
+  if(i<0||S.done||S.paused||S.P.givens[i]||n>N) return;
+  if(S.noteMode&&!S.vals[i]){ push(); S.notes[i]^=1<<(n-1); S.usedNotes=true; render(); save(); return; }
+  if(S.vals[i]===n){ push(); S.vals[i]=0; hideHint(); render(); save(); afterMove(); return; }
+  setValue(i,n);
+}
+function erase(){
+  const i=S.sel;
+  if(S.editing){ if(i>=0){S.editVals[i]=0; renderEdit(); saveEdit();} return; }
+  if(i<0||S.done||S.paused||S.P.givens[i]) return; push(); S.vals[i]=0; S.notes[i]=0; render(); save(); afterMove();
+}
+function undo(){ if(S.editing||S.done||S.paused) return; const h=S.hist.pop(); if(!h) return; S.vals=h.v; S.notes=h.n; hideHint(); render(); save(); afterMove(); }
+function afterMove(){ if(S.mode==='race') raceProgress(); }
+
+// ---------- 教學式提示 ----------
+function findHint(){
+  const P=S.P;
+  const wrong=S.vals.findIndex((v,i)=>v&&!P.givens[i]&&v!==P.sol[i]);
+  if(wrong>=0) return {i:wrong,v:P.sol[wrong],text:`${posName(wrong)}的 ${S.vals[wrong]} 填錯了，先從這裡改起。`};
+  const r=logicSolve(P,S.vals,1);
+  if(r.steps.length){ const st=r.steps[0]; return {i:st.i,v:st.v,text:explain(st)}; }
+  const i=S.vals.findIndex(v=>!v); if(i<0) return null;
+  return {i,v:P.sol[i],text:`這一步光靠推理比較難找到，需要先試填看看。這裡直接告訴你：${posName(i)}是 ${P.sol[i]}。`};
+}
+function explain(st){
+  const P=S.P, g=S.vals, i=st.i, v=st.v, r=i/N|0, c=i%N;
+  if(st.info.kind==='hidden'){
+    const unit=st.info.unit==='row'?`第 ${st.info.idx+1} 列`:`第 ${st.info.idx+1} 行`;
+    return `${unit}裡，數字 ${v} 只有一個地方能放，就是${posName(i)}。其他空格放 ${v} 都會跟同列、同行或旁邊的鳥衝突。`+(st.tech>=3?'（要先想想鄰格還可能填什麼。）':'');
+  }
+  const rowV=range(N).map(k=>g[r*N+k]).filter(Boolean).sort((a,b)=>a-b);
+  const colV=range(N).map(k=>g[k*N+c]).filter(x=>x&&!rowV.includes(x)).sort((a,b)=>a-b);
+  const parts=[];
+  if(rowV.length) parts.push(`同一列已經有 ${listJoin(rowV)}`);
+  if(colV.length) parts.push(`同一行還有 ${listJoin(colV)}`);
+  const used=new Set([...rowV,...colV]);
+  for(const [j,t] of P.nb[i]){ const w=g[j]; if(!w) continue;
+    const ex=range(N).map(k=>k+1).filter(x=>!used.has(x)&&!allowPair(t,x,w,N,P.tit));
+    if(!ex.length) continue; ex.forEach(x=>used.add(x));
+    parts.push(t?`和旁邊的 ${w} 之間有${SPECIES[t].name}，所以不能是 ${listJoin(ex)}`:`和旁邊的 ${w} 之間沒有鳥，所以不能是 ${listJoin(ex)}`); }
+  for(const k of P.cellOw[i]){ const o=P.ow[k]; const m=owlMask(o,i,g,N);
+    const ex=range(N).map(x=>x+1).filter(x=>!used.has(x)&&!(m>>(x-1)&1)); if(ex.length){ex.forEach(x=>used.add(x)); parts.push(`領角鴞的總和 ${o.s} 排除了 ${listJoin(ex)}`);} }
+  let s=`${posName(i)}只能填 ${v}。`+(parts.length?parts.join('；')+'。':'');
+  if(st.tech>=3) s+=st.tech===4?'另外，這一列或這一行有兩格只能是同一對數字，所以其他格就不能用那兩個數。':'再看看旁邊空格還可能填什麼，就能排除剩下的數字。';
+  return s;
+}
+function doHint(){
+  if(S.done||S.editing||S.paused) return;
+  const h=findHint(); if(!h) return;
+  S.hints++; HINT=h; S.sel=h.i;
+  $('hintText').textContent=h.text; $('hintbar').hidden=false; birdify($('hintbar'));
+  render(); save(); chirp(5,.035);
+}
+function hideHint(){ HINT=null; $('hintbar').hidden=true; }
+$('hintFill').onclick=()=>{ if(!HINT) return; const h=HINT; setValue(h.i,h.v); };
+$('hintClose').onclick=()=>{ hideHint(); render(); };
+
+// ---------- 過關 ----------
+const fmt=s=>`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+function secs(){ return S.done||S.paused?S.elapsed:Math.floor((Date.now()-S.t0)/1000); }
+setInterval(()=>{$('time').textContent=fmt(Math.max(0,secs()));},500);
+function starsFor(h){return h===0?3:h<=2?2:1}
+function onWin(){
+  S.done=true; S.elapsed=Math.floor((Date.now()-S.t0)/1000); hideHint();
+  PROG.c.wins++;
+  if(S.hints===0&&N>=8) PROG.c.nohint8=1;
+  if(!S.usedNotes&&N>=7) PROG.c.nonote=1;
+  if(S.hints===0&&N>=7&&S.elapsed<=180) PROG.c.fast=1;
+  const res=MODES[S.mode].win();
+  $('wintitle').textContent=res.title; $('winstars').innerHTML=res.stars?starHTML(res.stars):'';
+  $('winmsg').textContent=res.msg;
+  const egg=$('winEgg');
+  if(res.hatched!==undefined){ egg.hidden=false; egg.innerHTML=birdDot(res.hatched)+`<span>孵出了一隻${SPECIES[res.hatched].name}，牠住進鳥園了！</span>`; birdify(egg); }
+  else egg.hidden=true;
+  $('again').textContent=res.againText||'再來一局'; $('nextBtn').hidden=!res.next; $('nextBtn').textContent=res.nextText||'下一關';
+  $('winBirds').innerHTML=birdsIn(S.P).slice(0,4).map(t=>birdDot(t)).join(''); birdify($('winBirds'));
+  $('win').hidden=false; saveProg(); save(); confetti();
+  birdsIn(S.P).slice(0,3).forEach((t,k)=>setTimeout(()=>chirp(t,.045),k*380));
+  edgeEls.forEach((e,k)=>setTimeout(()=>anim(e.el,'fly'),(k%12)*60));
+  checkAch(); syncPanels();
+}
+function confetti(){
+  if(RM) return;
+  const c=document.createElement('canvas'); c.id='confetti'; document.body.appendChild(c);
+  const dpr=devicePixelRatio||1, W=innerWidth, H=innerHeight; c.width=W*dpr; c.height=H*dpr;
+  const x=c.getContext('2d'); x.scale(dpr,dpr);
+  const cs=getComputedStyle(document.documentElement);
+  const cols=['--accent','--mint','--butter','--blush','--sky'].map(v=>cs.getPropertyValue(v).trim());
+  const P=Array.from({length:140},()=>({x:W/2+(Math.random()-.5)*80,y:H*.45,vx:(Math.random()-.5)*12,vy:-Math.random()*13-4,
+    r:Math.random()*5+4,c:cols[Math.floor(Math.random()*cols.length)],round:Math.random()<.5,a:Math.random()*6,va:(Math.random()-.5)*.3}));
+  const t0=performance.now();
+  (function f(t){ const e=t-t0; x.clearRect(0,0,W,H);
+    for(const p of P){p.vy+=.35;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.a+=p.va; x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;
+      x.globalAlpha=Math.max(0,1-e/2600); if(p.round){x.beginPath();x.arc(0,0,p.r*.6,0,7);x.fill();} else x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2); x.restore();}
+    if(e<2600) requestAnimationFrame(f); else c.remove(); })(t0);
+}
+
+// ---------- 存檔（每個模式各一份） ----------
+function save(){ if(!S.P) return; try{ localStorage.setItem('kp4-s-'+S.mode,JSON.stringify({P:rawPuzzle(S.P),vals:S.vals,notes:S.notes,sel:S.sel,
+  elapsed:secs(),done:S.done,hints:S.hints,usedNotes:S.usedNotes,levelNo:S.levelNo,extra:S.extra||null})); localStorage.setItem('kp4-mode',S.mode);}catch(e){} }
+function loadMode(m){ try{ const d=JSON.parse(localStorage.getItem('kp4-s-'+m)); if(!d||!d.P) return false;
+  S.mode=m; setPuzzle(d.P); Object.assign(S,{vals:d.vals,notes:d.notes,sel:d.sel,elapsed:d.elapsed,done:d.done,hints:d.hints,usedNotes:d.usedNotes,
+    levelNo:d.levelNo||S.levelNo,extra:d.extra,hist:[],editing:false,paused:false,prevLines:null}); S.t0=Date.now()-d.elapsed*1000; return true; }catch(e){return false} }
+function saveEdit(){ try{localStorage.setItem('kp4-edit',JSON.stringify({n:N,v:S.editVals}))}catch(e){} }
+
+// ---------- 控制 ----------
+$('notes').onclick=()=>{S.noteMode=!S.noteMode; render();};
+$('erase').onclick=erase; $('undo').onclick=undo; $('hint').onclick=doHint;
+document.addEventListener('keydown',e=>{
+  if(e.target.closest&&e.target.closest('input,textarea')) return;
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo();return;}
+  if(e.ctrlKey||e.metaKey||e.altKey) return;
+  if(e.key>='1'&&e.key<='9'){input(+e.key);return;}
+  if(e.key==='Backspace'||e.key==='Delete'||e.key==='0'){erase();return;}
+  const k=e.key.toLowerCase();
+  if(k==='n'){S.noteMode=!S.noteMode;render();return;}
+  if(k==='h'){doHint();return;}
+  const mv={ArrowUp:-N,ArrowDown:N,ArrowLeft:-1,ArrowRight:1}[e.key];
+  if(mv!==undefined){e.preventDefault(); if(S.sel<0) S.sel=0; else{const r=S.sel/N|0,c=S.sel%N;
+    if((mv===-1&&c>0)||(mv===1&&c<N-1)||(mv===-N&&r>0)||(mv===N&&r<N-1)) S.sel+=mv;} render();}
+});
+// ===================== 07 模式：闖關、每日、自由、工作室、競速 =====================
+const hintTxt=()=>S.hints?`提示 ${S.hints} 次`:'沒用提示';
+function withLoading(n,text,fn){
+  if(n<9){fn();return;}
+  $('loadingText').textContent=text||'出題中…'; $('loading').hidden=false; birdify($('loading'));
+  setTimeout(()=>{try{fn();}finally{$('loading').hidden=true;}},40);
+}
+function startPuzzle(P,mode){ S.mode=mode; setPuzzle(P); resetPlay(); syncPanels(); maybeIntro(S.P,()=>{ if(!S.vals.some((v,i)=>v&&!S.P.givens[i])) S.t0=Date.now(); }); }
+async function copyText(t,msgEl){
+  let ok=false; try{await navigator.clipboard.writeText(t); ok=true;}catch(e){}
+  if(msgEl) msgEl.textContent=ok?'已複製':'無法自動複製，請手動選取：'+t;
+  return ok;
+}
+function seg(el,opts,get,set){
+  el.innerHTML=''; opts.forEach(([val,label])=>{const b=document.createElement('button'); b.textContent=label;
+    b.setAttribute('aria-pressed',get()===val); b.onclick=()=>{set(val); el.querySelectorAll('button').forEach((x,k)=>x.setAttribute('aria-pressed',opts[k][0]===val));}; el.appendChild(b);});
+}
+const CHIP_BIRDS=[1,2,3,4,5,'O',6,7];
+function chips(el,set,onChange){
+  el.innerHTML=''; CHIP_BIRDS.forEach(t=>{const b=document.createElement('button'); b.innerHTML=birdDot(t)+SPECIES[t].name;
+    const fixed=t===1; b.disabled=fixed; b.setAttribute('aria-pressed',fixed||set.has(t));
+    if(!fixed) b.onclick=()=>{set.has(t)?set.delete(t):set.add(t); b.setAttribute('aria-pressed',set.has(t)); onChange&&onChange();};
+    el.appendChild(b);}); birdify(el);
+}
+const randSeed=()=>(Math.random()*4294967296)>>>0;
+function cfgCode(cfg,seed,sol){return {n:cfg.n,tit:cfg.birds.has(2),owl:cfg.birds.has('O'),partial:[3,4,5,6,7].filter(t=>cfg.birds.has(t)),diff:cfg.diff,seed,sol}}
+
+// ---------- 闖關 ----------
+function startLevel(L){
+  L=Math.max(1,Math.min(LEVELS,L,PROG.max)); S.levelNo=L;
+  const sp=levelSpec(L);
+  withLoading(sp.n,L===100?'帝雉之關準備中，請稍等幾秒…':'出題中…',()=>startPuzzle(generateLevel(L),'level'));
+}
+function openMap(){
+  $('mapBody').innerHTML=CHAPTERS.map((c,ci)=>`<div class="chap"><h4>${birdDot(c.bird)}第 ${ci+1} 章・${c.name}<span>第 ${c.from}–${c.to} 關</span></h4><div class="lvgrid">`+
+    range(c.to-c.from+1).map(k=>{const L=c.from+k, lock=L>PROG.max;
+      return `<button class="lv${L===c.to?' boss':''}${S.mode==='level'&&L===S.levelNo?' cur':''}" data-l="${L}" ${lock?'disabled':''} aria-label="第 ${L} 關${lock?'，未解鎖':''}"><b>${L}</b><span class="stars">${starHTML(PROG.stars[L]||0)}</span></button>`;}).join('')+'</div></div>').join('');
+  birdify($('mapBody'));
+  $('mapBody').querySelectorAll('.lv').forEach(b=>b.onclick=()=>{closeSheet('map'); switchTo('level',()=>startLevel(+b.dataset.l));});
+  openSheet('map'); const cur=$('mapBody').querySelector('.cur'); cur&&cur.scrollIntoView({block:'center'});
+}
+$('mapBtn').onclick=openMap;
+$('prevLv').onclick=()=>startLevel(S.levelNo-1);
+$('nextLv').onclick=()=>startLevel(S.levelNo+1);
+
+// ---------- 每日一題 ----------
+function startDaily(){
+  const key=todayKey();
+  if(loadMode('daily')&&S.P.label&&S.P.label.key===key){ buildBoard(); render(); $('win').hidden=!S.done; syncPanels(); return; }
+  const sp=dailySpec(key);
+  withLoading(sp.n,'今天的週末大盤準備中…',()=>startPuzzle(generateDaily(key),'daily'));
+}
+const WD='日一二三四五六';
+function dailyInfo(){
+  const key=todayKey(), d=new Date(key+'T00:00:00Z'), sp=dailySpec(key), rec=PROG.daily[key];
+  $('dailyKind').textContent=sp.weekend?'週末大盤':'每日一題';
+  $('dailyDate').textContent=`${d.getUTCMonth()+1} 月 ${d.getUTCDate()} 日（星期${WD[d.getUTCDay()]}）`;
+  $('streakN').textContent=streakNow();
+  const birds=birdsIn(S.mode==='daily'&&S.P?S.P:{h:[],v:[],owls:[]}).filter(t=>t!==1&&t!==2).map(t=>SPECIES[t].name);
+  $('dailyNote').textContent=rec?`今天已經解開了，最好成績 ${fmt(rec.t)}，${rec.h?`提示 ${rec.h} 次`:'沒用提示'}。明天台北時間午夜會換新題。`
+    :`今天是 ${sp.n}×${sp.n}${birds.length?'，主角是'+listJoin(birds):''}。全世界都是同一題，每天台北時間午夜換新。`;
+  $('shareDaily').hidden=!rec;
+}
+$('shareDaily').onclick=()=>{
+  const key=todayKey(), rec=PROG.daily[key]; if(!rec) return; const sp=dailySpec(key);
+  copyText(`黑白點方陣 ${sp.weekend?'週末大盤':'每日一題'} ${key}\n用時 ${fmt(rec.t)} ${'★'.repeat(rec.st||starsFor(rec.h))}\n連續 ${streakNow()} 天`,$('shareMsg'));
+};
+
+// 排行榜：存在 artifact 的共用資料庫，每人一份文件 board/<自己的 id>
+let DBP=null, USERP=null, leaderUnsub=null;
+const getDB=()=>DBP||(DBP=(window.claude&&claude.use)?claude.use('db').catch(()=>null):Promise.resolve(null));
+const getUser=()=>USERP||(USERP=(window.claude&&claude.use)?claude.use('user').catch(()=>null):Promise.resolve(null));
+async function loadLeader(){
+  const db=await getDB(); if(!db){ $('leader').hidden=true; return; }
+  $('leader').hidden=false; $('leaderNote').textContent='讀取中…';
+  const key=todayKey();
+  const timer=setTimeout(()=>{$('leaderNote').textContent='暫時讀不到排行';},10000);
+  try{
+    const snap=await db.collection('board').get(); clearTimeout(timer);
+    const user=await getUser(); const me=user?await user.id():null;
+    const rows=[]; snap.docs.forEach(d=>{const x=d.data(); const r=x&&x.d&&x.d[key]; if(r&&typeof r.t==='number') rows.push({id:d.id,t:r.t,h:r.h|0});});
+    rows.sort((a,b)=>a.h-b.h||a.t-b.t);
+    const top=rows.slice(0,10); let names={};
+    if(user&&top.length){ try{names=await user.profiles(top.map(r=>r.id));}catch(e){} }
+    $('leaderList').innerHTML='';
+    top.forEach(r=>{const li=document.createElement('li'); if(r.id===me) li.className='me';
+      const nm=document.createElement('span'); nm.textContent=r.id===me?'你':((names[r.id]&&names[r.id].name)||'玩家');
+      const t=document.createElement('span'); t.className='t'; t.textContent=fmt(r.t)+(r.h?`（提示 ${r.h}）`:'');
+      li.append(nm,t); $('leaderList').appendChild(li);});
+    $('leaderNote').textContent=rows.length?`今天有 ${rows.length} 人解開`:'還沒有人解開，搶第一！';
+  }catch(e){ clearTimeout(timer); $('leaderNote').textContent='暫時讀不到排行'; }
+}
+async function postDaily(key,t,h){
+  try{ const db=await getDB(), user=await getUser(); if(!db||!user) return; const id=await user.id(); if(!id) return;
+    const ref=db.collection('board').doc(id); const cur=(await ref.get()).data()||{}; const d=cur.d||{};
+    const old=d[key]; if(old&&(old.h<h||(old.h===h&&old.t<=t))) return;
+    d[key]={t,h}; await ref.set({d}); loadLeader();
+  }catch(e){}
+}
+
+// ---------- 自由練習 ----------
+let FREE={n:7,diff:1,birds:new Set([2,3])};
+try{const d=JSON.parse(localStorage.getItem('kp4-free')); if(d) FREE={n:d.n,diff:d.diff,birds:new Set(d.birds)};}catch(e){}
+const saveFree=()=>{try{localStorage.setItem('kp4-free',JSON.stringify({n:FREE.n,diff:FREE.diff,birds:[...FREE.birds]}))}catch(e){}};
+seg($('freeSize'),[[6,'6×6'],[7,'7×7'],[8,'8×8'],[9,'9×9']],()=>FREE.n,v=>{FREE.n=v;saveFree();});
+seg($('freeDiff'),DIFFS.map((d,k)=>[k,d.name]),()=>FREE.diff,v=>{FREE.diff=v;saveFree();});
+chips($('freeBirds'),FREE.birds,saveFree);
+function freeNew(){
+  const o=cfgCode(FREE,randSeed());
+  withLoading(o.n,'出題中…',()=>{ const P=puzzleFromCode(o); S.extra={code:P.label.code}; startPuzzle(P,'free'); });
+}
+$('freeGo').onclick=()=>switchTo('free',freeNew,true);
+$('freeCopy').onclick=async()=>{ const c=S.mode==='free'&&S.extra&&S.extra.code; if(!c) return; if(await copyText(c,$('freeMsg'))){PROG.c.shared++;saveProg();checkAch();} };
+
+// ---------- 工作室 ----------
+let STUDIO={n:6,diff:1,birds:new Set([2])};
+seg($('studioSize'),[[5,'5×5'],[6,'6×6'],[7,'7×7'],[8,'8×8'],[9,'9×9']],()=>STUDIO.n,v=>{STUDIO.n=v; if(S.editing) startEdit(true);});
+seg($('studioDiff'),DIFFS.map((d,k)=>[k,d.name]),()=>STUDIO.diff,v=>{STUDIO.diff=v;});
+chips($('studioBirds'),STUDIO.birds);
+function startEdit(fresh){
+  if(S.mode==='race') raceLeave();
+  save(); S.mode='studio'; S.editing=true; hideHint(); $('win').hidden=true;
+  N=STUDIO.n; NN=N*N;
+  let v=null; if(!fresh){try{const d=JSON.parse(localStorage.getItem('kp4-edit')); if(d&&d.n===N) v=d.v;}catch(e){}}
+  S.editVals=v||Array(NN).fill(0); S.sel=0; buildBoard(); renderEdit(); syncPanels();
+  $('studioMsg').textContent='用下方數字鍵把答案填滿。紅色代表同列或同行重複了。';
+}
+$('studioEdit').onclick=()=>startEdit(false);
+$('studioRand').onclick=()=>{ if(!S.editing) startEdit(false); S.editVals=randomLatin(N); renderEdit(); saveEdit(); };
+$('studioClear').onclick=()=>{ if(!S.editing) startEdit(false); S.editVals=Array(NN).fill(0); renderEdit(); saveEdit(); };
+$('studioMake').onclick=()=>{
+  if(!S.editing){ $('studioMsg').textContent='先按「開始填答案」，把答案填好再產生題目。'; return; }
+  if(!isLatin(S.editVals,N)){ $('studioMsg').textContent='答案還沒填完，或有數字在同一列、同一行重複了（紅色的格子）。'; return; }
+  const o=cfgCode(STUDIO,randSeed(),S.editVals.slice());
+  S.editing=false;
+  withLoading(o.n,'幫你放鳥中…',()=>{ const P=puzzleFromCode(o); S.extra={code:P.label.code}; startPuzzle(P,'studio'); showStudioCode(); });
+};
+function showStudioCode(){
+  const c=S.extra&&S.extra.code; if(!c) return;
+  const m=$('studioMsg'); m.innerHTML=''; m.append('題目做好了！代碼 ');
+  const code=document.createElement('code'); code.textContent=c; const b=document.createElement('button'); b.className='pill small'; b.textContent='複製代碼';
+  b.onclick=async()=>{ if(await copyText(c)){ b.textContent='已複製'; PROG.c.shared++; saveProg(); checkAch(); } };
+  m.append(code,' ',b);
+}
+$('codeGo').onclick=()=>{
+  const o=decodeCode($('codeIn').value);
+  if(!o){ $('codeMsg').textContent='這個代碼看不懂，請確認有沒有打錯字。'; return; }
+  $('codeMsg').textContent=`${o.n}×${o.n}・${DIFFS[o.diff].name}${o.sol?'・手作題':''}`;
+  switchTo('studio',()=>withLoading(o.n,'出題中…',()=>{ const P=puzzleFromCode(o); S.extra={code:P.label.code}; startPuzzle(P,'studio'); }),true);
+};
+
+// ---------- 雙人競速（room：同時開著頁面的人） ----------
+let ROOMP=null, RACE=null, NAMES={};
+const getRoom=()=>ROOMP||(ROOMP=(window.claude&&claude.use)?claude.use('room').catch(()=>null):Promise.resolve(null));
+function normRoom(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,12)}
+async function raceJoin(code){
+  code=normRoom(code); if(code.length<2){ $('raceMsg').textContent='房間代碼至少要 2 個英文字母或數字。'; return; }
+  $('raceMsg').textContent='連線中…';
+  const room=await getRoom();
+  if(!room){ $('raceMsg').textContent='這裡沒辦法即時連線。可以改用「自由練習」產生題目代碼，和朋友玩同一題再比時間。'; return; }
+  let r; try{ r=await room.join('race-'+code); }catch(e){ $('raceMsg').textContent='加入房間失敗，請稍後再試。'; return; }
+  if(S.mode!=='race'){ save(); }
+  RACE={code,r,round:1,start:null,ready:false,unsub:null,cd:null};
+  RACE.unsub=r.onPeers(()=>{renderRacers(); checkRound(); checkStart();},()=>{$('raceMsg').textContent='和房間的連線中斷了。';});
+  newRound(1);
+  $('raceMsg').textContent=''; $('roomName').textContent=code.toUpperCase();
+  syncPanels();
+}
+function newRound(round){
+  RACE.round=round; RACE.start=null; RACE.ready=false; clearInterval(RACE.cd);
+  const P=racePuzzle(RACE.code+':'+round); S.mode='race'; setPuzzle(P); resetPlay();
+  S.paused=true; S.elapsed=0;
+  showRaceCover('等雙方都按「準備好了」');
+  RACE.r.presence({round,ready:false,at:null,filled:0,done:null}).catch(()=>{});
+  $('raceReady').disabled=false; $('raceReady').textContent='準備好了'; renderRacers();
+}
+function showRaceCover(t){ $('countdown').hidden=false; $('cdNum').textContent=t; $('cdNum').style.fontSize=t.length>3?'1.1rem':''; }
+function viewers(){return RACE?RACE.r.peers().filter(p=>p.kind==='viewer'):[]}
+async function resolveNames(ids){
+  const need=ids.filter(id=>id&&!(id in NAMES)); if(!need.length) return;
+  need.forEach(id=>NAMES[id]='');
+  const u=await getUser(); if(!u) return;
+  try{const ps=await u.profiles(need); for(const id of need) NAMES[id]=(ps[id]&&ps[id].name)||'';}catch(e){}
+  renderRacers();
+}
+function renderRacers(){
+  if(!RACE) return; const ps=viewers(); resolveNames(ps.map(p=>p.by));
+  const ul=$('racers'); ul.innerHTML='';
+  ps.forEach((p,k)=>{ const pr=p.presence||{}, li=document.createElement('li'); if(p.isMe&&p.sameTab) li.className='me';
+    const nm=document.createElement('span'); nm.className='nm'; nm.textContent=p.isMe&&p.sameTab?'你':(NAMES[p.by]||`玩家 ${k+1}`);
+    const bar=document.createElement('span'); bar.className='bar'; bar.innerHTML=`<i style="width:${Math.min(100,(pr.filled||0)/NN*100)}%"></i>`;
+    const st=document.createElement('span'); st.className='st'; st.textContent=pr.done!=null?fmt(pr.done):pr.round!==RACE.round?'換題中':pr.ready?'準備好了':'等待中';
+    li.append(nm,bar,st); ul.appendChild(li); });
+  $('raceStatus').textContent=ps.length<2?'等朋友用同一個代碼加入…':'';
+}
+function checkRound(){ const hi=Math.max(...viewers().map(p=>(p.presence&&p.presence.round)|0)); if(hi>RACE.round) newRound(hi); }
+function checkStart(){
+  if(!RACE||RACE.start) return; const ps=viewers().filter(p=>(p.presence&&p.presence.round)===RACE.round);
+  if(ps.length<2||!ps.every(p=>p.presence.ready&&typeof p.presence.at==='number')) return;
+  RACE.start=Math.max(...ps.map(p=>p.presence.at))+3500;
+  clearInterval(RACE.cd);
+  RACE.cd=setInterval(()=>{ const left=RACE.start-Date.now();
+    if(left>0){ showRaceCover(String(Math.ceil(left/1000))); if(left%1000<120) blip(660,.06,.04); return; }
+    clearInterval(RACE.cd); $('countdown').hidden=true; S.paused=false; S.t0=RACE.start; render(); blip(990,.15,.05); },100);
+}
+function raceProgress(){ if(!RACE) return; const c=S.vals.filter((v,i)=>v&&v===S.P.sol[i]).length; RACE.r.presence({filled:c}).catch(()=>{}); }
+async function raceLeave(){ if(!RACE) return; clearInterval(RACE.cd); try{RACE.unsub&&RACE.unsub(); await RACE.r.leave();}catch(e){} RACE=null; $('countdown').hidden=true; S.paused=false; syncPanels(); }
+$('roomJoin').onclick=()=>raceJoin($('roomIn').value);
+$('roomNew').onclick=()=>{ const c=Math.random().toString(36).slice(2,7); $('roomIn').value=c.toUpperCase(); raceJoin(c); };
+$('roomCopy').onclick=()=>RACE&&copyText(RACE.code.toUpperCase(),$('raceMsg'));
+$('roomLeave').onclick=()=>{ raceLeave(); switchTo('level'); };
+$('raceReady').onclick=()=>{ if(!RACE) return; RACE.ready=true; $('raceReady').disabled=true; RACE.r.presence({ready:true,at:Date.now()}).catch(()=>{}); };
+
+// ---------- 各模式的設定 ----------
+const MODES={
+  level:{start:()=>startLevel(PROG.max),newText:'重玩',onNew:()=>startLevel(S.levelNo),next:()=>startLevel(S.levelNo+1),
+    win(){ const L=S.levelNo, st=starsFor(S.hints), first=!PROG.stars[L];
+      PROG.stars[L]=Math.max(PROG.stars[L]||0,st); PROG.max=Math.max(PROG.max,Math.min(LEVELS,L+1));
+      const hatched=first?hatch(L===100?'E':undefined):undefined;
+      return {title:L===100?'全部 100 關破關！':`第 ${L} 關過關！`,stars:st,msg:`用時 ${fmt(S.elapsed)}・${hintTxt()}`+(st<3?'・不用提示可以拿三顆星':''),
+        hatched,next:L<LEVELS,againText:'再玩一次'}; }},
+  daily:{start:startDaily,newText:'重玩',onNew:()=>{ resetPlay(); },
+    win(){ const key=S.P.label.key, st=starsFor(S.hints), rec=PROG.daily[key], first=!rec;
+      if(!rec||S.hints<rec.h||(S.hints===rec.h&&S.elapsed<rec.t)) PROG.daily[key]={t:S.elapsed,h:S.hints,st};
+      if(S.P.label.weekend) PROG.c.weekend=1;
+      const hatched=first?hatch():undefined; saveProg(); postDaily(key,S.elapsed,S.hints);
+      return {title:S.P.label.weekend?'週末大盤完成！':'今天的題目解開了！',stars:st,msg:`用時 ${fmt(S.elapsed)}・${hintTxt()}・連續 ${streakNow()} 天`,hatched,againText:'再玩一次'}; }},
+  free:{start:freeNew,newText:'新局',onNew:freeNew,
+    win(){ return {title:'解開了！',msg:`${N}×${N}・${DIFFS[FREE.diff].name}・用時 ${fmt(S.elapsed)}・${hintTxt()}`,againText:'再出一題'}; }},
+  studio:{start:()=>startEdit(false),newText:'重玩',onNew:()=>{ if(S.editing) return; resetPlay(); },
+    win(){ return {title:'解開了！',msg:`用時 ${fmt(S.elapsed)}・${hintTxt()}。把代碼分享給朋友，看誰比較快！`,againText:'再玩一次'}; }},
+  race:{start:()=>{},newText:'重玩',onNew:()=>{},
+    win(){ const others=viewers().filter(p=>!(p.isMe&&p.sameTab)&&p.presence&&p.presence.round===RACE.round&&p.presence.done!=null);
+      const firstPlace=!others.length; if(firstPlace) PROG.c.raceWins++;
+      RACE&&RACE.r.presence({done:S.elapsed,filled:NN}).catch(()=>{});
+      return {title:firstPlace?'你第一個解完！':'解完了！',msg:`用時 ${fmt(S.elapsed)}・${hintTxt()}`+(firstPlace?'':'，對手比你快一點'),againText:'再比一場'}; }},
+};
+$('new').onclick=()=>MODES[S.mode].onNew();
+$('again').onclick=()=>{ $('win').hidden=true;
+  if(S.mode==='race'){ if(RACE) newRound(RACE.round+1); return; }
+  if(S.mode==='free') return freeNew();
+  if(S.mode==='level') return startLevel(S.levelNo);
+  resetPlay(); };
+$('nextBtn').onclick=()=>{ $('win').hidden=true; MODES[S.mode].next&&MODES[S.mode].next(); };
+
+// ---------- 切換模式 ----------
+function switchTo(m,then,forceFresh){
+  if(S.mode==='race'&&m!=='race') raceLeave();
+  if(S.P&&!S.editing) save();
+  hideHint(); $('win').hidden=true; $('countdown').hidden=true; S.paused=false; S.editing=false;
+  if(then){ S.mode=m; then(); syncPanels(); return; }
+  if(m==='daily'){ S.mode='daily'; startDaily(); syncPanels(); return; }
+  if(m==='race'){ S.mode='race'; if(!RACE){ S.paused=true; syncPanels(); showRaceCover('加入房間後開始'); } return; }
+  if(!forceFresh&&loadMode(m)){ buildBoard(); render(); $('win').hidden=!S.done; syncPanels(); return; }
+  S.mode=m; MODES[m].start(); syncPanels();
+}
+document.querySelectorAll('.tabs .tab').forEach(b=>b.onclick=()=>{ if(S.mode===b.dataset.mode&&!(S.mode==='studio'&&S.editing)) return; switchTo(b.dataset.mode); });
+
+function syncPanels(){
+  const m=S.mode;
+  document.querySelectorAll('.tabs .tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.mode===m));
+  ['level','daily','free','studio','race'].forEach(k=>$('panel-'+k).hidden=k!==m);
+  $('new').textContent=MODES[m].newText; $('new').disabled=m==='race';
+  $('hint').disabled=m==='race';
+  if(m==='level'){ const L=S.levelNo, sp=levelSpec(L), ch=CHAPTERS[sp.chapter-1];
+    $('stageCh').textContent=`第 ${sp.chapter} 章・${ch.name}`; $('stageNo').textContent=L;
+    $('stageTag').textContent=`${sp.n}×${sp.n}`+(L===ch.to?'・本章最終關':''); $('stageStars').innerHTML=PROG.stars[L]?starHTML(PROG.stars[L]):'';
+    $('prevLv').disabled=L<=1; $('nextLv').disabled=L>=Math.min(LEVELS,PROG.max);
+    const done=Object.keys(PROG.stars).length; $('progN').textContent=done; $('progBar').style.width=done/LEVELS*100+'%'; }
+  if(m==='daily'){ dailyInfo(); loadLeader(); }
+  if(m==='free') $('freeCode').textContent=S.extra&&S.extra.code&&S.P&&S.P.label.kind==='custom'?S.extra.code:'—';
+  if(m==='race'){ $('raceOff').hidden=!!RACE; $('raceOn').hidden=!RACE; }
+}
+// ===================== 08 新手教學 =====================
+const B_INLINE=t=>`<span class="dot" data-bird="${t}" style="position:relative;transform:none;width:22px;--n:1"></span>`;
+const LESSONS=[
+ {t:'目標：把 1 到 6 填滿每一列',
+  html:'<p>先用 6×6 的棋盤當例子，它有 6 列 6 行。每一<b>橫列</b>都要剛好出現 1、2、3、4、5、6 各一次，每一<b>直行</b>也一樣。</p><p>這一題先不看鳥，只看數字。</p>',
+  row:[1,2,'?',4,5,6], dots:null, q:'這一列還缺哪個數字？', opts:[3,5,6], ans:3,
+  ok:'對！一列裡每個數字只能出現一次，所以缺的就是 3。', no:'這個數字已經在這一列出現過了，再找找看少了誰。'},
+ {t:'鸚鵡：相鄰兩格差 1',
+  html:`<p>兩格中間站了一隻<b>玄鳳鸚鵡</b> ${B_INLINE(1)}，代表這兩個數字<b>相差 1</b>，例如 2 和 3、5 和 4。</p>`,
+  row:[6,'?'], dots:[1], q:'左邊是 6，右邊是多少？', opts:[3,4,5], ans:5,
+  ok:'對！和 6 相差 1 的有 5 和 7，這題是 6×6，最大只到 6，所以是 5。', no:'鸚鵡代表相差 1 喔。6 減 1 是多少？'},
+ {t:'沒有鸚鵡，也是線索',
+  html:'<p>棋盤上<b>所有的鸚鵡都畫出來了</b>。所以兩格之間如果<b>沒有鸚鵡</b>，就代表它們<b>不是</b>連續數。</p><p>下面這一列還缺 2 和 4，要放進兩個問號裡。</p>',
+  row:[1,'?',3,5,'?',6], dots:[0,1,0,0,0], q:'第二格（1 的右邊）應該填 2 還是 4？', opts:[2,4], ans:4, fill:{4:2},
+  ok:'對！1 和 2 是連續數，中間應該要有鸚鵡，但這裡沒有，所以不能放 2，只能放 4。另一格自然就是 2。', no:'看看 1 和第二格之間有沒有鸚鵡？如果填 2，和 1 是連續數，應該要有鸚鵡才對。'},
+ {t:'山雀：一格是另一格的兩倍',
+  html:`<p>到了第二章會多出<b>青背山雀</b> ${B_INLINE(2)}，代表其中一個數字<b>剛好是另一個的兩倍</b>，例如 2 和 4、3 和 6。山雀也是全部畫出來的。</p><p>1 和 2 同時差 1 又是兩倍，這種情況一律畫山雀。</p>`,
+  row:[3,'?'], dots:[2], q:'左邊是 3，右邊是多少？', opts:[1,4,6], ans:6,
+  ok:'對！3 的兩倍是 6。3 的一半是 1.5，不是整數，所以只能是 6。', no:'山雀是兩倍關係。3 乘以 2 是多少？'},
+ {t:'怎麼玩',
+  html:'<ol class="howto"><li>點一下空格選中它，再按下方的數字填進去。</li><li>不確定的時候打開「筆記」，可以在格子裡記下小小的候選數字。</li><li>卡住了按「提示」，小麻雀會告訴你下一步該看哪裡、為什麼。</li><li>越後面的章節會有新的鳥登場，每隻鳥都是一條新規則，遇到時會先介紹給你。</li></ol><p>從<b>闖關第 1 關</b>開始吧！</p>',
+  final:true}
+];
+const T={i:0,solved:new Set()};
+function tutRender(){
+  const L=LESSONS[T.i];
+  const st=$('tut-step'); st.innerHTML=LESSONS.map((_,k)=>`<i class="${k===T.i?'on':''}"></i>`).join('');
+  st.setAttribute('aria-label',`第 ${T.i+1} 步，共 ${LESSONS.length} 步`);
+  $('tut-title').textContent=L.t;
+  const body=$('tut-body'); let h=L.html; const done=T.solved.has(T.i);
+  if(L.row){
+    const firstQ=L.row.indexOf('?');
+    h+='<div class="mini">'+L.row.map((v,k)=>{
+      let cell; if(v==='?'){ const f=done?(k===firstQ?L.ans:(L.fill&&L.fill[k])):''; cell=`<div class="mc ask${done?' ok':''}">${f||'?'}</div>`; }
+      else cell=`<div class="mc">${v}</div>`;
+      const g=k<L.row.length-1?`<div class="gap">${L.dots&&L.dots[k]?`<span class="dot" data-bird="${L.dots[k]}"></span>`:''}</div>`:'';
+      return cell+g;}).join('')+'</div>';
+    h+=`<p class="q">${L.q}</p><div class="opts">`+L.opts.map(o=>`<button data-o="${o}" class="${done&&o===L.ans?'right':''}">${o}</button>`).join('')+'</div>';
+  }
+  body.innerHTML=h; birdify(body);
+  const fb=$('tut-fb'); fb.className='fb'; fb.textContent=done&&L.ok?L.ok:''; if(done) fb.classList.add('good');
+  body.querySelectorAll('.opts button').forEach(b=>b.onclick=()=>{
+    if(+b.dataset.o===L.ans){T.solved.add(T.i); tutRender(); chirp(L.dots&&L.dots[0]?L.dots[0]:1,.05);}
+    else{b.classList.add('wrong'); fb.className='fb bad'; fb.textContent=L.no; blip(220,.12,.035,'sine');}
+  });
+  $('tut-prev').disabled=T.i===0;
+  const nx=$('tut-next'); nx.textContent=L.final?'開始第 1 關':'下一步'; nx.disabled=!!L.row&&!done;
+}
+function tutOpen(){T.i=0;T.solved.clear();openSheet('tut');tutRender();$('tut-next').focus();}
+function tutClose(){closeSheet('tut');try{localStorage.setItem('kp4-tut','1')}catch(e){}}
+$('learn').onclick=tutOpen;
+$('tut-close').onclick=tutClose;
+$('tut-prev').onclick=()=>{if(T.i>0){T.i--;tutRender();}};
+$('tut-next').onclick=()=>{ if(LESSONS[T.i].final){tutClose(); switchTo('level',()=>startLevel(1));} else {T.i++;tutRender();} };
+// ===================== 09 啟動 =====================
+birdify();
+function syncSound(){ $('btn-sound').setAttribute('aria-pressed',PROG.sound); $('btn-sound').textContent=PROG.sound?'音效開':'音效關'; }
+$('btn-sound').onclick=()=>{ PROG.sound=!PROG.sound; saveProg(); syncSound(); if(PROG.sound) chirp(1,.05); };
+$('btn-dex').onclick=openDex; $('btn-garden').onclick=openGarden; $('btn-ach').onclick=openAch;
+syncSound();
+(function boot(){
+  // 分享連結 #p-代碼：直接打開那一題
+  const h=location.hash.replace(/^#/,'');
+  if(/^p-[0-9a-z-]+$/i.test(h)){ const o=decodeCode(h.slice(2)); if(o){ $('codeIn').value=h.slice(2).toUpperCase(); switchTo('studio',()=>withLoading(o.n,'出題中…',()=>{const P=puzzleFromCode(o); S.extra={code:P.label.code}; startPuzzle(P,'studio');}),true); return; } }
+  let m='level'; try{m=localStorage.getItem('kp4-mode')||'level'}catch(e){}
+  if(m==='race'||m==='studio') m='level'; // 工作室、雙人競速暫時隱藏
+  if(m==='level'){ if(loadMode('level')){ buildBoard(); render(); $('win').hidden=!S.done; syncPanels(); } else startLevel(PROG.max); }
+  else switchTo(m);
+})();
+let seenTut=false; try{seenTut=!!localStorage.getItem('kp4-tut')}catch(e){}
+if(!seenTut) tutOpen();
+
+})();
+</script>
+</body>
+</html>

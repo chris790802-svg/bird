@@ -1,0 +1,183 @@
+<div class="wrap">
+  <header>
+    <h1><span class="pair" aria-hidden="true"><span class="dot" data-bird="2"></span><span class="dot" data-bird="1"></span></span>黑白點方陣</h1>
+    <nav class="topbar" aria-label="功能">
+      <button class="ib" id="btn-dex">圖鑑</button>
+      <button class="ib" id="btn-garden">鳥園</button>
+      <button class="ib" id="btn-ach">成就</button>
+      <button class="ib" id="btn-sound" aria-pressed="true">音效開</button>
+      <button class="ib mint" id="learn">教學</button>
+    </nav>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="模式">
+    <button class="tab" role="tab" id="tab-level" data-mode="level" aria-selected="true">闖關</button>
+    <button class="tab" role="tab" id="tab-daily" data-mode="daily" aria-selected="false">每日一題</button>
+    <button class="tab" role="tab" id="tab-free" data-mode="free" aria-selected="false">自由練習</button>
+    <button class="tab" role="tab" id="tab-studio" data-mode="studio" aria-selected="false" hidden>工作室</button>
+    <button class="tab" role="tab" id="tab-race" data-mode="race" aria-selected="false" hidden>雙人競速</button>
+  </div>
+
+  <section class="panel" id="panel-level">
+    <div class="stage">
+      <button class="nav" id="prevLv" aria-label="上一關">‹</button>
+      <div class="stage-info">
+        <span class="stage-ch" id="stageCh"></span>
+        <span class="stage-no">第 <b id="stageNo">1</b> 關</span>
+        <span class="stage-tag"><span id="stageTag"></span> <span class="stars" id="stageStars"></span></span>
+      </div>
+      <button class="nav" id="nextLv" aria-label="下一關">›</button>
+    </div>
+    <div class="prog-row"><button class="pill" id="mapBtn">選關</button><div class="prog"><i id="progBar" style="width:0%"></i></div><span><b id="progN">0</b> / 100</span></div>
+  </section>
+
+  <section class="panel" id="panel-daily" hidden>
+    <div class="daily-head">
+      <div class="daily-title"><span class="eyebrow" id="dailyKind">每日一題</span><b id="dailyDate"></b></div>
+      <div class="streak"><b id="streakN">0</b><span>天連續</span></div>
+    </div>
+    <p class="note" id="dailyNote"></p>
+    <div class="leader" id="leader" hidden>
+      <div class="leader-head"><span>今日排行</span><span class="note" id="leaderNote"></span></div>
+      <ol id="leaderList"></ol>
+    </div>
+    <div class="row"><button class="pill" id="shareDaily" hidden>複製今天的成績</button><span class="note" id="shareMsg" aria-live="polite"></span></div>
+  </section>
+
+  <section class="panel" id="panel-free" hidden>
+    <div class="opt-row"><span class="lab">大小</span><div class="seg" id="freeSize"></div></div>
+    <div class="opt-row"><span class="lab">難度</span><div class="seg" id="freeDiff"></div></div>
+    <div class="opt-row top"><span class="lab">鳥</span><div class="chips" id="freeBirds"></div></div>
+    <div class="row"><button class="pill primary" id="freeGo">出一題新的</button><span class="code-line" hidden>題目代碼 <code id="freeCode">—</code><button class="pill small" id="freeCopy">複製</button></span></div>
+    <p class="note" id="freeMsg" aria-live="polite"></p>
+  </section>
+
+  <section class="panel" id="panel-studio" hidden>
+    <h3 class="ph">輸入題目代碼</h3>
+    <div class="row"><input id="codeIn" class="field" placeholder="例如 RSMB-CNHD-KKZL-SL" autocomplete="off" spellcheck="false"><button class="pill primary" id="codeGo">開始玩</button></div>
+    <p class="note" id="codeMsg" aria-live="polite">朋友分享給你的代碼貼在這裡，就能玩到同一題。</p>
+    <h3 class="ph">手作出題</h3>
+    <p class="note">在下面的棋盤填好一份完整答案，每列每行都不重複。接著選好要出現的鳥和難度，系統會幫你放鳥、確認只有一個解，再產生代碼。</p>
+    <div class="opt-row"><span class="lab">大小</span><div class="seg" id="studioSize"></div></div>
+    <div class="opt-row"><span class="lab">難度</span><div class="seg" id="studioDiff"></div></div>
+    <div class="opt-row top"><span class="lab">鳥</span><div class="chips" id="studioBirds"></div></div>
+    <div class="row wrap-row">
+      <button class="pill" id="studioEdit">開始填答案</button>
+      <button class="pill" id="studioRand">隨機填滿</button>
+      <button class="pill" id="studioClear">清空</button>
+      <button class="pill primary" id="studioMake">產生題目</button>
+    </div>
+    <p class="note" id="studioMsg" aria-live="polite"></p>
+  </section>
+
+  <section class="panel" id="panel-race" hidden>
+    <div id="raceOff">
+      <p class="note">兩個人各自打開這個頁面，輸入同一個房間代碼。兩邊都按「準備好了」，倒數三秒後同時開始，誰先解完誰贏。</p>
+      <div class="row"><input id="roomIn" class="field" placeholder="房間代碼" maxlength="12" autocomplete="off" spellcheck="false"><button class="pill primary" id="roomJoin">加入</button><button class="pill" id="roomNew">開新房間</button></div>
+    </div>
+    <div id="raceOn" hidden>
+      <div class="row"><span>房間 <code id="roomName"></code></span><button class="pill small" id="roomCopy">複製代碼</button><button class="pill small" id="roomLeave">離開</button></div>
+      <ul class="racers" id="racers"></ul>
+      <div class="row"><button class="pill primary" id="raceReady">準備好了</button><span class="note" id="raceStatus"></span></div>
+    </div>
+    <p class="note" id="raceMsg" aria-live="polite"></p>
+  </section>
+
+  <div class="meta"><span class="chip">時間 <b id="time">0:00</b></span><span class="chip">已填 <b id="filled">0</b>/<span id="total">36</span></span><span class="chip birds-chip" id="birdChip" aria-label="本題的鳥"></span></div>
+
+  <div class="board-wrap">
+    <div class="board" id="board" aria-label="棋盤"></div>
+    <div class="cover" id="loading" hidden><div><span class="dot spin" data-bird="1"></span><span id="loadingText">出題中…</span></div></div>
+    <div class="cover" id="countdown" hidden><div><strong id="cdNum">3</strong></div></div>
+    <div class="win" id="win" hidden><div>
+      <span class="beans" aria-hidden="true" id="winBirds"></span>
+      <strong id="wintitle">解開了！</strong>
+      <span class="stars win-stars" id="winstars"></span>
+      <span id="winmsg"></span>
+      <span class="egg" id="winEgg" hidden></span>
+      <div class="win-btns"><button class="tool" id="again">再來一局</button><button class="tool primary" id="nextBtn">下一關</button></div>
+    </div></div>
+  </div>
+
+  <div class="hintbar" id="hintbar" hidden role="status">
+    <span class="dot hint-bird" data-bird="5"></span>
+    <p id="hintText"></p>
+    <div class="hint-btns"><button class="pill small primary" id="hintFill">幫我填</button><button class="pill small" id="hintClose">知道了</button></div>
+  </div>
+
+  <div class="keys" id="keys"></div>
+  <div class="tools">
+    <button class="tool" id="notes" aria-pressed="false">筆記</button>
+    <button class="tool" id="erase">擦除</button>
+    <button class="tool" id="undo">復原</button>
+    <button class="tool" id="hint">提示</button>
+    <button class="tool primary" id="new">新局</button>
+  </div>
+
+  <section class="rules">
+    <h2>規則</h2>
+    <ul>
+      <li><span class="sw g"></span><span>每一列、每一行都要剛好填入 1 到 <span class="nmax">6</span>（棋盤幾格寬，就填到幾）。沒有宮格限制，這點和數獨不同。</span></li>
+      <li><span class="sw n"></span><span>鸚鵡和山雀<b>全部都畫出來了</b>。兩格之間沒有鸚鵡，就代表不是連續數；有山雀的題目裡，沒有山雀就代表不是兩倍。</span></li>
+      <li><span class="sw n"></span><span>其他的鳥只畫<b>一部分</b>，而且只會站在沒有鸚鵡、沒有山雀的地方。沒看到牠們，不代表那裡沒有這種關係。</span></li>
+    </ul>
+    <h2 class="sub">這一題的鳥</h2>
+    <ul id="ruleBirds"></ul>
+    <p class="kbd">鍵盤：方向鍵移動，數字鍵填數，N 切換筆記，H 提示，Backspace 擦除，Ctrl+Z 復原。</p>
+  </section>
+</div>
+
+<div class="sheet" id="map" hidden role="dialog" aria-modal="true" aria-labelledby="map-title">
+  <div class="sheet-card wide">
+    <div class="sheet-top"><h3 id="map-title">選擇關卡</h3><button class="sheet-close" data-close="map">關閉</button></div>
+    <div class="sheet-body" id="mapBody"></div>
+  </div>
+</div>
+
+<div class="sheet" id="intro" hidden role="dialog" aria-modal="true" aria-labelledby="intro-title">
+  <div class="sheet-card intro-card">
+    <span class="eyebrow">新的鳥登場</span>
+    <span class="intro-bird" id="introBird"></span>
+    <h3 id="intro-title"></h3>
+    <p class="intro-rule" id="introRule"></p>
+    <p class="note" id="introEx"></p>
+    <p class="intro-fact" id="introFact"></p>
+    <button class="pill primary" id="introOk">知道了，開始</button>
+  </div>
+</div>
+
+<div class="sheet" id="dex" hidden role="dialog" aria-modal="true" aria-labelledby="dex-title">
+  <div class="sheet-card wide">
+    <div class="sheet-top"><h3 id="dex-title">鳥類圖鑑</h3><button class="sheet-close" data-close="dex">關閉</button></div>
+    <p class="note" id="dexNote"></p>
+    <div class="sheet-body dex-grid" id="dexBody"></div>
+  </div>
+</div>
+
+<div class="sheet" id="garden" hidden role="dialog" aria-modal="true" aria-labelledby="garden-title">
+  <div class="sheet-card wide">
+    <div class="sheet-top"><h3 id="garden-title">我的鳥園</h3><button class="sheet-close" data-close="garden">關閉</button></div>
+    <p class="note" id="gardenNote"></p>
+    <div class="yard" id="yard"></div>
+    <div class="deco-list" id="decoList"></div>
+  </div>
+</div>
+
+<div class="sheet" id="ach" hidden role="dialog" aria-modal="true" aria-labelledby="ach-title">
+  <div class="sheet-card wide">
+    <div class="sheet-top"><h3 id="ach-title">成就</h3><button class="sheet-close" data-close="ach">關閉</button></div>
+    <div class="sheet-body ach-list" id="achBody"></div>
+  </div>
+</div>
+
+<div class="sheet" id="tut" hidden role="dialog" aria-modal="true" aria-labelledby="tut-title">
+  <div class="sheet-card tut-card">
+    <div class="tut-top"><span class="tut-step" id="tut-step"></span><button class="sheet-close" id="tut-close">略過教學</button></div>
+    <h3 id="tut-title"></h3>
+    <div id="tut-body" style="display:flex;flex-direction:column;gap:12px"></div>
+    <div class="fb" id="tut-fb" aria-live="polite"></div>
+    <div class="tut-nav"><button id="tut-prev">上一步</button><button class="go" id="tut-next">下一步</button></div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>

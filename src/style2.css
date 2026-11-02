@@ -1,0 +1,175 @@
+
+/* ---------- 新增：頂部功能列、分頁、面板 ---------- */
+h1 .pair .dot:nth-child(1){animation:bob 2.4s ease-in-out infinite}
+h1 .pair .dot:nth-child(2){animation:bob 2.4s ease-in-out infinite .3s}
+.ln{stroke:var(--bird-line);stroke-width:1.1;stroke-linejoin:round}
+.topbar{display:flex;gap:6px;flex-wrap:wrap}
+.ib{font:inherit;cursor:pointer;border:0;border-radius:999px;padding:5px 12px;font-size:.84rem;background:var(--surface);color:var(--ink);box-shadow:0 2px 0 var(--shadow)}
+.ib.mint{background:var(--mint-soft)}
+.ib[aria-pressed="false"]{color:var(--muted)}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;flex-wrap:nowrap}
+.tabs::-webkit-scrollbar{display:none}
+.tabs .tab{flex:none;font:inherit;cursor:pointer;border:0;border-radius:999px;padding:7px 15px;font-size:.92rem;background:var(--surface);color:var(--ink);box-shadow:0 2px 0 var(--shadow)}
+.tabs .tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.panel{background:var(--surface);border-radius:20px;padding:14px;box-shadow:0 3px 0 var(--shadow);display:flex;flex-direction:column;gap:10px}
+.panel h3.ph{margin:4px 0 0;font-family:var(--f-display);font-weight:400;font-size:1.05rem;color:var(--accent)}
+.note{color:var(--muted);font-size:.84rem;margin:0}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{font:inherit;cursor:pointer;border:0;border-radius:999px;padding:7px 14px;font-size:.88rem;background:var(--paper);color:var(--ink);box-shadow:0 2px 0 var(--shadow)}
+.pill.small{padding:4px 10px;font-size:.8rem}
+.pill.primary{background:var(--accent);color:var(--accent-ink)}
+.pill:disabled{opacity:.45;cursor:default}
+.field{font:inherit;font-family:var(--f-num);letter-spacing:.04em;flex:1;min-width:0;padding:8px 12px;border-radius:12px;border:2px solid var(--line);background:var(--paper);color:var(--ink);text-transform:uppercase}
+.field:focus{outline:none;border-color:var(--accent)}
+code{font-family:var(--f-num);font-weight:600;letter-spacing:.04em;color:var(--accent);word-break:break-all}
+.code-line{display:flex;gap:6px;align-items:center;font-size:.84rem;color:var(--muted);flex-wrap:wrap;min-width:0}
+.opt-row{display:flex;gap:8px;align-items:center}
+.opt-row.top{align-items:flex-start}
+.opt-row .lab{flex:none;width:2.4em;font-size:.8rem;color:var(--muted);padding-top:2px}
+.seg{display:flex;gap:5px;flex-wrap:wrap}
+.seg button{font:inherit;cursor:pointer;border:0;border-radius:999px;padding:5px 12px;font-size:.86rem;background:var(--paper);color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);box-shadow:0 2px 0 var(--shadow)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{font:inherit;cursor:pointer;border:2px solid transparent;border-radius:999px;padding:3px 10px 3px 4px;font-size:.82rem;background:var(--paper);color:var(--muted);display:flex;align-items:center;gap:5px}
+.chips button .dot{position:relative;transform:none;width:22px;--n:1}
+.chips button[aria-pressed="true"]{border-color:var(--accent);color:var(--ink);background:var(--accent-soft)}
+.chips button:disabled{cursor:default;opacity:.9}
+
+/* 闖關面板 */
+.stage{display:flex;align-items:center;gap:8px}
+.stage-ch{font-size:.78rem;color:var(--accent);letter-spacing:.06em}
+.prog-row .pill{flex:none}
+
+/* 每日 */
+.daily-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.daily-title{display:flex;flex-direction:column;line-height:1.3}
+.daily-title b{font-family:var(--f-num);font-size:1.25rem;font-weight:600}
+.eyebrow{font-size:.76rem;color:var(--accent);letter-spacing:.08em}
+.streak{display:flex;flex-direction:column;align-items:center;background:var(--accent-soft);border-radius:16px;padding:6px 14px;line-height:1.1}
+.streak b{font-family:var(--f-num);font-size:1.5rem;color:var(--accent)}
+.streak span{font-size:.72rem;color:var(--muted)}
+.leader{background:var(--paper);border-radius:14px;padding:10px 12px}
+.leader-head{display:flex;justify-content:space-between;font-size:.84rem;margin-bottom:4px;gap:8px}
+.leader ol{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:3px;font-size:.88rem}
+.leader li{font-variant-numeric:tabular-nums}
+.leader li .t{font-family:var(--f-num);font-weight:600;margin-left:6px}
+.leader li.me{color:var(--accent)}
+
+/* 競速 */
+.racers{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.racers li{display:grid;grid-template-columns:minmax(0,7em) 1fr auto;gap:8px;align-items:center;font-size:.86rem}
+.racers .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.racers .bar{height:10px;border-radius:999px;background:var(--paper);overflow:hidden}
+.racers .bar i{display:block;height:100%;background:var(--mint);transition:width .3s}
+.racers li.me .bar i{background:var(--accent)}
+.racers .st{font-family:var(--f-num);font-size:.82rem;color:var(--muted);min-width:4.5em;text-align:right}
+
+/* 本題的鳥（小圖） */
+.meta{flex-wrap:wrap}
+.birds-chip{gap:2px;align-items:center;padding:3px 8px}
+.birds-chip .dot{position:relative;transform:none;width:20px;--n:1}
+.birds-chip:empty{display:none}
+
+/* 棋盤上的鳥 */
+.dot.flap{animation:flap .5s ease-out}
+@keyframes flap{30%{transform:translate(-50%,-80%) rotate(-8deg) scale(1.15)}60%{transform:translate(-50%,-55%) rotate(5deg)}}
+.dot.fly{animation:fly .9s cubic-bezier(.3,.7,.4,1)}
+@keyframes fly{35%{transform:translate(-50%,-170%) scale(1.25) rotate(-10deg)}70%{transform:translate(-50%,-120%) scale(1.1) rotate(6deg)}}
+.dot.tilt{animation:tilt .7s ease-in-out}
+@keyframes tilt{20%{transform:translate(-50%,-50%) rotate(-28deg)}50%{transform:translate(-50%,-50%) rotate(-22deg)}80%{transform:translate(-50%,-50%) rotate(6deg)}}
+.owl{position:absolute;width:min(calc(var(--bw) / var(--n,6) * .5),32px);aspect-ratio:1;transform:translate(-50%,-50%);z-index:3;pointer-events:none}
+.owl svg{width:100%;height:100%;overflow:visible;display:block}
+.owl b{position:absolute;left:50%;top:-38%;transform:translateX(-50%);font-family:var(--f-num);font-weight:700;font-size:min(calc(var(--bw) / var(--n,6) * .2),.82rem);
+  background:var(--ink);color:var(--paper);border-radius:999px;padding:0 5px;line-height:1.5;min-width:1.6em;text-align:center}
+.owl.bad b{background:var(--error)}
+.cell.hint{box-shadow:inset 0 0 0 3px var(--accent)}
+.cell.edit{color:var(--ink)}
+
+/* 遮罩：出題中、倒數 */
+.cover{position:absolute;inset:-7px;z-index:6;display:grid;place-items:center;background:color-mix(in srgb,var(--paper) 80%,transparent);border-radius:26px}
+.cover > div{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--muted)}
+.cover .dot{position:relative;transform:none;width:44px;--n:1}
+.spin{animation:bob .8s ease-in-out infinite}
+#cdNum{font-family:var(--f-num);font-size:4rem;color:var(--accent)}
+
+/* 提示列 */
+.hintbar{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border-radius:18px;padding:10px 12px;box-shadow:0 3px 0 var(--shadow);border:2px solid var(--accent-soft);flex-wrap:wrap}
+.hintbar .hint-bird{position:relative;transform:none;width:30px;--n:1;flex:none}
+.hintbar p{margin:0;flex:1;min-width:12em;font-size:.9rem}
+.hint-btns{display:flex;gap:6px;margin-left:auto}
+
+/* 過關 */
+.win .beans .dot{position:relative;transform:none;width:38px;--n:1}
+.egg{display:flex;align-items:center;gap:8px;background:var(--accent-soft);border-radius:14px;padding:6px 12px;font-size:.88rem}
+.egg .dot{position:relative;transform:none;width:30px;--n:1;animation:popin .5s cubic-bezier(.3,1.6,.5,1)}
+
+/* 規則：本題的鳥 */
+.rules h2.sub{font-size:1rem;margin-top:4px}
+#ruleBirds .sw{width:26px;height:26px}
+
+/* ---------- 彈出視窗 ---------- */
+.sheet{position:fixed;inset:0;z-index:20;background:color-mix(in srgb,var(--ink) 40%,transparent);display:grid;place-items:center;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));overflow-y:auto}
+.sheet-card{background:var(--surface);color:var(--ink);border-radius:26px;width:100%;max-width:460px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 0 var(--shadow);animation:popin .3s cubic-bezier(.3,1.5,.5,1)}
+.sheet-card.wide{max-width:560px}
+.sheet-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sheet-top h3{margin:0;font-family:var(--f-display);font-weight:400;font-size:1.35rem;color:var(--accent)}
+.sheet-close{font:inherit;background:none;border:0;color:var(--muted);cursor:pointer;font-size:.88rem;padding:4px}
+.sheet-body{display:flex;flex-direction:column;gap:16px;max-height:min(66vh,600px);overflow-y:auto;padding-right:4px}
+.chap h4{margin:0 0 8px;font-family:var(--f-display);font-weight:400;font-size:1rem;color:var(--ink);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chap h4 .dot{position:relative;transform:none;width:24px;--n:1}
+.chap h4 span{font-size:.76rem;color:var(--muted);font-family:var(--f-body)}
+.lv:disabled{cursor:default;opacity:.35;box-shadow:none}
+.lv.boss{background:var(--sky)}
+
+/* 新鳥介紹 */
+.intro-card{align-items:center;text-align:center}
+.intro-bird{width:110px;height:110px;display:block;animation:bob 2s ease-in-out infinite}
+.intro-bird svg{width:100%;height:100%;overflow:visible}
+.intro-card h3{margin:0;font-family:var(--f-display);font-weight:400;font-size:1.6rem;color:var(--accent)}
+.intro-rule{font-size:1.1rem;margin:0}
+.intro-fact{font-size:.86rem;color:var(--muted);background:var(--paper);border-radius:14px;padding:10px 12px;margin:0;text-align:left}
+
+/* 圖鑑 */
+.dex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.dex-item{background:var(--paper);border-radius:18px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;min-width:0}
+.dex-item .pic{width:64px;height:64px;display:block}
+.dex-item .pic svg{width:100%;height:100%;overflow:visible}
+.dex-item b{font-family:var(--f-display);font-weight:400;font-size:1.05rem}
+.dex-item .tag{font-size:.72rem;color:var(--accent)}
+.dex-item p{margin:0;font-size:.78rem;color:var(--muted);text-align:left}
+.dex-item.locked .pic{filter:brightness(0) opacity(.18)}
+.dex-item.locked b{color:var(--muted)}
+
+/* 鳥園 */
+.yard{position:relative;height:260px;border-radius:20px;overflow:hidden;
+  background:linear-gradient(var(--sky) 0 58%,#9fd7a0 58% 100%)}
+.yard .sun{position:absolute;right:22px;top:16px;width:38px;height:38px;border-radius:50%;background:#ffe27a;box-shadow:0 0 0 8px rgba(255,226,122,.35)}
+.yard .gb{position:absolute;width:34px;height:34px;transform-origin:50% 100%;cursor:pointer;transition:left 1.6s ease-in-out}
+.yard .gb svg{width:100%;height:100%;overflow:visible}
+.yard .gb.hop{animation:hop .5s ease-out}
+.yard .gb.flip svg{transform:scaleX(-1)}
+@keyframes hop{40%{transform:translateY(-14px)}}
+.yard .deco{position:absolute;pointer-events:none}
+.yard .empty{position:absolute;inset:0;display:grid;place-items:center;color:#2b5a3a;font-size:.9rem;text-align:center;padding:20px}
+.deco-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.deco-list div{background:var(--paper);border-radius:14px;padding:8px 10px;font-size:.8rem;display:flex;flex-direction:column}
+.deco-list div b{font-size:.88rem}
+.deco-list div.off{color:var(--muted)}
+
+/* 成就 */
+.ach-list{display:flex;flex-direction:column;gap:8px}
+.ach-item{display:flex;gap:10px;align-items:center;background:var(--paper);border-radius:14px;padding:10px 12px}
+.ach-item .medal{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--line);color:var(--surface);font-family:var(--f-num);font-weight:700}
+.ach-item.got .medal{background:#f5b82e;color:#5a3a00}
+.ach-item div{display:flex;flex-direction:column;min-width:0}
+.ach-item b{font-size:.92rem}
+.ach-item span{font-size:.78rem;color:var(--muted)}
+
+/* 通知 */
+.toasts{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:min(92vw,420px)}
+.toast{background:var(--ink);color:var(--paper);border-radius:16px;padding:10px 14px;font-size:.88rem;display:flex;gap:10px;align-items:center;box-shadow:0 4px 0 var(--shadow);animation:popin .3s cubic-bezier(.3,1.5,.5,1)}
+.toast .dot{position:relative;transform:none;width:26px;--n:1}
+.toast.out{opacity:0;transition:opacity .4s}
+
+@media (max-width:420px){ h1{font-size:1.55rem} h1 .pair .dot{width:28px} }
