@@ -78,6 +78,9 @@ button:focus-visible{outline:3px solid var(--mint);outline-offset:2px}
 .notes{position:absolute;inset:6%;display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:1fr;
   font-family:var(--f-num);font-size:min(calc(var(--bw) / var(--n) * .2),.75rem);color:var(--muted);font-weight:500}
 .notes span{display:grid;place-items:center}
+.notes span.x{color:var(--error);opacity:.75;text-decoration:line-through;text-decoration-thickness:2px}
+#xnotes[aria-pressed="true"]{background:var(--error-soft);color:var(--error)}
+.key.ruled{opacity:.4;text-decoration:line-through;text-decoration-thickness:2px}
 
 /* 小鳥：黑點是山雀，白點是玄鳳鸚鵡 */
 .dot{position:absolute;width:min(calc(var(--bw) / var(--n,6) * .4),26px);aspect-ratio:1;transform:translate(-50%,-50%);z-index:2;pointer-events:none;
@@ -108,7 +111,7 @@ button:focus-visible{outline:3px solid var(--mint);outline-offset:2px}
 .key,.tool{font:inherit;cursor:pointer;border:0;border-radius:14px;background:var(--surface);color:var(--ink);box-shadow:0 4px 0 var(--shadow);transition:transform .08s,box-shadow .08s}
 .key{font-family:var(--f-num);font-size:clamp(1.15rem,5vw,1.5rem);font-weight:600;padding-block:9px;color:var(--entry)}
 .key:active,.tool:active{transform:translateY(3px);box-shadow:0 1px 0 var(--shadow)}
-.tools{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-width:440px;width:100%;margin:0 auto}
+.tools{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;max-width:440px;width:100%;margin:0 auto}
 .tool{padding:9px 4px;font-size:.88rem}
 .tool[aria-pressed="true"]{background:var(--mint);color:#21413a}
 .primary{background:var(--accent);color:var(--accent-ink)}
@@ -466,6 +469,7 @@ code{font-family:var(--f-num);font-weight:600;letter-spacing:.04em;color:var(--a
   <div class="keys" id="keys"></div>
   <div class="tools">
     <button class="tool" id="notes" aria-pressed="false">筆記</button>
+    <button class="tool" id="xnotes" aria-pressed="false">排除</button>
     <button class="tool" id="erase">擦除</button>
     <button class="tool" id="undo">復原</button>
     <button class="tool" id="hint">提示</button>
@@ -481,7 +485,7 @@ code{font-family:var(--f-num);font-weight:600;letter-spacing:.04em;color:var(--a
     </ul>
     <h2 class="sub">這一題的鳥</h2>
     <ul id="ruleBirds"></ul>
-    <p class="kbd">鍵盤：方向鍵移動，數字鍵填數，N 切換筆記，H 提示，Backspace 擦除，Ctrl+Z 復原。</p>
+    <p class="kbd">鍵盤：方向鍵移動，數字鍵填數，N 切換筆記，X 切換排除，H 提示，Backspace 擦除，Ctrl+Z 復原。</p>
   </section>
 </div>
 
@@ -1080,7 +1084,7 @@ function bestStreak(){ const keys=Object.keys(PROG.daily).sort(); let best=0,cur
   for(const k of keys){ cur=(prev&&dayOffset(prev,1)===k)?cur+1:1; best=Math.max(best,cur); prev=k; } return best; }
 // ===================== 06 遊戲畫面：棋盤、輸入、提示、過關 =====================
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const S={mode:'level',levelNo:1,P:null,vals:[],notes:[],sel:-1,noteMode:false,hist:[],t0:0,elapsed:0,done:false,hints:0,usedNotes:false,
+const S={mode:'level',levelNo:1,P:null,vals:[],notes:[],xnotes:[],sel:-1,noteMode:false,xMode:false,hist:[],t0:0,elapsed:0,done:false,hints:0,usedNotes:false,
   editing:false,editVals:[],paused:false,prevLines:null};
 let N=6,NN=36;
 const boardEl=$('board'); let cells=[],edgeEls=[],owlEls=[],HINT=null;
@@ -1090,7 +1094,7 @@ const listJoin=a=>a.join('、');
 function rawPuzzle(P){const {n,tit,h,v,owls,sol,givens,label}=P; return {n,tit,h,v,owls,sol,givens,label};}
 function setPuzzle(P){prep(P); S.P=P; N=P.n; NN=N*N;}
 function resetPlay(){
-  S.vals=S.P.givens.slice(); S.notes=Array(NN).fill(0); S.hist=[]; S.sel=S.vals.indexOf(0);
+  S.vals=S.P.givens.slice(); S.notes=Array(NN).fill(0); S.xnotes=Array(NN).fill(0); S.hist=[]; S.sel=S.vals.indexOf(0);
   S.t0=Date.now(); S.elapsed=0; S.done=false; S.hints=0; S.usedNotes=false; S.editing=false;
   hideHint(); $('win').hidden=true; buildBoard(); render(); save();
 }
@@ -1159,13 +1163,15 @@ function render(){
     d.className='cell'+(S.P.givens[i]?' given':'')+(rowOK[r]||colOK[c]?' line':'')+(i===sel?' sel':'')
       +(bad.has(i)&&!S.P.givens[i]?' bad':'')+(HINT&&HINT.i===i?' hint':'');
     if(v) d.textContent=v;
-    else if(S.notes[i]) d.innerHTML='<div class="notes">'+range(N).map(k=>`<span>${(S.notes[i]>>k)&1?k+1:''}</span>`).join('')+'</div>';
+    else if(S.notes[i]||S.xnotes[i]) d.innerHTML='<div class="notes">'+range(N).map(k=>(S.xnotes[i]>>k)&1?`<span class="x">${k+1}</span>`:`<span>${(S.notes[i]>>k)&1?k+1:''}</span>`).join('')+'</div>';
     else d.textContent='';
   });
   edgeEls.forEach((e,k)=>e.el.classList.toggle('bad',badE.has(k)));
   owlEls.forEach((o,k)=>o.el.classList.toggle('bad',badO.has(k)));
   $('filled').textContent=S.vals.filter(Boolean).length;
-  $('notes').setAttribute('aria-pressed',S.noteMode);
+  $('notes').setAttribute('aria-pressed',S.noteMode); $('xnotes').setAttribute('aria-pressed',S.xMode);
+  const xs=sel>=0&&!S.vals[sel]?S.xnotes[sel]:0;
+  for(let n=1;n<=N;n++){const k=$('key'+n); if(k) k.classList.toggle('ruled',!!(xs>>(n-1)&1));}
   fresh.forEach(k=>celebrateLine(k[0]==='r',+k.slice(1)));
   if(!S.done&&!S.paused&&S.vals.every(Boolean)&&bad.size===0) onWin();
 }
@@ -1204,9 +1210,9 @@ function feedback(i){
 }
 
 // ---------- 輸入 ----------
-function push(){S.hist.push({v:S.vals.slice(),n:S.notes.slice()}); if(S.hist.length>300) S.hist.shift();}
+function push(){S.hist.push({v:S.vals.slice(),n:S.notes.slice(),x:S.xnotes.slice()}); if(S.hist.length>300) S.hist.shift();}
 function place(i,n){
-  S.vals[i]=n; S.notes[i]=0; const r=i/N|0,c=i%N;
+  S.vals[i]=n; S.notes[i]=0; S.xnotes[i]=0; const r=i/N|0,c=i%N;
   for(let k=0;k<N;k++){S.notes[r*N+k]&=~(1<<(n-1)); S.notes[k*N+c]&=~(1<<(n-1));}
 }
 function autoFill(i){ // 一列或一行只剩一格、其他都對 → 補上最後一格
@@ -1226,16 +1232,17 @@ function input(n){
   const i=S.sel;
   if(S.editing){ if(i<0||n>N) return; S.editVals[i]=S.editVals[i]===n?0:n; renderEdit(); saveEdit(); return; }
   if(i<0||S.done||S.paused||S.P.givens[i]||n>N) return;
-  if(S.noteMode&&!S.vals[i]){ push(); S.notes[i]^=1<<(n-1); S.usedNotes=true; render(); save(); return; }
+  if(S.xMode&&!S.vals[i]){ push(); const b=1<<(n-1); S.xnotes[i]^=b; S.notes[i]&=~b; S.usedNotes=true; render(); save(); return; }
+  if(S.noteMode&&!S.vals[i]){ push(); const b=1<<(n-1); S.notes[i]^=b; S.xnotes[i]&=~b; S.usedNotes=true; render(); save(); return; }
   if(S.vals[i]===n){ push(); S.vals[i]=0; hideHint(); render(); save(); afterMove(); return; }
   setValue(i,n);
 }
 function erase(){
   const i=S.sel;
   if(S.editing){ if(i>=0){S.editVals[i]=0; renderEdit(); saveEdit();} return; }
-  if(i<0||S.done||S.paused||S.P.givens[i]) return; push(); S.vals[i]=0; S.notes[i]=0; render(); save(); afterMove();
+  if(i<0||S.done||S.paused||S.P.givens[i]) return; push(); S.vals[i]=0; S.notes[i]=0; S.xnotes[i]=0; render(); save(); afterMove();
 }
-function undo(){ if(S.editing||S.done||S.paused) return; const h=S.hist.pop(); if(!h) return; S.vals=h.v; S.notes=h.n; hideHint(); render(); save(); afterMove(); }
+function undo(){ if(S.editing||S.done||S.paused) return; const h=S.hist.pop(); if(!h) return; S.vals=h.v; S.notes=h.n; S.xnotes=h.x||Array(NN).fill(0); hideHint(); render(); save(); afterMove(); }
 function afterMove(){ if(S.mode==='race') raceProgress(); }
 
 // ---------- 教學式提示 ----------
@@ -1322,15 +1329,17 @@ function confetti(){
 }
 
 // ---------- 存檔（每個模式各一份） ----------
-function save(){ if(!S.P) return; try{ localStorage.setItem('kp4-s-'+S.mode,JSON.stringify({P:rawPuzzle(S.P),vals:S.vals,notes:S.notes,sel:S.sel,
+function save(){ if(!S.P) return; try{ localStorage.setItem('kp4-s-'+S.mode,JSON.stringify({P:rawPuzzle(S.P),vals:S.vals,notes:S.notes,xnotes:S.xnotes,sel:S.sel,
   elapsed:secs(),done:S.done,hints:S.hints,usedNotes:S.usedNotes,levelNo:S.levelNo,extra:S.extra||null})); localStorage.setItem('kp4-mode',S.mode);}catch(e){} }
 function loadMode(m){ try{ const d=JSON.parse(localStorage.getItem('kp4-s-'+m)); if(!d||!d.P) return false;
-  S.mode=m; setPuzzle(d.P); Object.assign(S,{vals:d.vals,notes:d.notes,sel:d.sel,elapsed:d.elapsed,done:d.done,hints:d.hints,usedNotes:d.usedNotes,
+  S.mode=m; setPuzzle(d.P); Object.assign(S,{vals:d.vals,notes:d.notes,xnotes:d.xnotes||Array(d.vals.length).fill(0),sel:d.sel,elapsed:d.elapsed,done:d.done,hints:d.hints,usedNotes:d.usedNotes,
     levelNo:d.levelNo||S.levelNo,extra:d.extra,hist:[],editing:false,paused:false,prevLines:null}); S.t0=Date.now()-d.elapsed*1000; return true; }catch(e){return false} }
 function saveEdit(){ try{localStorage.setItem('kp4-edit',JSON.stringify({n:N,v:S.editVals}))}catch(e){} }
 
 // ---------- 控制 ----------
-$('notes').onclick=()=>{S.noteMode=!S.noteMode; render();};
+function toggleNote(){S.noteMode=!S.noteMode; if(S.noteMode) S.xMode=false; render();}
+function toggleX(){S.xMode=!S.xMode; if(S.xMode) S.noteMode=false; render();}
+$('notes').onclick=toggleNote; $('xnotes').onclick=toggleX;
 $('erase').onclick=erase; $('undo').onclick=undo; $('hint').onclick=doHint;
 document.addEventListener('keydown',e=>{
   if(e.target.closest&&e.target.closest('input,textarea')) return;
@@ -1339,7 +1348,8 @@ document.addEventListener('keydown',e=>{
   if(e.key>='1'&&e.key<='9'){input(+e.key);return;}
   if(e.key==='Backspace'||e.key==='Delete'||e.key==='0'){erase();return;}
   const k=e.key.toLowerCase();
-  if(k==='n'){S.noteMode=!S.noteMode;render();return;}
+  if(k==='n'){toggleNote();return;}
+  if(k==='x'){toggleX();return;}
   if(k==='h'){doHint();return;}
   const mv={ArrowUp:-N,ArrowDown:N,ArrowLeft:-1,ArrowRight:1}[e.key];
   if(mv!==undefined){e.preventDefault(); if(S.sel<0) S.sel=0; else{const r=S.sel/N|0,c=S.sel%N;
@@ -1638,7 +1648,7 @@ const LESSONS=[
   row:[3,'?'], dots:[2], q:'左邊是 3，右邊是多少？', opts:[1,4,6], ans:6,
   ok:'對！3 的兩倍是 6。3 的一半是 1.5，不是整數，所以只能是 6。', no:'山雀是兩倍關係。3 乘以 2 是多少？'},
  {t:'怎麼玩',
-  html:'<ol class="howto"><li>點一下空格選中它，再按下方的數字填進去。</li><li>不確定的時候打開「筆記」，可以在格子裡記下小小的候選數字。</li><li>卡住了按「提示」，小麻雀會告訴你下一步該看哪裡、為什麼。</li><li>越後面的章節會有新的鳥登場，每隻鳥都是一條新規則，遇到時會先介紹給你。</li></ol><p>從<b>闖關第 1 關</b>開始吧！</p>',
+  html:'<ol class="howto"><li>點一下空格選中它，再按下方的數字填進去。</li><li>不確定的時候打開「筆記」，可以在格子裡記下可能的數字；打開「排除」，則是把確定不可能的數字劃掉。</li><li>卡住了按「提示」，小麻雀會告訴你下一步該看哪裡、為什麼。</li><li>越後面的章節會有新的鳥登場，每隻鳥都是一條新規則，遇到時會先介紹給你。</li></ol><p>從<b>闖關第 1 關</b>開始吧！</p>',
   final:true}
 ];
 const T={i:0,solved:new Set()};

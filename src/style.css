@@ -65,6 +65,9 @@ button:focus-visible{outline:3px solid var(--mint);outline-offset:2px}
 .notes{position:absolute;inset:6%;display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:1fr;
   font-family:var(--f-num);font-size:min(calc(var(--bw) / var(--n) * .2),.75rem);color:var(--muted);font-weight:500}
 .notes span{display:grid;place-items:center}
+.notes span.x{color:var(--error);opacity:.75;text-decoration:line-through;text-decoration-thickness:2px}
+#xnotes[aria-pressed="true"]{background:var(--error-soft);color:var(--error)}
+.key.ruled{opacity:.4;text-decoration:line-through;text-decoration-thickness:2px}
 
 /* 小鳥：黑點是山雀，白點是玄鳳鸚鵡 */
 .dot{position:absolute;width:min(calc(var(--bw) / var(--n,6) * .4),26px);aspect-ratio:1;transform:translate(-50%,-50%);z-index:2;pointer-events:none;
@@ -95,7 +98,7 @@ button:focus-visible{outline:3px solid var(--mint);outline-offset:2px}
 .key,.tool{font:inherit;cursor:pointer;border:0;border-radius:14px;background:var(--surface);color:var(--ink);box-shadow:0 4px 0 var(--shadow);transition:transform .08s,box-shadow .08s}
 .key{font-family:var(--f-num);font-size:clamp(1.15rem,5vw,1.5rem);font-weight:600;padding-block:9px;color:var(--entry)}
 .key:active,.tool:active{transform:translateY(3px);box-shadow:0 1px 0 var(--shadow)}
-.tools{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-width:440px;width:100%;margin:0 auto}
+.tools{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;max-width:440px;width:100%;margin:0 auto}
 .tool{padding:9px 4px;font-size:.88rem}
 .tool[aria-pressed="true"]{background:var(--mint);color:#21413a}
 .primary{background:var(--accent);color:var(--accent-ink)}

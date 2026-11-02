@@ -1,6 +1,6 @@
 // ===================== 06 遊戲畫面：棋盤、輸入、提示、過關 =====================
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const S={mode:'level',levelNo:1,P:null,vals:[],notes:[],sel:-1,noteMode:false,hist:[],t0:0,elapsed:0,done:false,hints:0,usedNotes:false,
+const S={mode:'level',levelNo:1,P:null,vals:[],notes:[],xnotes:[],sel:-1,noteMode:false,xMode:false,hist:[],t0:0,elapsed:0,done:false,hints:0,usedNotes:false,
   editing:false,editVals:[],paused:false,prevLines:null};
 let N=6,NN=36;
 const boardEl=$('board'); let cells=[],edgeEls=[],owlEls=[],HINT=null;
@@ -10,7 +10,7 @@ const listJoin=a=>a.join('、');
 function rawPuzzle(P){const {n,tit,h,v,owls,sol,givens,label}=P; return {n,tit,h,v,owls,sol,givens,label};}
 function setPuzzle(P){prep(P); S.P=P; N=P.n; NN=N*N;}
 function resetPlay(){
-  S.vals=S.P.givens.slice(); S.notes=Array(NN).fill(0); S.hist=[]; S.sel=S.vals.indexOf(0);
+  S.vals=S.P.givens.slice(); S.notes=Array(NN).fill(0); S.xnotes=Array(NN).fill(0); S.hist=[]; S.sel=S.vals.indexOf(0);
   S.t0=Date.now(); S.elapsed=0; S.done=false; S.hints=0; S.usedNotes=false; S.editing=false;
   hideHint(); $('win').hidden=true; buildBoard(); render(); save();
 }
@@ -79,13 +79,15 @@ function render(){
     d.className='cell'+(S.P.givens[i]?' given':'')+(rowOK[r]||colOK[c]?' line':'')+(i===sel?' sel':'')
       +(bad.has(i)&&!S.P.givens[i]?' bad':'')+(HINT&&HINT.i===i?' hint':'');
     if(v) d.textContent=v;
-    else if(S.notes[i]) d.innerHTML='<div class="notes">'+range(N).map(k=>`<span>${(S.notes[i]>>k)&1?k+1:''}</span>`).join('')+'</div>';
+    else if(S.notes[i]||S.xnotes[i]) d.innerHTML='<div class="notes">'+range(N).map(k=>(S.xnotes[i]>>k)&1?`<span class="x">${k+1}</span>`:`<span>${(S.notes[i]>>k)&1?k+1:''}</span>`).join('')+'</div>';
     else d.textContent='';
   });
   edgeEls.forEach((e,k)=>e.el.classList.toggle('bad',badE.has(k)));
   owlEls.forEach((o,k)=>o.el.classList.toggle('bad',badO.has(k)));
   $('filled').textContent=S.vals.filter(Boolean).length;
-  $('notes').setAttribute('aria-pressed',S.noteMode);
+  $('notes').setAttribute('aria-pressed',S.noteMode); $('xnotes').setAttribute('aria-pressed',S.xMode);
+  const xs=sel>=0&&!S.vals[sel]?S.xnotes[sel]:0;
+  for(let n=1;n<=N;n++){const k=$('key'+n); if(k) k.classList.toggle('ruled',!!(xs>>(n-1)&1));}
   fresh.forEach(k=>celebrateLine(k[0]==='r',+k.slice(1)));
   if(!S.done&&!S.paused&&S.vals.every(Boolean)&&bad.size===0) onWin();
 }
@@ -124,9 +126,9 @@ function feedback(i){
 }
 
 // ---------- 輸入 ----------
-function push(){S.hist.push({v:S.vals.slice(),n:S.notes.slice()}); if(S.hist.length>300) S.hist.shift();}
+function push(){S.hist.push({v:S.vals.slice(),n:S.notes.slice(),x:S.xnotes.slice()}); if(S.hist.length>300) S.hist.shift();}
 function place(i,n){
-  S.vals[i]=n; S.notes[i]=0; const r=i/N|0,c=i%N;
+  S.vals[i]=n; S.notes[i]=0; S.xnotes[i]=0; const r=i/N|0,c=i%N;
   for(let k=0;k<N;k++){S.notes[r*N+k]&=~(1<<(n-1)); S.notes[k*N+c]&=~(1<<(n-1));}
 }
 function autoFill(i){ // 一列或一行只剩一格、其他都對 → 補上最後一格
@@ -146,16 +148,17 @@ function input(n){
   const i=S.sel;
   if(S.editing){ if(i<0||n>N) return; S.editVals[i]=S.editVals[i]===n?0:n; renderEdit(); saveEdit(); return; }
   if(i<0||S.done||S.paused||S.P.givens[i]||n>N) return;
-  if(S.noteMode&&!S.vals[i]){ push(); S.notes[i]^=1<<(n-1); S.usedNotes=true; render(); save(); return; }
+  if(S.xMode&&!S.vals[i]){ push(); const b=1<<(n-1); S.xnotes[i]^=b; S.notes[i]&=~b; S.usedNotes=true; render(); save(); return; }
+  if(S.noteMode&&!S.vals[i]){ push(); const b=1<<(n-1); S.notes[i]^=b; S.xnotes[i]&=~b; S.usedNotes=true; render(); save(); return; }
   if(S.vals[i]===n){ push(); S.vals[i]=0; hideHint(); render(); save(); afterMove(); return; }
   setValue(i,n);
 }
 function erase(){
   const i=S.sel;
   if(S.editing){ if(i>=0){S.editVals[i]=0; renderEdit(); saveEdit();} return; }
-  if(i<0||S.done||S.paused||S.P.givens[i]) return; push(); S.vals[i]=0; S.notes[i]=0; render(); save(); afterMove();
+  if(i<0||S.done||S.paused||S.P.givens[i]) return; push(); S.vals[i]=0; S.notes[i]=0; S.xnotes[i]=0; render(); save(); afterMove();
 }
-function undo(){ if(S.editing||S.done||S.paused) return; const h=S.hist.pop(); if(!h) return; S.vals=h.v; S.notes=h.n; hideHint(); render(); save(); afterMove(); }
+function undo(){ if(S.editing||S.done||S.paused) return; const h=S.hist.pop(); if(!h) return; S.vals=h.v; S.notes=h.n; S.xnotes=h.x||Array(NN).fill(0); hideHint(); render(); save(); afterMove(); }
 function afterMove(){ if(S.mode==='race') raceProgress(); }
 
 // ---------- 教學式提示 ----------
@@ -242,15 +245,17 @@ function confetti(){
 }
 
 // ---------- 存檔（每個模式各一份） ----------
-function save(){ if(!S.P) return; try{ localStorage.setItem('kp4-s-'+S.mode,JSON.stringify({P:rawPuzzle(S.P),vals:S.vals,notes:S.notes,sel:S.sel,
+function save(){ if(!S.P) return; try{ localStorage.setItem('kp4-s-'+S.mode,JSON.stringify({P:rawPuzzle(S.P),vals:S.vals,notes:S.notes,xnotes:S.xnotes,sel:S.sel,
   elapsed:secs(),done:S.done,hints:S.hints,usedNotes:S.usedNotes,levelNo:S.levelNo,extra:S.extra||null})); localStorage.setItem('kp4-mode',S.mode);}catch(e){} }
 function loadMode(m){ try{ const d=JSON.parse(localStorage.getItem('kp4-s-'+m)); if(!d||!d.P) return false;
-  S.mode=m; setPuzzle(d.P); Object.assign(S,{vals:d.vals,notes:d.notes,sel:d.sel,elapsed:d.elapsed,done:d.done,hints:d.hints,usedNotes:d.usedNotes,
+  S.mode=m; setPuzzle(d.P); Object.assign(S,{vals:d.vals,notes:d.notes,xnotes:d.xnotes||Array(d.vals.length).fill(0),sel:d.sel,elapsed:d.elapsed,done:d.done,hints:d.hints,usedNotes:d.usedNotes,
     levelNo:d.levelNo||S.levelNo,extra:d.extra,hist:[],editing:false,paused:false,prevLines:null}); S.t0=Date.now()-d.elapsed*1000; return true; }catch(e){return false} }
 function saveEdit(){ try{localStorage.setItem('kp4-edit',JSON.stringify({n:N,v:S.editVals}))}catch(e){} }
 
 // ---------- 控制 ----------
-$('notes').onclick=()=>{S.noteMode=!S.noteMode; render();};
+function toggleNote(){S.noteMode=!S.noteMode; if(S.noteMode) S.xMode=false; render();}
+function toggleX(){S.xMode=!S.xMode; if(S.xMode) S.noteMode=false; render();}
+$('notes').onclick=toggleNote; $('xnotes').onclick=toggleX;
 $('erase').onclick=erase; $('undo').onclick=undo; $('hint').onclick=doHint;
 document.addEventListener('keydown',e=>{
   if(e.target.closest&&e.target.closest('input,textarea')) return;
@@ -259,7 +264,8 @@ document.addEventListener('keydown',e=>{
   if(e.key>='1'&&e.key<='9'){input(+e.key);return;}
   if(e.key==='Backspace'||e.key==='Delete'||e.key==='0'){erase();return;}
   const k=e.key.toLowerCase();
-  if(k==='n'){S.noteMode=!S.noteMode;render();return;}
+  if(k==='n'){toggleNote();return;}
+  if(k==='x'){toggleX();return;}
   if(k==='h'){doHint();return;}
   const mv={ArrowUp:-N,ArrowDown:N,ArrowLeft:-1,ArrowRight:1}[e.key];
   if(mv!==undefined){e.preventDefault(); if(S.sel<0) S.sel=0; else{const r=S.sel/N|0,c=S.sel%N;
