@@ -7,6 +7,7 @@
   --mint:#7fd8c2; --mint-soft:#dff6ef; --butter:#fff0a8; --peer:#eef5fc; --sky:#b9dcff; --sky-ink:#174f8a;
   --entry:#2a7fd6; --given:#27415d; --error:#e0503a; --error-soft:#ffe0d8;
   --bean-black:#22364d; --bean-white:#ffffff; --bean-line:#22364d; --bean-wline:#22364d; --bird-line:#22364d; --blush:#9fd0ff;
+  --sky-top:#cfe6fa; --forest-far:#d3e6f5; --forest-mid:#b4d3ec; --forest-near:#94bfe2; --leaf:#78c2b4; --branch:#9a7558; --cage:#5f86ad; --stars-op:0; --orb:#ffe48a; --orb-glow:rgba(255,228,138,.35); --flyer:#7f9fbf;
   --f-display:"Huninn","Zen Maru Gothic","PingFang TC","Microsoft JhengHei",sans-serif;
   --f-body:"Huninn","Zen Maru Gothic","PingFang TC","Microsoft JhengHei",sans-serif;
   --f-num:"Fredoka","Arial Rounded MT Bold","Huninn",sans-serif;
@@ -20,6 +21,7 @@
   --mint:#6fcfb8; --mint-soft:#1f3f3a; --butter:#5c4d24; --peer:#22344a; --sky:#1e5288; --sky-ink:#dcefff;
   --entry:#7fc1ff; --given:#e5effa; --error:#ff8a75; --error-soft:#4c2723;
   --bean-black:#0a1119; --bean-white:#f3f8fe; --bean-line:#a7bfd8; --bean-wline:#f3f8fe; --bird-line:#c8d8ea; --blush:#6cb5ff;
+  --sky-top:#070d16; --forest-far:#182739; --forest-mid:#13202f; --forest-near:#0d1824; --leaf:#2f6a66; --branch:#6b5444; --cage:#86a4c6; --stars-op:.85; --orb:#e8eef8; --orb-glow:rgba(232,238,248,.12); --flyer:#3d5673;
   color-scheme:dark;}}
 :root[data-theme="dark"]{
   --paper:#121b27; --surface:#1b2838; --tray:#0b121b; --tile:#203045; --tile-given:#293c53;
@@ -28,10 +30,28 @@
   --mint:#6fcfb8; --mint-soft:#1f3f3a; --butter:#5c4d24; --peer:#22344a; --sky:#1e5288; --sky-ink:#dcefff;
   --entry:#7fc1ff; --given:#e5effa; --error:#ff8a75; --error-soft:#4c2723;
   --bean-black:#0a1119; --bean-white:#f3f8fe; --bean-line:#a7bfd8; --bean-wline:#f3f8fe; --bird-line:#c8d8ea; --blush:#6cb5ff;
+  --sky-top:#070d16; --forest-far:#182739; --forest-mid:#13202f; --forest-near:#0d1824; --leaf:#2f6a66; --branch:#6b5444; --cage:#86a4c6; --stars-op:.85; --orb:#e8eef8; --orb-glow:rgba(232,238,248,.12); --flyer:#3d5673;
   color-scheme:dark;}
 html,body{background:var(--paper);color:var(--ink)}
-body{font-family:var(--f-body);line-height:1.6;
-  background-image:radial-gradient(var(--line) 1.5px,transparent 1.6px);background-size:22px 22px}
+body{font-family:var(--f-body);line-height:1.6}
+/* 背景場景：天空、星星、飛鳥、森林（固定在畫面後方） */
+.scenery{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:linear-gradient(var(--sky-top),var(--paper) 62%)}
+.sc-forest{position:absolute;left:0;right:0;bottom:0;width:100%;height:clamp(200px,40vh,380px)}
+.sc-stars{position:absolute;inset:0;width:100%;height:100%;fill:#fff;opacity:var(--stars-op)}
+.sc-orb{position:absolute;top:9vh;right:8vw;width:58px;height:58px;border-radius:50%;background:var(--orb);box-shadow:0 0 0 12px var(--orb-glow),0 0 0 26px var(--orb-glow)}
+.sc-fly{position:absolute;left:0;display:block;animation:sc-fly linear infinite}
+.sc-fly svg{display:block;width:100%;animation:sc-flap .6s ease-in-out infinite alternate}
+@keyframes sc-fly{from{transform:translateX(-12vw)}to{transform:translateX(112vw)}}
+@keyframes sc-flap{to{transform:scaleY(.55)}}
+@media (max-width:640px){.sc-orb{display:none}}
+.wrap{position:relative;z-index:1}
+/* 頁首的樹枝與鳥籠 */
+.banner{display:block;width:100%;height:auto;margin-bottom:-14px;overflow:visible}
+.banner .perch{cursor:pointer}
+.banner .perch.hop{animation:perch-hop .45s ease-out}
+@keyframes perch-hop{40%{transform:translateY(-6px)}}
+.banner .cage-swing{transform-box:view-box;transform-origin:322px 14px;animation:cage-swing 4.5s ease-in-out infinite}
+@keyframes cage-swing{0%,100%{transform:rotate(3deg)}50%{transform:rotate(-3deg)}}
 .wrap{max-width:520px;margin:0 auto;padding-block:22px 48px;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
   display:flex;flex-direction:column;gap:18px}
