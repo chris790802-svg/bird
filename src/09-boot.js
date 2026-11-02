@@ -5,6 +5,14 @@ $('btn-sound').onclick=()=>{ PROG.sound=!PROG.sound; saveProg(); syncSound(); if
 $('btn-dex').onclick=openDex; $('btn-garden').onclick=openGarden; $('btn-ach').onclick=openAch;
 syncSound();
 
+// ---- 選單收合 ----
+function setMenu(open){ $('menu').hidden=!open; $('menuBtn').setAttribute('aria-expanded',open); $('menuBtn').textContent=open?'收起':'選單';
+  document.body.classList.toggle('menu-open',open); }
+$('menuBtn').onclick=()=>setMenu($('menu').hidden);
+document.addEventListener('pointerdown',e=>{ if($('menu').hidden) return;
+  if(e.target.closest('#menu,#menuBtn,.sheet,.toasts')) return; setMenu(false); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('menu').hidden) setMenu(false); });
+
 // ---- 外觀：自動（跟著手機）、淺色、深色 ----
 const THEMES=['auto','light','dark'], THEME_NAME={auto:'自動',light:'淺色',dark:'深色'};
 function applyTheme(){ const t=PROG.theme||'auto', root=document.documentElement;
@@ -46,6 +54,7 @@ if(PROG.theme&&PROG.theme!=='auto') applyTheme(); else $('btn-theme').textConten
 })();
 let seenTut=false; try{seenTut=!!localStorage.getItem('kp4-tut')}catch(e){}
 if(!seenTut) tutOpen();
+fitLayout();
 
 // ---- 自動更新：放在 GitHub Pages 時，打開或切回來就檢查有沒有新版本 ----
 (function(){

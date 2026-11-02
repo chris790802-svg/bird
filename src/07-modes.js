@@ -36,7 +36,7 @@ function openMap(){
     range(c.to-c.from+1).map(k=>{const L=c.from+k, lock=false;
       return `<button class="lv${L===c.to?' boss':''}${S.mode==='level'&&L===S.levelNo?' cur':''}" data-l="${L}" ${lock?'disabled':''} aria-label="第 ${L} 關${lock?'，未解鎖':''}"><b>${L}</b><span class="stars">${starHTML(PROG.stars[L]||0)}</span></button>`;}).join('')+'</div></div>').join('');
   birdify($('mapBody'));
-  $('mapBody').querySelectorAll('.lv').forEach(b=>b.onclick=()=>{closeSheet('map'); switchTo('level',()=>startLevel(+b.dataset.l));});
+  $('mapBody').querySelectorAll('.lv').forEach(b=>b.onclick=()=>{closeSheet('map'); setMenu(false); switchTo('level',()=>startLevel(+b.dataset.l));});
   openSheet('map'); const cur=$('mapBody').querySelector('.cur'); cur&&cur.scrollIntoView({block:'center'});
 }
 $('mapBtn').onclick=openMap;
@@ -63,7 +63,7 @@ function dailyInfo(){
 }
 $('shareDaily').onclick=()=>{
   const key=todayKey(), rec=PROG.daily[key]; if(!rec) return; const sp=dailySpec(key);
-  copyText(`黑白點方陣 ${sp.weekend?'週末大盤':'每日一題'} ${key}\n用時 ${fmt(rec.t)} ${'★'.repeat(rec.st||starsFor(rec.h))}\n連續 ${streakNow()} 天`,$('shareMsg'));
+  copyText(`鳥巢數獨 ${sp.weekend?'週末大盤':'每日一題'} ${key}\n用時 ${fmt(rec.t)} ${'★'.repeat(rec.st||starsFor(rec.h))}\n連續 ${streakNow()} 天`,$('shareMsg'));
 };
 
 // 排行榜：存在 artifact 的共用資料庫，每人一份文件 board/<自己的 id>
@@ -109,7 +109,7 @@ function freeNew(){
   const o=cfgCode(FREE,randSeed());
   withLoading(o.n,'出題中…',()=>{ const P=puzzleFromCode(o); S.extra={code:P.label.code}; startPuzzle(P,'free'); });
 }
-$('freeGo').onclick=()=>switchTo('free',freeNew,true);
+$('freeGo').onclick=()=>{ setMenu(false); switchTo('free',freeNew,true); };
 $('freeCopy').onclick=async()=>{ const c=S.mode==='free'&&S.extra&&S.extra.code; if(!c) return; if(await copyText(c,$('freeMsg'))){PROG.c.shared++;saveProg();checkAch();} };
 
 // ---------- 工作室 ----------
@@ -256,8 +256,14 @@ function switchTo(m,then,forceFresh){
 }
 document.querySelectorAll('.tabs .tab').forEach(b=>b.onclick=()=>{ if(S.mode===b.dataset.mode&&!(S.mode==='studio'&&S.editing)) return; switchTo(b.dataset.mode); });
 
+const MODE_NAME={level:'闖關',daily:'每日一題',free:'自由練習',studio:'工作室',race:'雙人競速'};
 function syncPanels(){
   const m=S.mode;
+  let sub=MODE_NAME[m];
+  if(m==='level'){ const sp=levelSpec(S.levelNo); sub=`第 ${S.levelNo} 關・${CHAPTERS[sp.chapter-1].name}`+(PROG.stars[S.levelNo]?' '+'★'.repeat(PROG.stars[S.levelNo]):''); }
+  else if(m==='daily'){ const k=todayKey(); sub=`${dailySpec(k).weekend?'週末大盤':'每日一題'}・${+k.slice(5,7)}/${+k.slice(8)}`; }
+  else if(m==='free'&&S.P) sub=`自由練習・${N}×${N}・${DIFFS[FREE.diff].name}`;
+  $('hudSub').textContent=sub;
   document.querySelectorAll('.tabs .tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.mode===m));
   ['level','daily','free','studio','race'].forEach(k=>$('panel-'+k).hidden=k!==m);
   $('new').textContent=MODES[m].newText; $('new').disabled=m==='race';

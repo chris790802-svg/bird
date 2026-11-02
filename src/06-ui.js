@@ -35,19 +35,28 @@ function buildBoard(){
     (P.owls||[]).forEach((o,k)=>{ const d=document.createElement('span'); d.className='owl'; d.innerHTML=birdSVG('O')+`<b>${o.s}</b>`;
       d.style.left=(o.c+1)/N*100+'%'; d.style.top=(o.r+1)/N*100+'%'; boardEl.appendChild(d); owlEls.push({el:d,cells:P.ow[k].cells,s:o.s}); });
   }
-  buildKeys(); renderBirdInfo();
+  buildKeys(); renderBirdInfo(); requestAnimationFrame(fitLayout);
 }
+// ---- 讓整個遊戲剛好放進一個畫面：依螢幕高度調整棋盤大小 ----
+function fitLayout(){
+  const root=document.documentElement, gutter=32;
+  let bw=Math.min(innerWidth-gutter-14,470); root.style.setProperty('--bw',bw+'px');
+  for(let k=0;k<4;k++){ const over=root.scrollHeight-innerHeight; if(over<=0) break; bw=Math.max(200,bw-over-1); root.style.setProperty('--bw',bw+'px'); }
+}
+addEventListener('resize',()=>{ clearTimeout(fitLayout.t); fitLayout.t=setTimeout(fitLayout,80); });
 function buildKeys(){
   const k=$('keys'); k.innerHTML=''; k.style.gridTemplateColumns=`repeat(${N},1fr)`;
   for(let n=1;n<=N;n++){const b=document.createElement('button'); b.className='key'; b.id='key'+n; b.textContent=n; b.onclick=()=>input(n); k.appendChild(b);}
 }
 function renderBirdInfo(){
   const list=S.editing?[]:birdsIn(S.P);
-  $('birdChip').innerHTML=list.map(t=>birdDot(t)).join('');
-  $('ruleBirds').innerHTML=list.length?list.map(t=>{const sp=SPECIES[t];
-    return `<li><span class="sw dot" data-bird="${t}"></span><span><b>${sp.name}</b>：${sp.rule}${sp.full?'（全部畫出）':t==='O'?'':'（只畫一部分）'}。<span class="eg">例 ${sp.ex}</span></span></li>`;}).join('')
-    :'<li><span>編輯答案中，還沒有放鳥。</span></li>';
-  birdify($('birdChip')); birdify($('ruleBirds'));
+  const box=$('birdChip'); box.innerHTML='';
+  list.forEach(t=>{ const sp=SPECIES[t], b=document.createElement('button'); b.className='bird-btn';
+    b.innerHTML=birdDot(t)+`<span>${sp.name}</span>`; b.setAttribute('aria-label',sp.name+'的規則');
+    b.onclick=()=>{ toast(`${sp.name}：${sp.rule}${sp.full?'（全部畫出）':t==='O'?'':'（只畫一部分）'}。例 ${sp.ex}`,t); chirp(t,.04); };
+    box.appendChild(b); });
+  box.classList.toggle('compact',list.length>3);
+  birdify(box);
 }
 
 // ---------- 檢查衝突 ----------

@@ -1,16 +1,23 @@
 <div class="wrap">
-  <svg class="banner" id="banner" viewBox="0 0 400 96" aria-hidden="true"></svg>
-  <header>
-    <h1><span class="pair" aria-hidden="true"><span class="dot" data-bird="2"></span><span class="dot" data-bird="1"></span></span>黑白點方陣</h1>
-    <nav class="topbar" aria-label="功能">
-      <button class="ib" id="btn-dex">圖鑑</button>
-      <button class="ib" id="btn-garden">鳥園</button>
-      <button class="ib" id="btn-ach">成就</button>
-      <button class="ib" id="btn-sound" aria-pressed="true">音效開</button>
-      <button class="ib" id="btn-theme">外觀：自動</button>
-      <button class="ib mint" id="learn">教學</button>
-    </nav>
+  <header class="hud">
+    <div class="hud-title">
+      <span class="hud-name"><span class="dot" data-bird="1"></span>鳥巢數獨</span>
+      <span class="hud-sub" id="hudSub">第 1 關</span>
+    </div>
+    <span class="chip"><b id="time">0:00</b></span>
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="menu">選單</button>
   </header>
+
+  <div class="menu" id="menu" hidden>
+  <svg class="banner" id="banner" viewBox="0 0 400 96" aria-hidden="true"></svg>
+  <nav class="topbar" aria-label="功能">
+    <button class="ib" id="btn-dex">圖鑑</button>
+    <button class="ib" id="btn-garden">鳥園</button>
+    <button class="ib" id="btn-ach">成就</button>
+    <button class="ib" id="btn-sound" aria-pressed="true">音效開</button>
+    <button class="ib" id="btn-theme">外觀：自動</button>
+    <button class="ib mint" id="learn">教學</button>
+  </nav>
 
   <div class="tabs" role="tablist" aria-label="模式">
     <button class="tab" role="tab" id="tab-level" data-mode="level" aria-selected="true">闖關</button>
@@ -85,7 +92,12 @@
     <p class="note" id="raceMsg" aria-live="polite"></p>
   </section>
 
-  <div class="meta"><span class="chip">時間 <b id="time">0:00</b></span><span class="chip">已填 <b id="filled">0</b>/<span id="total">36</span></span><span class="chip birds-chip" id="birdChip" aria-label="本題的鳥"></span></div>
+  </div>
+
+  <div class="birdrow">
+    <div class="bird-btns" id="birdChip" aria-label="這一關的鳥，點一下看規則"></div>
+    <span class="chip">已填 <b id="filled">0</b>/<span id="total">36</span></span>
+  </div>
 
   <div class="board-wrap">
     <div class="board" id="board" aria-label="棋盤"></div>
@@ -117,10 +129,6 @@
     <button class="tool primary" id="new">新局</button>
   </div>
 
-  <section class="rules">
-    <h2>這一關的鳥</h2>
-    <ul id="ruleBirds"></ul>
-  </section>
 </div>
 
 <div class="sheet" id="map" hidden role="dialog" aria-modal="true" aria-labelledby="map-title">

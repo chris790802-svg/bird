@@ -10,7 +10,7 @@ reset = (':root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padd
          'body{margin:0;font:14px/1.5 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}')
 html = ('<!doctype html>\n<html lang="zh-Hant">\n<head>\n<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'
-        '<meta name="description" content="用小鳥當線索的數字推理遊戲：100 關、8 種鳥規則、每日一題、圖鑑與鳥園。">\n'
+        '<meta name="description" content="鳥巢數獨：用小鳥當線索的數字推理遊戲，100 關、8 種鳥規則、每日一題、圖鑑與鳥園。">\n'
         "<script>try{var t=JSON.parse(localStorage.getItem('kp4-prog')||'{}').theme;if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>\n"
         f'<style>{reset}</style>\n{head}<style>{css}</style>\n</head>\n<body>\n{body}\n'
         f'<script>\n(()=>{{\n{js}\n}})();\n</script>\n</body>\n</html>\n')
