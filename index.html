@@ -1374,13 +1374,13 @@ function cfgCode(cfg,seed,sol){return {n:cfg.n,tit:cfg.birds.has(2),owl:cfg.bird
 
 // ---------- 闖關 ----------
 function startLevel(L){
-  L=Math.max(1,Math.min(LEVELS,L,PROG.max)); S.levelNo=L;
+  L=Math.max(1,Math.min(LEVELS,L)); S.levelNo=L; // 所有關卡都可以直接選
   const sp=levelSpec(L);
   withLoading(sp.n,L===100?'帝雉之關準備中，請稍等幾秒…':'出題中…',()=>startPuzzle(generateLevel(L),'level'));
 }
 function openMap(){
   $('mapBody').innerHTML=CHAPTERS.map((c,ci)=>`<div class="chap"><h4>${birdDot(c.bird)}第 ${ci+1} 章・${c.name}<span>第 ${c.from}–${c.to} 關</span></h4><div class="lvgrid">`+
-    range(c.to-c.from+1).map(k=>{const L=c.from+k, lock=L>PROG.max;
+    range(c.to-c.from+1).map(k=>{const L=c.from+k, lock=false;
       return `<button class="lv${L===c.to?' boss':''}${S.mode==='level'&&L===S.levelNo?' cur':''}" data-l="${L}" ${lock?'disabled':''} aria-label="第 ${L} 關${lock?'，未解鎖':''}"><b>${L}</b><span class="stars">${starHTML(PROG.stars[L]||0)}</span></button>`;}).join('')+'</div></div>').join('');
   birdify($('mapBody'));
   $('mapBody').querySelectorAll('.lv').forEach(b=>b.onclick=()=>{closeSheet('map'); switchTo('level',()=>startLevel(+b.dataset.l));});
@@ -1612,7 +1612,7 @@ function syncPanels(){
   if(m==='level'){ const L=S.levelNo, sp=levelSpec(L), ch=CHAPTERS[sp.chapter-1];
     $('stageCh').textContent=`第 ${sp.chapter} 章・${ch.name}`; $('stageNo').textContent=L;
     $('stageTag').textContent=`${sp.n}×${sp.n}`+(L===ch.to?'・本章最終關':''); $('stageStars').innerHTML=PROG.stars[L]?starHTML(PROG.stars[L]):'';
-    $('prevLv').disabled=L<=1; $('nextLv').disabled=L>=Math.min(LEVELS,PROG.max);
+    $('prevLv').disabled=L<=1; $('nextLv').disabled=L>=LEVELS;
     const done=Object.keys(PROG.stars).length; $('progN').textContent=done; $('progBar').style.width=done/LEVELS*100+'%'; }
   if(m==='daily'){ dailyInfo(); loadLeader(); }
   if(m==='free') $('freeCode').textContent=S.extra&&S.extra.code&&S.P&&S.P.label.kind==='custom'?S.extra.code:'—';
