@@ -15,3 +15,26 @@ syncSound();
 })();
 let seenTut=false; try{seenTut=!!localStorage.getItem('kp4-tut')}catch(e){}
 if(!seenTut) tutOpen();
+
+// ---- 自動更新：放在 GitHub Pages 時，打開或切回來就檢查有沒有新版本 ----
+(function(){
+  if(!/^https?:$/.test(location.protocol)) return;
+  const mine=(document.querySelector('meta[name="build"]')||{}).content; if(!mine) return;
+  let checking=false;
+  async function check(){
+    if(checking) return; checking=true;
+    try{
+      const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});
+      if(!r.ok) return;
+      const m=(await r.text()).match(/<meta name="build" content="([0-9a-f]+)">/);
+      if(!m||m[1]===mine) return;
+      let tried=null; try{tried=sessionStorage.getItem('kp4-reload')}catch(e){}
+      if(tried===m[1]) return; // 已經為這個版本重新載入過，避免一直重來
+      try{sessionStorage.setItem('kp4-reload',m[1])}catch(e){}
+      save(); toast('有新版本，重新載入中…',1);
+      setTimeout(()=>location.replace(location.pathname+'?v='+m[1]),900);
+    }catch(e){} finally{checking=false;}
+  }
+  setTimeout(check,1500);
+  document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') check(); });
+})();

@@ -13,5 +13,8 @@ html = ('<!doctype html>\n<html lang="zh-Hant">\n<head>\n<meta charset="utf-8">\
         '<meta name="description" content="用小鳥當線索的數字推理遊戲：100 關、8 種鳥規則、每日一題、圖鑑與鳥園。">\n'
         f'<style>{reset}</style>\n{head}<style>{css}</style>\n</head>\n<body>\n{body}\n'
         f'<script>\n(()=>{{\n{js}\n}})();\n</script>\n</body>\n</html>\n')
+import hashlib
+build = hashlib.sha1(html.encode('utf-8')).hexdigest()[:10]
+html = html.replace('<meta charset="utf-8">\n', f'<meta charset="utf-8">\n<meta name="build" content="{build}">\n', 1)
 (Path(__file__).parent / 'index.html').write_text(html, encoding='utf-8')
 print('index.html', len(html.encode('utf-8')), 'bytes')
