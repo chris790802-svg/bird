@@ -205,6 +205,7 @@ function explain(st){
 function doHint(){
   if(S.done||S.editing||S.paused) return;
   const h=findHint(); if(!h) return;
+  if(!useHint()) return;
   S.hints++; HINT=h; S.sel=h.i;
   $('hintText').textContent=h.text; $('hintbar').hidden=false; birdify($('hintbar'));
   render(); save(); chirp(5,.035);

@@ -230,4 +230,28 @@
   </div>
 </div>
 
+<div class="sheet" id="hintOut" hidden role="dialog" aria-modal="true" aria-labelledby="ho-title">
+  <div class="sheet-card ho-card">
+    <span class="dot ho-bird" data-bird="5"></span>
+    <h3 id="ho-title">提示用完了</h3>
+    <p class="ho-count">剩下 <b id="hoCount">0 / 5</b> 次</p>
+    <p class="note" id="hoWait"></p>
+    <p class="note">提示最多存 5 次，用掉之後每 12 小時恢復 1 次。不想等的話，看一段廣告就能立刻恢復 1 次。</p>
+    <div class="row ho-btns"><button class="pill" data-close="hintOut">等等再說</button><button class="pill primary" id="hoAd">看廣告，立刻恢復 1 次</button></div>
+  </div>
+</div>
+
+<div class="sheet ad-sheet" id="ad" hidden role="dialog" aria-modal="true" aria-labelledby="ad-title">
+  <div class="sheet-card ad-card">
+    <div class="ad-top"><span class="ad-badge">廣告</span><span class="note">示意畫面，之後會換成真正的廣告</span></div>
+    <div class="ad-stage" aria-hidden="true">
+      <span class="dot ad-b1" data-bird="1"></span><span class="dot ad-b2" data-bird="2"></span><span class="dot ad-b3" data-bird="3"></span>
+      <div class="ad-copy"><b id="ad-title">鳥園的冬天來了</b><span>到鳥園的「季節」兌換下雪效果，讓你的小鳥們在雪地裡玩耍！</span></div>
+    </div>
+    <div class="ad-prog"><i id="adBar"></i></div>
+    <p class="ad-left" id="adLeft" aria-live="polite"></p>
+    <div class="row ad-btns"><button class="pill" id="adSkip">跳過（不會恢復提示）</button><button class="pill primary" id="adDone" hidden>領取 1 次提示</button></div>
+  </div>
+</div>
+
 <div class="toasts" id="toasts" aria-live="polite"></div>

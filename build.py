@@ -4,7 +4,7 @@ d = Path(__file__).parent / 'src'
 head = (d / 'head.html').read_text(encoding='utf-8')
 css = (d / 'style.css').read_text(encoding='utf-8') + (d / 'style2.css').read_text(encoding='utf-8')
 body = (d / 'scenery.html').read_text(encoding='utf-8') + (d / 'body.html').read_text(encoding='utf-8')
-parts = ['01-core.js','02-logic.js','03-gen.js','04-birds.js','05-meta.js','06-ui.js','07-modes.js','08-tutorial.js','10-garden.js','11-collect.js','09-boot.js']
+parts = ['01-core.js','02-logic.js','03-gen.js','04-birds.js','05-meta.js','06-ui.js','07-modes.js','08-tutorial.js','10-garden.js','11-collect.js','12-hints.js','09-boot.js']
 js = ''.join((d / f).read_text(encoding='utf-8') for f in parts)
 reset = (':root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}'
          'body{margin:0;font:14px/1.5 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}')

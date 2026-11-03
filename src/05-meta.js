@@ -21,8 +21,8 @@ function openSheet(id){lastFocus=document.activeElement; $(id).hidden=false; con
 function closeSheet(id){$(id).hidden=true; if(lastFocus&&lastFocus.focus) lastFocus.focus();}
 document.addEventListener('click',e=>{const c=e.target.closest('[data-close]'); if(c) closeSheet(c.dataset.close);});
 document.querySelectorAll('.sheet').forEach(s=>{
-  s.addEventListener('keydown',e=>{if(e.key==='Escape'&&s.id!=='intro') closeSheet(s.id); e.stopPropagation();});
-  s.addEventListener('click',e=>{if(e.target===s&&s.id!=='intro'&&s.id!=='tut') closeSheet(s.id);});
+  s.addEventListener('keydown',e=>{if(e.key==='Escape'&&s.id!=='intro'&&s.id!=='ad') closeSheet(s.id); e.stopPropagation();});
+  s.addEventListener('click',e=>{if(e.target===s&&s.id!=='intro'&&s.id!=='tut'&&s.id!=='ad') closeSheet(s.id);});
 });
 
 // ---------- 新鳥登場 ----------
