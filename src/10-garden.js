@@ -55,7 +55,7 @@ function addSeeds(n){ if(!n) return; gInit(); PROG.seeds+=n; saveProg(); }
 let G={tab:'fac',edit:false,sel:null,timer:null,birds:[]};
 function openGarden(){
   gInit(); G.edit=false; G.sel=null; $('trade').hidden=true;
-  openSheet('garden'); gLayout(); gRender(); gList();
+  openSheet('garden'); gLayout(); gRender();
   const sc=$('yardScroll'), ground=PROG.gItems.filter(i=>!G_ITEMS[i.k]?.air);
   const cx=ground.length?ground.reduce((t,i)=>t+i.x,0)/ground.length:50;
   sc.scrollLeft=Math.max(0,cx/100*sc.scrollWidth-sc.clientWidth/2);
@@ -134,7 +134,11 @@ function gPlace(k){
 }
 
 // ---------- 商店、背包、季節 ----------
+function openShop(){ gInit(); $('trade').hidden=true; gList(); openSheet('shop'); }
+// 買到或從背包拿出來的東西：關掉商店、打開鳥園，放在畫面中間讓你拖曳
+function placeFromShop(k){ closeSheet('shop'); if($('garden').hidden) openGarden(); gPlace(k); }
 function gList(){
+  $('shopSeeds').textContent=PROG.seeds; $('shopCoins').textContent=PROG.coins||0;
   document.querySelectorAll('.g-tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===G.tab));
   const box=$('gList'); box.innerHTML='';
   const card=(icon,name,sub,btn,disabled,fn)=>{ const d=document.createElement('div'); d.className='g-card';
@@ -144,22 +148,23 @@ function gList(){
   if(G.tab==='bag'){
     const ks=Object.keys(PROG.gBag).filter(k=>PROG.gBag[k]>0);
     if(!ks.length){ box.innerHTML='<p class="note">背包是空的。在「擺設」模式選取物品，按「收回背包」就會放到這裡。</p>'; return; }
-    ks.forEach(k=>card(itemSVG(k),G_ITEMS[k].name,`背包裡有 ${PROG.gBag[k]} 個`,'放進鳥園',false,()=>{ PROG.gBag[k]--; gPlace(k); gList(); }));
+    ks.forEach(k=>card(itemSVG(k),G_ITEMS[k].name,`背包裡有 ${PROG.gBag[k]} 個`,'放進鳥園',false,()=>{ PROG.gBag[k]--; placeFromShop(k); }));
     return;
   }
   if(G.tab==='season'){
     Object.entries(G_SEASONS).forEach(([k,s])=>{ const own=PROG.gSeasons.includes(k), on=PROG.gSeason===k;
       card(`<span class="g-season s-${k}"></span>`,s.name,own?s.desc:`${s.cost} 顆種子・${s.desc}`,on?'使用中':own?'使用':'兌換',on||(!own&&PROG.seeds<s.cost),()=>{
         if(!own){ PROG.seeds-=s.cost; PROG.gSeasons.push(k); blip(880,.1,.04); toast(`兌換了「${s.name}」`); }
-        PROG.gSeason=k; saveProg(); gRender(); gList(); }); });
+        PROG.gSeason=k; saveProg(); gRender(); gList(); toast(`鳥園換成「${s.name}」了`); }); });
     if(PROG.gSeason) card('<span class="g-season s-none"></span>','一般天氣','不使用季節效果','使用',false,()=>{ PROG.gSeason=null; saveProg(); gRender(); gList(); });
     return;
   }
   Object.entries(G_ITEMS).filter(([,it])=>it.cat===G.tab).forEach(([k,it])=>{
     const n=PROG.gItems.filter(i=>i.k===k).length+(PROG.gBag[k]||0);
     card(itemSVG(k),it.name,`${it.cost} 顆種子`+(n?`・已有 ${n} 個`:''),'兌換',PROG.seeds<it.cost,()=>{
-      PROG.seeds-=it.cost; blip(880,.1,.04); toast(`兌換了${it.name}，拖曳可以調整位置`); gPlace(k); gList(); checkAch(); });
+      PROG.seeds-=it.cost; blip(880,.1,.04); toast(`兌換了${it.name}，拖曳可以調整位置`); placeFromShop(k); checkAch(); });
   });
 }
 document.querySelectorAll('.g-tab').forEach(b=>b.onclick=()=>{ G.tab=b.dataset.t; $('trade').hidden=true; gList(); });
+$('gShop').onclick=openShop;
 $('gEdit').onclick=()=>{ G.edit=!G.edit; if(!G.edit) G.sel=null; gRender(); };

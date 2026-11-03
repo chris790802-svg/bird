@@ -2,7 +2,7 @@
 birdify();
 function syncSound(){ $('btn-sound').setAttribute('aria-pressed',PROG.sound); $('btn-sound').textContent=PROG.sound?'音效開':'音效關'; }
 $('btn-sound').onclick=()=>{ PROG.sound=!PROG.sound; saveProg(); syncSound(); if(PROG.sound) chirp(1,.05); };
-$('btn-dex').onclick=openDex; $('btn-garden').onclick=openGarden; $('btn-ach').onclick=openAch;
+$('btn-dex').onclick=openDex; $('btn-garden').onclick=openGarden; $('btn-shop').onclick=openShop; $('btn-ach').onclick=openAch;
 syncSound();
 
 // ---- 選單收合 ----

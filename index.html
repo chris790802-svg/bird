@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="build" content="e9284e8660">
+<meta name="build" content="e4bea28ebf">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="鳥巢數獨：用小鳥當線索的數字推理遊戲，100 關、8 種鳥規則、每日一題、圖鑑與鳥園。">
 <script>try{var t=JSON.parse(localStorage.getItem('kp4-prog')||'{}').theme;if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
@@ -547,6 +547,23 @@ code{font-family:var(--f-num);font-weight:600;letter-spacing:.04em;color:var(--a
 .ad-btns{justify-content:center}
 #hint{position:relative}
 #hint .hint-n{position:absolute;top:-7px;right:-4px;margin:0;box-shadow:0 0 0 2px var(--paper)}
+
+/* 鎖定遊戲畫面：整頁不能上下滑動 */
+html{box-sizing:border-box;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:manipulation}
+body{height:100%;overflow:hidden;overscroll-behavior:none}
+.wrap{height:100%;box-sizing:border-box;overflow:hidden}
+.key-all{font-family:var(--f-body);font-size:.82rem;color:var(--ink);background:var(--mint-soft)}
+
+/* 鳥園放大，商店獨立 */
+.garden-card{max-width:900px;height:calc(100dvh - 32px);max-height:none}
+.yard-frame{flex:1;height:auto;min-height:240px}
+.shop-fab{position:absolute;z-index:3;right:10px;top:10px;display:flex;align-items:center;gap:6px;font:inherit;font-size:.9rem;cursor:pointer;border:0;border-radius:999px;padding:6px 14px 6px 8px;background:var(--surface);color:var(--ink);box-shadow:0 4px 0 var(--shadow),0 6px 18px rgba(0,0,0,.12)}
+.shop-ic{width:28px;height:28px;flex:none}
+.shop-ic.big{width:34px;height:34px}
+.shop-card{position:relative;max-width:680px;height:min(calc(100dvh - 32px),820px);padding:14px;gap:10px}
+.shop-card .sheet-top{gap:8px}
+.shop-card .sheet-top h3{flex:1}
+#shop{z-index:22}
 </style>
 </head>
 <body>
@@ -566,6 +583,7 @@ code{font-family:var(--f-num);font-weight:600;letter-spacing:.04em;color:var(--a
   <nav class="topbar" aria-label="功能">
     <button class="ib" id="btn-dex">圖鑑</button>
     <button class="ib" id="btn-garden">鳥園</button>
+    <button class="ib" id="btn-shop">商店</button>
     <button class="ib" id="btn-ach">成就</button>
     <button class="ib" id="btn-sound" aria-pressed="true">音效開</button>
     <button class="ib" id="btn-theme">外觀：自動</button>
@@ -724,8 +742,21 @@ code{font-family:var(--f-num);font-weight:600;letter-spacing:.04em;color:var(--a
     <div class="yard-frame">
       <div class="yard-scroll" id="yardScroll"><div class="yard-world" id="yard"></div></div>
       <div class="g-fx" id="gFx" aria-hidden="true"></div>
+      <button class="shop-fab" id="gShop"><svg class="shop-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9 L5 3 H19 L21 9 Z" fill="#ff8f4f"/><path d="M3 9 h4.5 v1 a2.25 2.25 0 0 1 -4.5 0 Z M7.5 9 h4.5 v1 a2.25 2.25 0 0 1 -4.5 0 Z M12 9 h4.5 v1 a2.25 2.25 0 0 1 -4.5 0 Z M16.5 9 H21 v1 a2.25 2.25 0 0 1 -4.5 0 Z" fill="#fff4e0" stroke="#ff8f4f" stroke-width=".8"/><rect x="4.5" y="12" width="15" height="9" rx="1" fill="#fff"/><rect x="9.5" y="14.5" width="5" height="6.5" fill="#3b93e6"/><rect x="5.8" y="13.5" width="2.6" height="2.6" fill="#bfe0fb"/><rect x="15.6" y="13.5" width="2.6" height="2.6" fill="#bfe0fb"/></svg><span>商店</span></button>
     </div>
     <div class="g-bar" id="gBar"></div>
+  </div>
+</div>
+
+<div class="sheet" id="shop" hidden role="dialog" aria-modal="true" aria-labelledby="shop-title">
+  <div class="sheet-card shop-card">
+    <div class="sheet-top">
+      <svg class="shop-ic big" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9 L5 3 H19 L21 9 Z" fill="#ff8f4f"/><path d="M3 9 h4.5 v1 a2.25 2.25 0 0 1 -4.5 0 Z M7.5 9 h4.5 v1 a2.25 2.25 0 0 1 -4.5 0 Z M12 9 h4.5 v1 a2.25 2.25 0 0 1 -4.5 0 Z M16.5 9 H21 v1 a2.25 2.25 0 0 1 -4.5 0 Z" fill="#fff4e0" stroke="#ff8f4f" stroke-width=".8"/><rect x="4.5" y="12" width="15" height="9" rx="1" fill="#fff"/><rect x="9.5" y="14.5" width="5" height="6.5" fill="#3b93e6"/><rect x="5.8" y="13.5" width="2.6" height="2.6" fill="#bfe0fb"/><rect x="15.6" y="13.5" width="2.6" height="2.6" fill="#bfe0fb"/></svg>
+      <h3 id="shop-title">商店</h3>
+      <span class="seeds" title="種子"><span class="seed-ic" aria-hidden="true"></span><b id="shopSeeds">0</b></span>
+      <span class="seeds" title="鳥幣"><span class="coin-ic" aria-hidden="true"></span><b id="shopCoins">0</b></span>
+      <button class="sheet-close" data-close="shop">關閉</button>
+    </div>
     <div class="g-tabs" role="tablist">
       <button class="g-tab" role="tab" data-t="fac">設施</button>
       <button class="g-tab" role="tab" data-t="plant">植物</button>
@@ -734,7 +765,7 @@ code{font-family:var(--f-num);font-weight:600;letter-spacing:.04em;color:var(--a
       <button class="g-tab" role="tab" data-t="trade">換鳥</button>
       <button class="g-tab" role="tab" data-t="bag">背包</button>
     </div>
-    <p class="note g-how">過關、解每日一題可以拿到種子：第一次過關 ★ 一顆 10 粒，每日一題 40 粒，自由練習 5 粒。</p>
+    <p class="note g-how">過關、解每日一題可以拿到種子：第一次過關 ★ 一顆 10 粒，每日一題 40 粒，自由練習 5 粒。買好的東西會直接放進鳥園，可以拖曳調整位置。</p>
     <div class="g-list" id="gList"></div>
     <div class="trade" id="trade" hidden role="dialog" aria-labelledby="tradeName">
       <div class="trade-head"><span class="pic" id="tradeBird"></span><div><b id="tradeName"></b> <span id="tradeTag"></span><p class="note" id="tradeNeed"></p></div></div>
@@ -1372,13 +1403,22 @@ function buildBoard(){
 // ---- 讓整個遊戲剛好放進一個畫面：依螢幕高度調整棋盤大小 ----
 function fitLayout(){
   const root=document.documentElement, gutter=32;
+  const wrap=document.querySelector('.wrap');
   let bw=Math.min(innerWidth-gutter-14,470); root.style.setProperty('--bw',bw+'px');
-  for(let k=0;k<4;k++){ const over=root.scrollHeight-innerHeight; if(over<=0) break; bw=Math.max(200,bw-over-1); root.style.setProperty('--bw',bw+'px'); }
+  for(let k=0;k<4;k++){ const over=wrap.scrollHeight-wrap.clientHeight; if(over<=0) break; bw=Math.max(180,bw-over-1); root.style.setProperty('--bw',bw+'px'); }
 }
 addEventListener('resize',()=>{ clearTimeout(fitLayout.t); fitLayout.t=setTimeout(fitLayout,80); });
 function buildKeys(){
   const k=$('keys'); k.innerHTML=''; k.style.gridTemplateColumns=`repeat(${N},1fr)`;
   for(let n=1;n<=N;n++){const b=document.createElement('button'); b.className='key'; b.id='key'+n; b.textContent=n; b.onclick=()=>input(n); k.appendChild(b);}
+  const all=document.createElement('button'); all.className='key key-all'; all.id='keyAll'; all.textContent='全選'; all.hidden=true;
+  all.setAttribute('aria-label','把這格所有數字都記上筆記'); all.onclick=noteAll; k.appendChild(all);
+}
+// 筆記全選：把這格所有可能的數字都記上（已排除的除外），再按一次全部清掉
+function noteAll(){
+  const i=S.sel; if(i<0||S.done||S.paused||S.editing||S.P.givens[i]||S.vals[i]) return;
+  const full=((1<<N)-1)&~S.xnotes[i];
+  push(); S.notes[i]=S.notes[i]===full?0:full; S.usedNotes=true; render(); save(); pop(cells[i]);
 }
 function renderBirdInfo(){
   const list=S.editing?[]:birdsIn(S.P);
@@ -1427,6 +1467,7 @@ function render(){
   owlEls.forEach((o,k)=>o.el.classList.toggle('bad',badO.has(k)));
   $('filled').textContent=S.vals.filter(Boolean).length;
   $('notes').setAttribute('aria-pressed',S.noteMode); $('xnotes').setAttribute('aria-pressed',S.xMode);
+  const ka=$('keyAll'); if(ka){ ka.hidden=!S.noteMode; $('keys').style.gridTemplateColumns=`repeat(${N}, 1fr)`+(S.noteMode?' 1.5fr':''); }
   const xs=sel>=0&&!S.vals[sel]?S.xnotes[sel]:0;
   for(let n=1;n<=N;n++){const k=$('key'+n); if(k) k.classList.toggle('ruled',!!(xs>>(n-1)&1));}
   fresh.forEach(k=>celebrateLine(k[0]==='r',+k.slice(1)));
@@ -1608,6 +1649,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Backspace'||e.key==='Delete'||e.key==='0'){erase();return;}
   const k=e.key.toLowerCase();
   if(k==='n'){toggleNote();return;}
+  if(k==='a'&&S.noteMode){noteAll();return;}
   if(k==='x'){toggleX();return;}
   if(k==='h'){doHint();return;}
   const mv={ArrowUp:-N,ArrowDown:N,ArrowLeft:-1,ArrowRight:1}[e.key];
@@ -2004,7 +2046,7 @@ function addSeeds(n){ if(!n) return; gInit(); PROG.seeds+=n; saveProg(); }
 let G={tab:'fac',edit:false,sel:null,timer:null,birds:[]};
 function openGarden(){
   gInit(); G.edit=false; G.sel=null; $('trade').hidden=true;
-  openSheet('garden'); gLayout(); gRender(); gList();
+  openSheet('garden'); gLayout(); gRender();
   const sc=$('yardScroll'), ground=PROG.gItems.filter(i=>!G_ITEMS[i.k]?.air);
   const cx=ground.length?ground.reduce((t,i)=>t+i.x,0)/ground.length:50;
   sc.scrollLeft=Math.max(0,cx/100*sc.scrollWidth-sc.clientWidth/2);
@@ -2083,7 +2125,11 @@ function gPlace(k){
 }
 
 // ---------- 商店、背包、季節 ----------
+function openShop(){ gInit(); $('trade').hidden=true; gList(); openSheet('shop'); }
+// 買到或從背包拿出來的東西：關掉商店、打開鳥園，放在畫面中間讓你拖曳
+function placeFromShop(k){ closeSheet('shop'); if($('garden').hidden) openGarden(); gPlace(k); }
 function gList(){
+  $('shopSeeds').textContent=PROG.seeds; $('shopCoins').textContent=PROG.coins||0;
   document.querySelectorAll('.g-tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===G.tab));
   const box=$('gList'); box.innerHTML='';
   const card=(icon,name,sub,btn,disabled,fn)=>{ const d=document.createElement('div'); d.className='g-card';
@@ -2093,24 +2139,25 @@ function gList(){
   if(G.tab==='bag'){
     const ks=Object.keys(PROG.gBag).filter(k=>PROG.gBag[k]>0);
     if(!ks.length){ box.innerHTML='<p class="note">背包是空的。在「擺設」模式選取物品，按「收回背包」就會放到這裡。</p>'; return; }
-    ks.forEach(k=>card(itemSVG(k),G_ITEMS[k].name,`背包裡有 ${PROG.gBag[k]} 個`,'放進鳥園',false,()=>{ PROG.gBag[k]--; gPlace(k); gList(); }));
+    ks.forEach(k=>card(itemSVG(k),G_ITEMS[k].name,`背包裡有 ${PROG.gBag[k]} 個`,'放進鳥園',false,()=>{ PROG.gBag[k]--; placeFromShop(k); }));
     return;
   }
   if(G.tab==='season'){
     Object.entries(G_SEASONS).forEach(([k,s])=>{ const own=PROG.gSeasons.includes(k), on=PROG.gSeason===k;
       card(`<span class="g-season s-${k}"></span>`,s.name,own?s.desc:`${s.cost} 顆種子・${s.desc}`,on?'使用中':own?'使用':'兌換',on||(!own&&PROG.seeds<s.cost),()=>{
         if(!own){ PROG.seeds-=s.cost; PROG.gSeasons.push(k); blip(880,.1,.04); toast(`兌換了「${s.name}」`); }
-        PROG.gSeason=k; saveProg(); gRender(); gList(); }); });
+        PROG.gSeason=k; saveProg(); gRender(); gList(); toast(`鳥園換成「${s.name}」了`); }); });
     if(PROG.gSeason) card('<span class="g-season s-none"></span>','一般天氣','不使用季節效果','使用',false,()=>{ PROG.gSeason=null; saveProg(); gRender(); gList(); });
     return;
   }
   Object.entries(G_ITEMS).filter(([,it])=>it.cat===G.tab).forEach(([k,it])=>{
     const n=PROG.gItems.filter(i=>i.k===k).length+(PROG.gBag[k]||0);
     card(itemSVG(k),it.name,`${it.cost} 顆種子`+(n?`・已有 ${n} 個`:''),'兌換',PROG.seeds<it.cost,()=>{
-      PROG.seeds-=it.cost; blip(880,.1,.04); toast(`兌換了${it.name}，拖曳可以調整位置`); gPlace(k); gList(); checkAch(); });
+      PROG.seeds-=it.cost; blip(880,.1,.04); toast(`兌換了${it.name}，拖曳可以調整位置`); placeFromShop(k); checkAch(); });
   });
 }
 document.querySelectorAll('.g-tab').forEach(b=>b.onclick=()=>{ G.tab=b.dataset.t; $('trade').hidden=true; gList(); });
+$('gShop').onclick=openShop;
 $('gEdit').onclick=()=>{ G.edit=!G.edit; if(!G.edit) G.sel=null; gRender(); };
 // ===================== 11 收藏鳥：用孵出的鳥換收藏鳥 =====================
 // 孵出來的規則鳥，各自值多少「鳥幣」：越後面章節的鳥越值錢
@@ -2304,7 +2351,7 @@ refreshHintBtn();
 birdify();
 function syncSound(){ $('btn-sound').setAttribute('aria-pressed',PROG.sound); $('btn-sound').textContent=PROG.sound?'音效開':'音效關'; }
 $('btn-sound').onclick=()=>{ PROG.sound=!PROG.sound; saveProg(); syncSound(); if(PROG.sound) chirp(1,.05); };
-$('btn-dex').onclick=openDex; $('btn-garden').onclick=openGarden; $('btn-ach').onclick=openAch;
+$('btn-dex').onclick=openDex; $('btn-garden').onclick=openGarden; $('btn-shop').onclick=openShop; $('btn-ach').onclick=openAch;
 syncSound();
 
 // ---- 選單收合 ----

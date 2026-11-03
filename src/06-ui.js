@@ -40,13 +40,22 @@ function buildBoard(){
 // ---- 讓整個遊戲剛好放進一個畫面：依螢幕高度調整棋盤大小 ----
 function fitLayout(){
   const root=document.documentElement, gutter=32;
+  const wrap=document.querySelector('.wrap');
   let bw=Math.min(innerWidth-gutter-14,470); root.style.setProperty('--bw',bw+'px');
-  for(let k=0;k<4;k++){ const over=root.scrollHeight-innerHeight; if(over<=0) break; bw=Math.max(200,bw-over-1); root.style.setProperty('--bw',bw+'px'); }
+  for(let k=0;k<4;k++){ const over=wrap.scrollHeight-wrap.clientHeight; if(over<=0) break; bw=Math.max(180,bw-over-1); root.style.setProperty('--bw',bw+'px'); }
 }
 addEventListener('resize',()=>{ clearTimeout(fitLayout.t); fitLayout.t=setTimeout(fitLayout,80); });
 function buildKeys(){
   const k=$('keys'); k.innerHTML=''; k.style.gridTemplateColumns=`repeat(${N},1fr)`;
   for(let n=1;n<=N;n++){const b=document.createElement('button'); b.className='key'; b.id='key'+n; b.textContent=n; b.onclick=()=>input(n); k.appendChild(b);}
+  const all=document.createElement('button'); all.className='key key-all'; all.id='keyAll'; all.textContent='全選'; all.hidden=true;
+  all.setAttribute('aria-label','把這格所有數字都記上筆記'); all.onclick=noteAll; k.appendChild(all);
+}
+// 筆記全選：把這格所有可能的數字都記上（已排除的除外），再按一次全部清掉
+function noteAll(){
+  const i=S.sel; if(i<0||S.done||S.paused||S.editing||S.P.givens[i]||S.vals[i]) return;
+  const full=((1<<N)-1)&~S.xnotes[i];
+  push(); S.notes[i]=S.notes[i]===full?0:full; S.usedNotes=true; render(); save(); pop(cells[i]);
 }
 function renderBirdInfo(){
   const list=S.editing?[]:birdsIn(S.P);
@@ -95,6 +104,7 @@ function render(){
   owlEls.forEach((o,k)=>o.el.classList.toggle('bad',badO.has(k)));
   $('filled').textContent=S.vals.filter(Boolean).length;
   $('notes').setAttribute('aria-pressed',S.noteMode); $('xnotes').setAttribute('aria-pressed',S.xMode);
+  const ka=$('keyAll'); if(ka){ ka.hidden=!S.noteMode; $('keys').style.gridTemplateColumns=`repeat(${N}, 1fr)`+(S.noteMode?' 1.5fr':''); }
   const xs=sel>=0&&!S.vals[sel]?S.xnotes[sel]:0;
   for(let n=1;n<=N;n++){const k=$('key'+n); if(k) k.classList.toggle('ruled',!!(xs>>(n-1)&1));}
   fresh.forEach(k=>celebrateLine(k[0]==='r',+k.slice(1)));
@@ -276,6 +286,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Backspace'||e.key==='Delete'||e.key==='0'){erase();return;}
   const k=e.key.toLowerCase();
   if(k==='n'){toggleNote();return;}
+  if(k==='a'&&S.noteMode){noteAll();return;}
   if(k==='x'){toggleX();return;}
   if(k==='h'){doHint();return;}
   const mv={ArrowUp:-N,ArrowDown:N,ArrowLeft:-1,ArrowRight:1}[e.key];

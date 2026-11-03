@@ -335,3 +335,20 @@ code{font-family:var(--f-num);font-weight:600;letter-spacing:.04em;color:var(--a
 .ad-btns{justify-content:center}
 #hint{position:relative}
 #hint .hint-n{position:absolute;top:-7px;right:-4px;margin:0;box-shadow:0 0 0 2px var(--paper)}
+
+/* 鎖定遊戲畫面：整頁不能上下滑動 */
+html{box-sizing:border-box;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:manipulation}
+body{height:100%;overflow:hidden;overscroll-behavior:none}
+.wrap{height:100%;box-sizing:border-box;overflow:hidden}
+.key-all{font-family:var(--f-body);font-size:.82rem;color:var(--ink);background:var(--mint-soft)}
+
+/* 鳥園放大，商店獨立 */
+.garden-card{max-width:900px;height:calc(100dvh - 32px);max-height:none}
+.yard-frame{flex:1;height:auto;min-height:240px}
+.shop-fab{position:absolute;z-index:3;right:10px;top:10px;display:flex;align-items:center;gap:6px;font:inherit;font-size:.9rem;cursor:pointer;border:0;border-radius:999px;padding:6px 14px 6px 8px;background:var(--surface);color:var(--ink);box-shadow:0 4px 0 var(--shadow),0 6px 18px rgba(0,0,0,.12)}
+.shop-ic{width:28px;height:28px;flex:none}
+.shop-ic.big{width:34px;height:34px}
+.shop-card{position:relative;max-width:680px;height:min(calc(100dvh - 32px),820px);padding:14px;gap:10px}
+.shop-card .sheet-top{gap:8px}
+.shop-card .sheet-top h3{flex:1}
+#shop{z-index:22}
