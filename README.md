@@ -35,4 +35,4 @@
 python3 build.py
 ```
 
-會重新產生 `index.html`。背景森林由 `tools/make_scenery.py` 產生（輸出到 `src/scenery.html`）。
+會重新產生 `index.html`。背景森林由 `tools/make_scenery.py` 產生（輸出到 `src/scenery.html`）；App 圖示的原稿是 `src/icon.svg`，用 `tools/make_icons.py` 轉成各尺寸 PNG。

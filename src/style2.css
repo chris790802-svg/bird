@@ -260,3 +260,10 @@ code{font-family:var(--f-num);font-weight:600;letter-spacing:.04em;color:var(--a
 .s-winter{background:linear-gradient(#e6f0fa,#fff)} .s-firefly{background:radial-gradient(circle at 30% 40%,#fff6a0 2px,transparent 4px),radial-gradient(circle at 70% 65%,#fff6a0 2px,transparent 4px),linear-gradient(#0e1a2c,#1f4a33)}
 .s-none{background:linear-gradient(var(--g-sky1),var(--g-grass1))}
 .win-seeds{display:flex;align-items:center;gap:8px;font-size:.86rem;color:var(--muted)}
+
+/* 密碼視窗 */
+.pw-form{display:flex;gap:8px}
+.pw-form .field{letter-spacing:.3em}
+.cheat{display:flex;flex-direction:column;gap:6px}
+.cheat label{font-size:.86rem}
+.cheat .pill{align-self:flex-start;margin-top:4px}

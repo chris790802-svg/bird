@@ -16,6 +16,7 @@
     <button class="ib" id="btn-ach">成就</button>
     <button class="ib" id="btn-sound" aria-pressed="true">音效開</button>
     <button class="ib" id="btn-theme">外觀：自動</button>
+    <button class="ib" id="btn-pw">密碼</button>
     <button class="ib mint" id="learn">教學</button>
   </nav>
 
@@ -198,6 +199,25 @@
     <div id="tut-body" style="display:flex;flex-direction:column;gap:12px"></div>
     <div class="fb" id="tut-fb" aria-live="polite"></div>
     <div class="tut-nav"><button id="tut-prev">上一步</button><button class="go" id="tut-next">下一步</button></div>
+  </div>
+</div>
+
+<div class="sheet" id="pw" hidden role="dialog" aria-modal="true" aria-labelledby="pw-title">
+  <div class="sheet-card">
+    <div class="sheet-top"><h3 id="pw-title">輸入密碼</h3><button class="sheet-close" data-close="pw">關閉</button></div>
+    <form id="pwForm" class="pw-form" autocomplete="off">
+      <input id="pwIn" class="field" type="password" inputmode="numeric" maxlength="12" placeholder="密碼" aria-label="密碼">
+      <button class="pill primary" type="submit">確認</button>
+    </form>
+    <p class="note" id="pwMsg" aria-live="polite"></p>
+    <form id="cheatForm" class="cheat" hidden>
+      <label for="cheatLv">已經破到第幾關（0 到 100）</label>
+      <input id="cheatLv" class="field" type="number" inputmode="numeric" min="0" max="100">
+      <label for="cheatSeeds">種子數量</label>
+      <input id="cheatSeeds" class="field" type="number" inputmode="numeric" min="0" max="9999999">
+      <button class="pill primary" type="submit">套用</button>
+      <p class="note">前面的關卡會算成已過關；沒拿過星星的關卡會給三顆星。設定的關數比現在少的話，後面關卡的紀錄會清掉。</p>
+    </form>
   </div>
 </div>
 

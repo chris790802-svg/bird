@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dcefff"/><stop offset="1" stop-color="#8fc3f0"/></linearGradient>
+    <linearGradient id="nest" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c68d5a"/><stop offset="1" stop-color="#8a5a3b"/></linearGradient>
+    <style>
+      .bd-w{fill:#fff;stroke:#22364d;stroke-width:1.1;stroke-linejoin:round}
+      .bd-b{fill:#22364d;stroke:#22364d;stroke-width:1.1;stroke-linejoin:round}
+      .ck-w,.eye-w{fill:#fff} .eye-k{fill:#1b2633}
+      .wing-w{fill:none;stroke:#22364d;stroke-width:.9;stroke-linecap:round;opacity:.4}
+      .wing-b{fill:none;stroke:#8fa7c2;stroke-width:.9;stroke-linecap:round;opacity:.7}
+      .crest{fill:none;stroke:#f7c531;stroke-width:1.7;stroke-linecap:round}
+      .twig{fill:none;stroke-linecap:round}
+    </style>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <!-- 背景淡淡的數獨格子 -->
+  <g fill="#fff" opacity=".35">
+    <rect x="232" y="150" width="160" height="160" rx="34"/><rect x="432" y="150" width="160" height="160" rx="34"/><rect x="632" y="150" width="160" height="160" rx="34"/>
+    <rect x="132" y="350" width="160" height="160" rx="34" opacity=".6"/><rect x="732" y="350" width="160" height="160" rx="34" opacity=".6"/>
+  </g>
+  <!-- 鳥巢後緣 -->
+  <ellipse cx="512" cy="640" rx="330" ry="70" fill="#7a4d30"/>
+  <!-- 青背山雀（左，面向右） -->
+  <svg x="215" y="300" width="330" height="330" viewBox="-2 -3 24 24">
+    <path d="M3 12.6 L-1.4 14.4 L-1 15.6 L3.2 16.4 Z" class="bd-b"/><circle cx="10" cy="11" r="8.4" class="bd-b"/>
+    <ellipse cx="10.4" cy="10.4" rx="3.9" ry="2.6" transform="rotate(-14 10.4 10.4)" class="ck-w"/>
+    <path d="M5 13.4 Q8.6 17.6 13.4 16.4" class="wing-b"/>
+    <circle cx="13.6" cy="7.7" r="1.35" class="eye-w"/><circle cx="13.9" cy="7.6" r=".7" class="eye-k"/>
+    <path d="M17.6 8.2 L21 9.4 L17.8 10.6 Z" fill="#f2a93b"/>
+  </svg>
+  <!-- 玄鳳鸚鵡（右，面向左） -->
+  <g transform="translate(1294 0) scale(-1 1)">
+    <svg x="490" y="250" width="360" height="360" viewBox="-2 -3 24 24">
+      <path d="M9 3.4 Q7.4 -1.4 11.6 -2.2" class="crest"/><path d="M10.8 3.2 Q10.6 -0.4 14 -0.8" class="crest"/>
+      <path d="M3 12.6 L-1.4 14.4 L-1 15.6 L3.2 16.4 Z" class="bd-w"/><circle cx="10" cy="11" r="8.4" class="bd-w"/>
+      <path d="M8.4 4.4 Q14.6 3 17.6 8.6 Q15.6 11 11.4 10.2 Q8.2 8.4 8.4 4.4 Z" fill="#ffe36e"/>
+      <circle cx="13.2" cy="12.2" r="2.3" fill="#ff8f4f"/><path d="M5 13.4 Q8.6 17.6 13.4 16.4" class="wing-w"/>
+      <circle cx="13.8" cy="7.5" r="1.05" class="eye-k"/><path d="M17.4 8.3 Q20.6 8.6 18 11 Z" fill="#b9a28a"/>
+    </svg>
+  </g>
+  <!-- 鳥巢前緣：碗形加上交錯的樹枝 -->
+  <path d="M170 620 Q190 860 512 870 Q834 860 854 620 Q700 680 512 680 Q324 680 170 620 Z" fill="url(#nest)"/>
+  <g class="twig" stroke="#e0b07a" stroke-width="13" opacity=".9">
+    <path d="M200 668 Q380 740 610 700"/><path d="M300 760 Q520 820 760 730"/><path d="M420 830 Q620 820 800 690"/>
+    <path d="M250 720 Q400 790 520 760"/><path d="M560 780 Q700 770 830 650"/>
+  </g>
+  <g class="twig" stroke="#6b4428" stroke-width="11" opacity=".75">
+    <path d="M190 640 Q330 700 470 690"/><path d="M540 700 Q700 700 850 630"/><path d="M260 790 Q420 760 560 820"/><path d="M640 820 Q720 790 780 760"/>
+  </g>
+  <g class="twig" stroke="#a26a3f" stroke-width="12">
+    <path d="M160 610 L120 575"/><path d="M864 612 L910 580"/><path d="M190 650 L135 660"/><path d="M836 655 L892 668"/>
+  </g>
+</svg>

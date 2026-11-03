@@ -81,8 +81,8 @@ const ACH=[
   {id:'l50',   name:'過半', desc:'通過第 50 關', ok:()=>!!PROG.stars[50]},
   {id:'l100',  name:'帝雉現身', desc:'通過第 100 關', ok:()=>!!PROG.stars[100]},
 ];
-function checkAch(){
-  for(const a of ACH) if(!PROG.ach[a.id]&&a.ok()){ PROG.ach[a.id]=Date.now(); saveProg(); toast(`達成成就「${a.name}」`,2); blip(880,.12,.04); }
+function checkAch(quiet){
+  for(const a of ACH) if(!PROG.ach[a.id]&&a.ok()){ PROG.ach[a.id]=Date.now(); saveProg(); if(!quiet){ toast(`達成成就「${a.name}」`,2); blip(880,.12,.04); } }
 }
 function openAch(){
   const got=ACH.filter(a=>PROG.ach[a.id]).length;

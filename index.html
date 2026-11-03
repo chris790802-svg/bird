@@ -2,13 +2,18 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="build" content="43dc73357c">
+<meta name="build" content="cd8de07aed">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="鳥巢數獨：用小鳥當線索的數字推理遊戲，100 關、8 種鳥規則、每日一題、圖鑑與鳥園。">
 <script>try{var t=JSON.parse(localStorage.getItem('kp4-prog')||'{}').theme;if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.5 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>鳥巢數獨</title>
 <meta name="apple-mobile-web-app-title" content="鳥巢數獨">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
 <meta name="application-name" content="鳥巢數獨">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -467,6 +472,13 @@ code{font-family:var(--f-num);font-weight:600;letter-spacing:.04em;color:var(--a
 .s-winter{background:linear-gradient(#e6f0fa,#fff)} .s-firefly{background:radial-gradient(circle at 30% 40%,#fff6a0 2px,transparent 4px),radial-gradient(circle at 70% 65%,#fff6a0 2px,transparent 4px),linear-gradient(#0e1a2c,#1f4a33)}
 .s-none{background:linear-gradient(var(--g-sky1),var(--g-grass1))}
 .win-seeds{display:flex;align-items:center;gap:8px;font-size:.86rem;color:var(--muted)}
+
+/* 密碼視窗 */
+.pw-form{display:flex;gap:8px}
+.pw-form .field{letter-spacing:.3em}
+.cheat{display:flex;flex-direction:column;gap:6px}
+.cheat label{font-size:.86rem}
+.cheat .pill{align-self:flex-start;margin-top:4px}
 </style>
 </head>
 <body>
@@ -489,6 +501,7 @@ code{font-family:var(--f-num);font-weight:600;letter-spacing:.04em;color:var(--a
     <button class="ib" id="btn-ach">成就</button>
     <button class="ib" id="btn-sound" aria-pressed="true">音效開</button>
     <button class="ib" id="btn-theme">外觀：自動</button>
+    <button class="ib" id="btn-pw">密碼</button>
     <button class="ib mint" id="learn">教學</button>
   </nav>
 
@@ -671,6 +684,25 @@ code{font-family:var(--f-num);font-weight:600;letter-spacing:.04em;color:var(--a
     <div id="tut-body" style="display:flex;flex-direction:column;gap:12px"></div>
     <div class="fb" id="tut-fb" aria-live="polite"></div>
     <div class="tut-nav"><button id="tut-prev">上一步</button><button class="go" id="tut-next">下一步</button></div>
+  </div>
+</div>
+
+<div class="sheet" id="pw" hidden role="dialog" aria-modal="true" aria-labelledby="pw-title">
+  <div class="sheet-card">
+    <div class="sheet-top"><h3 id="pw-title">輸入密碼</h3><button class="sheet-close" data-close="pw">關閉</button></div>
+    <form id="pwForm" class="pw-form" autocomplete="off">
+      <input id="pwIn" class="field" type="password" inputmode="numeric" maxlength="12" placeholder="密碼" aria-label="密碼">
+      <button class="pill primary" type="submit">確認</button>
+    </form>
+    <p class="note" id="pwMsg" aria-live="polite"></p>
+    <form id="cheatForm" class="cheat" hidden>
+      <label for="cheatLv">已經破到第幾關（0 到 100）</label>
+      <input id="cheatLv" class="field" type="number" inputmode="numeric" min="0" max="100">
+      <label for="cheatSeeds">種子數量</label>
+      <input id="cheatSeeds" class="field" type="number" inputmode="numeric" min="0" max="9999999">
+      <button class="pill primary" type="submit">套用</button>
+      <p class="note">前面的關卡會算成已過關；沒拿過星星的關卡會給三顆星。設定的關數比現在少的話，後面關卡的紀錄會清掉。</p>
+    </form>
   </div>
 </div>
 
@@ -1173,8 +1205,8 @@ const ACH=[
   {id:'l50',   name:'過半', desc:'通過第 50 關', ok:()=>!!PROG.stars[50]},
   {id:'l100',  name:'帝雉現身', desc:'通過第 100 關', ok:()=>!!PROG.stars[100]},
 ];
-function checkAch(){
-  for(const a of ACH) if(!PROG.ach[a.id]&&a.ok()){ PROG.ach[a.id]=Date.now(); saveProg(); toast(`達成成就「${a.name}」`,2); blip(880,.12,.04); }
+function checkAch(quiet){
+  for(const a of ACH) if(!PROG.ach[a.id]&&a.ok()){ PROG.ach[a.id]=Date.now(); saveProg(); if(!quiet){ toast(`達成成就「${a.name}」`,2); blip(880,.12,.04); } }
 }
 function openAch(){
   const got=ACH.filter(a=>PROG.ach[a.id]).length;
@@ -1980,6 +2012,25 @@ $('menuBtn').onclick=()=>setMenu($('menu').hidden);
 document.addEventListener('pointerdown',e=>{ if($('menu').hidden) return;
   if(e.target.closest('#menu,#menuBtn,.sheet,.toasts')) return; setMenu(false); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('menu').hidden) setMenu(false); });
+
+// ---- 密碼：調整闖關進度和種子 ----
+$('btn-pw').onclick=()=>{ $('pwIn').value=''; $('pwMsg').textContent=''; $('cheatForm').hidden=true; $('pwForm').hidden=false; openSheet('pw'); setTimeout(()=>$('pwIn').focus(),50); };
+$('pwForm').addEventListener('submit',e=>{ e.preventDefault();
+  if(hashStr('pw:'+$('pwIn').value.trim())!==377573281){ $('pwMsg').textContent='密碼不對，請再試一次。'; $('pwIn').select(); blip(220,.12,.035,'sine'); return; }
+  gInit(); $('pwMsg').textContent=''; $('pwForm').hidden=true; $('cheatForm').hidden=false;
+  let cleared=0; while(cleared<LEVELS&&PROG.stars[cleared+1]) cleared++;
+  $('cheatLv').value=cleared; $('cheatSeeds').value=PROG.seeds; $('cheatLv').focus(); });
+$('cheatForm').addEventListener('submit',e=>{ e.preventDefault();
+  const L=Math.max(0,Math.min(LEVELS,parseInt($('cheatLv').value,10)||0));
+  const seeds=Math.max(0,Math.min(9999999,parseInt($('cheatSeeds').value,10)||0));
+  for(let k=1;k<=LEVELS;k++){ if(k<=L) PROG.stars[k]=PROG.stars[k]||3; else delete PROG.stars[k]; }
+  PROG.max=Math.min(LEVELS,L+1);
+  CHAPTERS.forEach(c=>{ if(c.from<=L&&!PROG.seen.includes(c.bird)) PROG.seen.push(c.bird); });
+  if(L>=LEVELS&&!PROG.seen.includes('E')) PROG.seen.push('E');
+  PROG.seeds=seeds; saveProg(); checkAch(true);
+  closeSheet('pw'); setMenu(false);
+  switchTo('level',()=>startLevel(Math.min(LEVELS,L+1)));
+  toast(`已設定：破到第 ${L} 關，種子 ${seeds} 顆`,1); });
 
 // ---- 外觀：自動（跟著手機）、淺色、深色 ----
 const THEMES=['auto','light','dark'], THEME_NAME={auto:'自動',light:'淺色',dark:'深色'};
