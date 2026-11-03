@@ -58,13 +58,13 @@ function hatch(force){
 function openDex(){
   const firstCh=t=>{const c=CHAPTERS.find(c=>c.bird===t); return c?`${c.name}・第 ${c.from} 關登場`:t==='E'?'通過第 100 關':'';};
   const all=[...SPECIES_ORDER,...COLLECT_ORDER], got=all.filter(t=>PROG.seen.includes(t)).length;
-  $('dexNote').textContent=`已經認識 ${got} / ${all.length} 種鳥。規則鳥在關卡裡遇到就會收進來；台灣野鳥要在鳥園用孵出來的鳥交換。`;
+  $('dexNote').textContent=`已經認識 ${got} / ${all.length} 種鳥。規則鳥在關卡裡遇到就會收進來；收藏鳥要在鳥園用孵出來的鳥交換。`;
   const card=(t,tag,lockText)=>{const sp=SPECIES[t], on=PROG.seen.includes(t);
     return `<div class="dex-item${on?'':' locked'}"><span class="pic">${sp.svg}</span><b>${on?sp.name:'？？？'}</b>${tag}`+
       (on?(sp.rule&&!isCollect(t)?`<p><b style="font-size:.8rem">規則：</b>${sp.rule}</p>`:'')+`<p>${sp.fact}</p>`:`<p>${lockText}</p>`)+'</div>';};
   let h='<h4 class="dex-h">規則鳥</h4><div class="dex-grid">'+SPECIES_ORDER.map(t=>card(t,`<span class="tag">${firstCh(t)}</span>`,'還沒遇過這種鳥。')).join('')+'</div>';
   RARITY_ORDER.forEach(r=>{ const ks=COLLECT_ORDER.filter(k=>COLLECT[k].rarity===r), n=ks.filter(k=>PROG.seen.includes(k)).length;
-    h+=`<h4 class="dex-h">台灣野鳥・${RARITY[r].name} <span>${n} / ${ks.length}・每隻 ${RARITY[r].cost} 鳥幣</span></h4><div class="dex-grid">`+
+    h+=`<h4 class="dex-h">收藏鳥・${RARITY[r].name} <span>${n} / ${ks.length}・每隻 ${RARITY[r].cost} 鳥幣</span></h4><div class="dex-grid">`+
       ks.map(k=>card(k,rarityTag(k),`到鳥園的「換鳥」，用 ${costOf(k)} 鳥幣交換。`)).join('')+'</div>'; });
   $('dexBody').innerHTML=h;
   openSheet('dex');
@@ -83,10 +83,10 @@ const ACH=[
   {id:'weekend',name:'週末大盤', desc:'解開一次週末大盤', ok:()=>!!PROG.c.weekend},
   {id:'dex5',  name:'賞鳥新手', desc:'圖鑑收集 5 種鳥', ok:()=>PROG.seen.length>=5},
   {id:'dexall',name:'賞鳥達人', desc:'認識全部 9 種規則鳥', ok:()=>SPECIES_ORDER.every(t=>PROG.seen.includes(t))},
-  {id:'coll1', name:'第一位新朋友', desc:'第一次用鳥換到台灣野鳥', ok:()=>COLLECT_ORDER.some(k=>PROG.seen.includes(k))},
-  {id:'coll8', name:'野鳥收藏家', desc:'收集 8 種台灣野鳥', ok:()=>COLLECT_ORDER.filter(k=>PROG.seen.includes(k)).length>=8},
+  {id:'coll1', name:'第一位新朋友', desc:'第一次用鳥換到收藏鳥', ok:()=>COLLECT_ORDER.some(k=>PROG.seen.includes(k))},
+  {id:'coll8', name:'野鳥收藏家', desc:'收集 8 種收藏鳥', ok:()=>COLLECT_ORDER.filter(k=>PROG.seen.includes(k)).length>=8},
   {id:'legend',name:'傳說現身', desc:'換到一隻傳說等級的鳥', ok:()=>COLLECT_ORDER.some(k=>COLLECT[k].rarity==='legend'&&PROG.seen.includes(k))},
-  {id:'collall',name:'台灣鳥類圖鑑', desc:'收集全部 17 種台灣野鳥', ok:()=>COLLECT_ORDER.every(k=>PROG.seen.includes(k))},
+  {id:'collall',name:'鳥類收藏大全', desc:'收集全部 18 種收藏鳥', ok:()=>COLLECT_ORDER.every(k=>PROG.seen.includes(k))},
   {id:'yard20',name:'熱鬧的鳥園', desc:'鳥園裡住了 20 隻鳥', ok:()=>PROG.aviary.length>=20},
   {id:'deco10',name:'鳥園設計師', desc:'鳥園裡擺了 10 樣東西', ok:()=>(PROG.gItems||[]).length>=10},
   {id:'l50',   name:'過半', desc:'通過第 50 關', ok:()=>!!PROG.stars[50]},

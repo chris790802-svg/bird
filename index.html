@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="build" content="4c624817ce">
+<meta name="build" content="1c5a80d511">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="鳥巢數獨：用小鳥當線索的數字推理遊戲，100 關、8 種鳥規則、每日一題、圖鑑與鳥園。">
 <script>try{var t=JSON.parse(localStorage.getItem('kp4-prog')||'{}').theme;if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
@@ -1220,13 +1220,13 @@ function hatch(force){
 function openDex(){
   const firstCh=t=>{const c=CHAPTERS.find(c=>c.bird===t); return c?`${c.name}・第 ${c.from} 關登場`:t==='E'?'通過第 100 關':'';};
   const all=[...SPECIES_ORDER,...COLLECT_ORDER], got=all.filter(t=>PROG.seen.includes(t)).length;
-  $('dexNote').textContent=`已經認識 ${got} / ${all.length} 種鳥。規則鳥在關卡裡遇到就會收進來；台灣野鳥要在鳥園用孵出來的鳥交換。`;
+  $('dexNote').textContent=`已經認識 ${got} / ${all.length} 種鳥。規則鳥在關卡裡遇到就會收進來；收藏鳥要在鳥園用孵出來的鳥交換。`;
   const card=(t,tag,lockText)=>{const sp=SPECIES[t], on=PROG.seen.includes(t);
     return `<div class="dex-item${on?'':' locked'}"><span class="pic">${sp.svg}</span><b>${on?sp.name:'？？？'}</b>${tag}`+
       (on?(sp.rule&&!isCollect(t)?`<p><b style="font-size:.8rem">規則：</b>${sp.rule}</p>`:'')+`<p>${sp.fact}</p>`:`<p>${lockText}</p>`)+'</div>';};
   let h='<h4 class="dex-h">規則鳥</h4><div class="dex-grid">'+SPECIES_ORDER.map(t=>card(t,`<span class="tag">${firstCh(t)}</span>`,'還沒遇過這種鳥。')).join('')+'</div>';
   RARITY_ORDER.forEach(r=>{ const ks=COLLECT_ORDER.filter(k=>COLLECT[k].rarity===r), n=ks.filter(k=>PROG.seen.includes(k)).length;
-    h+=`<h4 class="dex-h">台灣野鳥・${RARITY[r].name} <span>${n} / ${ks.length}・每隻 ${RARITY[r].cost} 鳥幣</span></h4><div class="dex-grid">`+
+    h+=`<h4 class="dex-h">收藏鳥・${RARITY[r].name} <span>${n} / ${ks.length}・每隻 ${RARITY[r].cost} 鳥幣</span></h4><div class="dex-grid">`+
       ks.map(k=>card(k,rarityTag(k),`到鳥園的「換鳥」，用 ${costOf(k)} 鳥幣交換。`)).join('')+'</div>'; });
   $('dexBody').innerHTML=h;
   openSheet('dex');
@@ -1245,10 +1245,10 @@ const ACH=[
   {id:'weekend',name:'週末大盤', desc:'解開一次週末大盤', ok:()=>!!PROG.c.weekend},
   {id:'dex5',  name:'賞鳥新手', desc:'圖鑑收集 5 種鳥', ok:()=>PROG.seen.length>=5},
   {id:'dexall',name:'賞鳥達人', desc:'認識全部 9 種規則鳥', ok:()=>SPECIES_ORDER.every(t=>PROG.seen.includes(t))},
-  {id:'coll1', name:'第一位新朋友', desc:'第一次用鳥換到台灣野鳥', ok:()=>COLLECT_ORDER.some(k=>PROG.seen.includes(k))},
-  {id:'coll8', name:'野鳥收藏家', desc:'收集 8 種台灣野鳥', ok:()=>COLLECT_ORDER.filter(k=>PROG.seen.includes(k)).length>=8},
+  {id:'coll1', name:'第一位新朋友', desc:'第一次用鳥換到收藏鳥', ok:()=>COLLECT_ORDER.some(k=>PROG.seen.includes(k))},
+  {id:'coll8', name:'野鳥收藏家', desc:'收集 8 種收藏鳥', ok:()=>COLLECT_ORDER.filter(k=>PROG.seen.includes(k)).length>=8},
   {id:'legend',name:'傳說現身', desc:'換到一隻傳說等級的鳥', ok:()=>COLLECT_ORDER.some(k=>COLLECT[k].rarity==='legend'&&PROG.seen.includes(k))},
-  {id:'collall',name:'台灣鳥類圖鑑', desc:'收集全部 17 種台灣野鳥', ok:()=>COLLECT_ORDER.every(k=>PROG.seen.includes(k))},
+  {id:'collall',name:'鳥類收藏大全', desc:'收集全部 18 種收藏鳥', ok:()=>COLLECT_ORDER.every(k=>PROG.seen.includes(k))},
   {id:'yard20',name:'熱鬧的鳥園', desc:'鳥園裡住了 20 隻鳥', ok:()=>PROG.aviary.length>=20},
   {id:'deco10',name:'鳥園設計師', desc:'鳥園裡擺了 10 樣東西', ok:()=>(PROG.gItems||[]).length>=10},
   {id:'l50',   name:'過半', desc:'通過第 50 關', ok:()=>!!PROG.stars[50]},
@@ -2048,7 +2048,7 @@ function gList(){
 }
 document.querySelectorAll('.g-tab').forEach(b=>b.onclick=()=>{ G.tab=b.dataset.t; $('trade').hidden=true; gList(); });
 $('gEdit').onclick=()=>{ G.edit=!G.edit; if(!G.edit) G.sel=null; gRender(); };
-// ===================== 11 收藏鳥：用孵出的鳥換台灣野鳥 =====================
+// ===================== 11 收藏鳥：用孵出的鳥換收藏鳥 =====================
 // 孵出來的規則鳥，各自值多少「鳥幣」：越後面章節的鳥越值錢
 const BIRD_VALUE={1:1,2:2,3:3,4:4,5:5,O:6,6:7,7:8};
 const RARITY={
@@ -2092,6 +2092,9 @@ const COLLECT={
   bushtit:{name:'紅頭山雀',rarity:'rare',fact:'身體很小，頭頂是紅褐色，喉嚨有一塊黑色。總是一大群在樹梢間快速移動，叫聲細細碎碎的。',
     svg:svgWrap(`<path d="M3.4 12 L-4 13.4 L-3.6 15 L3.4 15.8 Z" fill="#7d8592" class="ln"/>`+B_('#8f97a3')+`<ellipse cx="10.8" cy="15" rx="5.8" ry="3.4" fill="#e9dccf"/><path d="M4.6 7.4 Q6.6 2.4 12 2.6 Q16.8 3 18 7.2 Q12 5.6 4.6 7.4 Z" fill="#b5512e"/><ellipse cx="12.4" cy="9.8" rx="3.4" ry="2.2" fill="#fff"/><ellipse cx="15.4" cy="12" rx="2.2" ry="1.6" fill="#1b1b1b"/>${EW(14.2,7.8)}<path d="M17.8 8.6 L19.6 9.2 L17.8 9.8 Z" fill="#222"/>`),
     call:[[5200,5600,.025],[5400,5000,.025],[5200,5700,.025],[5500,5100,.025]]},
+  budgie:{name:'藍色虎皮鸚鵡',rarity:'rare',fact:'原產澳洲，野生的虎皮鸚鵡其實是綠色的，藍色是人工飼養時出現的羽色變化。頭後面有像老虎斑紋的波浪條紋，很愛說話、學聲音。',
+    svg:svgWrap(`<path d="M3.4 12.4 L-6.2 15.6 L-5.6 17 L3.6 15.8 Z" fill="#2f6fc0" class="ln"/>`+B_('#5b9bea')+`<path d="M5 14 q2 -1.4 4 0 M6 16.4 q2 -1.4 4 0 M3.6 11.4 q2 -1.4 4 0" stroke="#1d3f73" stroke-width=".7" fill="none"/><path d="M6 6.2 Q8 2.6 12.4 2.8 Q17.4 3.2 18.2 8.6 Q16.8 12.8 12.6 12.4 Q8.6 11.6 6 6.2 Z" fill="#fff"/><path d="M6.6 5.8 q1.2 -1 2.4 0 M7.4 7.8 q1.2 -1 2.4 0 M8.8 4.2 q1.2 -1 2.4 0 M10.6 2.9 q1.2 -.9 2.4 0" stroke="#1b1b1b" stroke-width=".6" fill="none"/><circle cx="14.4" cy="12.1" r=".7" fill="#1b1b1b"/><circle cx="16.3" cy="11.4" r=".7" fill="#1b1b1b"/><ellipse cx="17.7" cy="7.7" rx="1.2" ry=".8" fill="#3b6fd0"/>${E_(13.8,7.2,.95)}<path d="M17.4 8.4 Q20.4 8.6 18.4 11.2 Z" fill="#d9cfa8"/>`),
+    call:[[2600,3400,.04],[3200,2400,.05],[2800,3600,.04],[3400,2800,.05],[3000,3800,.04]]},
   yellowtit:{name:'黃山雀',rarity:'epic',fact:'台灣特有種。全身鮮黃色，頭上頂著一撮黑色的冠羽，非常亮眼。數量不多，能遇到算是幸運。',
     svg:svgWrap(`<path d="M7.6 4.6 L7.2 -2 L12 3.4 Z" fill="#1b1b1b" class="ln"/>`+T_('#6f7f99')+B_('#ffd23a')+`<path d="M3.4 9 Q5 5 9 4.6 Q7.4 9 9.6 14 Q5.4 14 3.4 9 Z" fill="#6f7f99"/><circle cx="6" cy="9" r=".7" fill="#fff"/><circle cx="7" cy="11.4" r=".7" fill="#fff"/><path d="M14 11 Q15.4 14.4 13 17" stroke="#1b1b1b" stroke-width="1.6" fill="none"/>${E_(14,7.6)}<path d="M17.6 8.2 L20.2 9 L17.7 9.8 Z" fill="#333"/>`),
     call:[[3600,3000,.06],[3600,3000,.06],[3200,3800,.08]]},
