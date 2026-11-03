@@ -75,54 +75,53 @@ const valueOf=t=>BIRD_VALUE[t]||0;
 const aviaryValue=()=>PROG.aviary.reduce((s,t)=>s+valueOf(t),0);
 const rarityTag=k=>{const r=RARITY[COLLECT[k].rarity]; return `<span class="rtag ${r.cls}">${r.name}</span>`;};
 
-// ---------- 換鳥 ----------
-let TRADE=null;
+// ---------- 鳥幣錢包：出售鳥換鳥幣，再用鳥幣兌換收藏鳥 ----------
+const coins=()=>PROG.coins||0;
+let SELL=null;
 function tradeList(box){
-  const total=aviaryValue();
-  const head=document.createElement('p'); head.className='note'; head.style.gridColumn='1/-1';
-  head.innerHTML=`你的鳥園裡，可以拿來交換的鳥共值 <b>${total}</b> 鳥幣。鸚鵡 1、山雀 2、綠繡眼 3、翠鳥 4、麻雀 5、領角鴞 6、藍鵲 7、五色鳥 8。`;
-  box.appendChild(head);
-  COLLECT_ORDER.forEach(k=>{ const sp=COLLECT[k], have=PROG.aviary.filter(t=>t===k).length, cost=costOf(k);
+  const head=document.createElement('div'); head.className='wallet';
+  head.innerHTML=`<span class="coin-ic" aria-hidden="true"></span><span>鳥幣錢包 <b>${coins()}</b></span><button class="pill small primary" id="sellOpen">出售鳥，兌換鳥幣</button>`+
+    `<p class="note">孵出來的鳥可以出售換鳥幣，越後面章節的鳥越值錢：鸚鵡 1、山雀 2、綠繡眼 3、翠鳥 4、麻雀 5、領角鴞 6、藍鵲 7、五色鳥 8。你鳥園裡可以出售的鳥共值 ${aviaryValue()} 鳥幣。</p>`;
+  box.appendChild(head); head.querySelector('#sellOpen').onclick=openSell;
+  COLLECT_ORDER.forEach(k=>{ const sp=COLLECT[k], have=PROG.aviary.filter(t=>t===k).length, cost=costOf(k), ok=coins()>=cost;
     const d=document.createElement('div'); d.className='g-card';
-    d.innerHTML=`<span class="g-ic"><span class="pic">${sp.svg}</span></span><b></b>${rarityTag(k)}<span class="g-sub"></span><button class="pill small${total>=cost?' primary':''}"></button>`;
+    d.innerHTML=`<span class="g-ic"><span class="pic">${sp.svg}</span></span><b></b>${rarityTag(k)}<span class="g-sub"></span><button class="pill small${ok?' primary':''}"></button>`;
     d.querySelector('b').textContent=sp.name; d.querySelector('.g-sub').textContent=`${cost} 鳥幣`+(have?`・已有 ${have} 隻`:'');
-    const b=d.querySelector('button'); b.textContent='交換'; b.disabled=total<cost; b.onclick=()=>openTrade(k);
+    const btn=d.querySelector('button'); btn.textContent='兌換'; btn.disabled=!ok; btn.onclick=()=>buyBird(k);
     box.appendChild(d); });
 }
-function autoPick(cost){
-  const pool=PROG.aviary.map((t,i)=>({t,i,v:valueOf(t)})).filter(x=>x.v>0).sort((a,b)=>a.v-b.v);
-  const pick=[]; let s=0;
-  for(const x of pool){ if(s>=cost) break; pick.push(x); s+=x.v; }
-  // 多出來的部分，能退就退回去（從價值最小的開始）
-  for(const x of [...pick]) if(s-x.v>=cost){ pick.splice(pick.indexOf(x),1); s-=x.v; }
-  const cnt={}; pick.forEach(x=>cnt[x.t]=(cnt[x.t]||0)+1); return cnt;
+function buyBird(k){
+  const cost=costOf(k); if(coins()<cost) return;
+  PROG.coins=coins()-cost; PROG.aviary.push(k);
+  const first=!PROG.seen.includes(k); if(first) PROG.seen.push(k);
+  saveProg(); gRender(); gList(); checkAch(); chirp(k,.06); showNewBird(k,first);
 }
-function openTrade(k){ TRADE={k,cnt:autoPick(costOf(k))}; renderTrade(); $('trade').hidden=false; }
-function renderTrade(){
-  const k=TRADE.k, sp=COLLECT[k], cost=costOf(k);
+function openSell(){ SELL={cnt:{}}; renderSell(); $('trade').hidden=false; }
+function renderSell(){
   const own={}; PROG.aviary.forEach(t=>{ if(valueOf(t)) own[t]=(own[t]||0)+1; });
-  const sum=Object.entries(TRADE.cnt).reduce((s,[t,n])=>s+valueOf(isNaN(+t)?t:+t)*n,0);
-  $('tradeBird').innerHTML=sp.svg; $('tradeName').textContent=sp.name; $('tradeTag').innerHTML=rarityTag(k);
-  $('tradeNeed').textContent=`需要 ${cost} 鳥幣，目前選了 ${sum} 鳥幣`+(sum>cost?`（多出 ${sum-cost}）`:'');
-  $('tradeNeed').classList.toggle('ok',sum>=cost);
+  const sum=Object.entries(SELL.cnt).reduce((s,[t,n])=>s+valueOf(isNaN(+t)?t:+t)*n,0);
+  $('tradeBird').innerHTML='<span class="coin-ic big"></span>'; $('tradeName').textContent='出售鳥，兌換鳥幣'; $('tradeTag').innerHTML='';
+  $('tradeNeed').textContent=`錢包現在有 ${coins()} 鳥幣，這次可以換到 ${sum} 鳥幣`;
+  $('tradeNeed').classList.toggle('ok',sum>0);
   const box=$('tradeRows'); box.innerHTML='';
-  BIRD_ORDER.filter(t=>own[t]).forEach(t=>{ const n=TRADE.cnt[t]||0, row=document.createElement('div'); row.className='trow';
-    row.innerHTML=`${birdDot(t)}<span class="tn">${SPECIES[t].name}<small>每隻 ${valueOf(t)} 鳥幣・有 ${own[t]} 隻</small></span><button class="step" aria-label="少一隻">−</button><b>${n}</b><button class="step" aria-label="多一隻">＋</button>`;
+  const kinds=BIRD_ORDER.filter(t=>own[t]);
+  if(!kinds.length) box.innerHTML='<p class="note">鳥園裡沒有可以出售的鳥。過關就會孵出新的鳥。收藏鳥和帝雉不能出售。</p>';
+  kinds.forEach(t=>{ const n=SELL.cnt[t]||0, row=document.createElement('div'); row.className='trow';
+    row.innerHTML=`${birdDot(t)}<span class="tn">${SPECIES[t].name}<small>每隻 ${valueOf(t)} 鳥幣・有 ${own[t]} 隻</small></span><button class="step" aria-label="少一隻">−</button><b>${n}</b><button class="step" aria-label="多一隻">＋</button><button class="pill small all">全部</button>`;
     const [minus,plus]=row.querySelectorAll('.step'); minus.disabled=n<=0; plus.disabled=n>=own[t];
-    minus.onclick=()=>{TRADE.cnt[t]=n-1; renderTrade();}; plus.onclick=()=>{TRADE.cnt[t]=n+1; renderTrade();};
+    minus.onclick=()=>{SELL.cnt[t]=n-1; renderSell();}; plus.onclick=()=>{SELL.cnt[t]=n+1; renderSell();};
+    row.querySelector('.all').onclick=()=>{SELL.cnt[t]=own[t]; renderSell();};
     box.appendChild(row); });
   birdify(box);
-  $('tradeGo').disabled=sum<cost;
+  $('tradeGo').disabled=sum<=0; $('tradeGo').textContent=sum>0?`出售，得到 ${sum} 鳥幣`:'出售';
 }
-$('tradeAuto').onclick=()=>{ TRADE.cnt=autoPick(costOf(TRADE.k)); renderTrade(); };
-$('tradeCancel').onclick=()=>{ $('trade').hidden=true; TRADE=null; };
+$('tradeAuto').onclick=()=>{ SELL.cnt={}; renderSell(); };
+$('tradeCancel').onclick=()=>{ $('trade').hidden=true; SELL=null; };
 $('tradeGo').onclick=()=>{
-  const k=TRADE.k;
-  for(const [t0,n] of Object.entries(TRADE.cnt)){ const t=isNaN(+t0)?t0:+t0; for(let j=0;j<n;j++){ const i=PROG.aviary.indexOf(t); if(i>=0) PROG.aviary.splice(i,1); } }
-  PROG.aviary.push(k); const first=!PROG.seen.includes(k); if(first) PROG.seen.push(k);
-  saveProg(); $('trade').hidden=true; TRADE=null;
-  gRender(); gList(); checkAch(); chirp(k,.06);
-  showNewBird(k,first);
+  let sum=0;
+  for(const [t0,n] of Object.entries(SELL.cnt)){ const t=isNaN(+t0)?t0:+t0; for(let j=0;j<n;j++){ const i=PROG.aviary.indexOf(t); if(i>=0){ PROG.aviary.splice(i,1); sum+=valueOf(t); } } }
+  PROG.coins=coins()+sum; saveProg(); $('trade').hidden=true; SELL=null;
+  gRender(); gList(); blip(988,.12,.04); toast(`出售成功，得到 ${sum} 鳥幣`);
 };
 function showNewBird(k,first){
   const sp=COLLECT[k];

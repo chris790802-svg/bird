@@ -65,7 +65,7 @@ function openDex(){
   let h='<h4 class="dex-h">規則鳥</h4><div class="dex-grid">'+SPECIES_ORDER.map(t=>card(t,`<span class="tag">${firstCh(t)}</span>`,'還沒遇過這種鳥。')).join('')+'</div>';
   RARITY_ORDER.forEach(r=>{ const ks=COLLECT_ORDER.filter(k=>COLLECT[k].rarity===r), n=ks.filter(k=>PROG.seen.includes(k)).length;
     h+=`<h4 class="dex-h">收藏鳥・${RARITY[r].name} <span>${n} / ${ks.length}・每隻 ${RARITY[r].cost} 鳥幣</span></h4><div class="dex-grid">`+
-      ks.map(k=>card(k,rarityTag(k),`到鳥園的「換鳥」，用 ${costOf(k)} 鳥幣交換。`)).join('')+'</div>'; });
+      ks.map(k=>card(k,rarityTag(k),`到鳥園的「換鳥」，用 ${costOf(k)} 鳥幣兌換。`)).join('')+'</div>'; });
   $('dexBody').innerHTML=h;
   openSheet('dex');
 }

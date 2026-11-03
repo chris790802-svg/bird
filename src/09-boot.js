@@ -19,18 +19,19 @@ $('pwForm').addEventListener('submit',e=>{ e.preventDefault();
   if(hashStr('pw:'+$('pwIn').value.trim())!==377573281){ $('pwMsg').textContent='密碼不對，請再試一次。'; $('pwIn').select(); blip(220,.12,.035,'sine'); return; }
   gInit(); $('pwMsg').textContent=''; $('pwForm').hidden=true; $('cheatForm').hidden=false;
   let cleared=0; while(cleared<LEVELS&&PROG.stars[cleared+1]) cleared++;
-  $('cheatLv').value=cleared; $('cheatSeeds').value=PROG.seeds; $('cheatLv').focus(); });
+  $('cheatLv').value=cleared; $('cheatSeeds').value=PROG.seeds; $('cheatCoins').value=PROG.coins||0; $('cheatLv').focus(); });
 $('cheatForm').addEventListener('submit',e=>{ e.preventDefault();
   const L=Math.max(0,Math.min(LEVELS,parseInt($('cheatLv').value,10)||0));
   const seeds=Math.max(0,Math.min(9999999,parseInt($('cheatSeeds').value,10)||0));
+  const coinsN=Math.max(0,Math.min(9999999,parseInt($('cheatCoins').value,10)||0));
   for(let k=1;k<=LEVELS;k++){ if(k<=L) PROG.stars[k]=PROG.stars[k]||3; else delete PROG.stars[k]; }
   PROG.max=Math.min(LEVELS,L+1);
   CHAPTERS.forEach(c=>{ if(c.from<=L&&!PROG.seen.includes(c.bird)) PROG.seen.push(c.bird); });
   if(L>=LEVELS&&!PROG.seen.includes('E')) PROG.seen.push('E');
-  PROG.seeds=seeds; saveProg(); checkAch(true);
+  PROG.seeds=seeds; PROG.coins=coinsN; saveProg(); checkAch(true);
   closeSheet('pw'); setMenu(false);
   switchTo('level',()=>startLevel(Math.min(LEVELS,L+1)));
-  toast(`已設定：破到第 ${L} 關，種子 ${seeds} 顆`,1); });
+  toast(`已設定：破到第 ${L} 關，種子 ${seeds} 顆，鳥幣 ${coinsN}`,1); });
 
 // ---- 外觀：自動（跟著手機）、淺色、深色 ----
 const THEMES=['auto','light','dark'], THEME_NAME={auto:'自動',light:'淺色',dark:'深色'};

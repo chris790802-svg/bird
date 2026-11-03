@@ -185,9 +185,9 @@
     <div class="g-list" id="gList"></div>
     <div class="trade" id="trade" hidden role="dialog" aria-labelledby="tradeName">
       <div class="trade-head"><span class="pic" id="tradeBird"></span><div><b id="tradeName"></b> <span id="tradeTag"></span><p class="note" id="tradeNeed"></p></div></div>
-      <p class="note">選擇要拿哪些鳥去交換。交換出去的鳥會離開鳥園。</p>
+      <p class="note">選擇要出售的鳥。賣出的鳥會離開鳥園，換成鳥幣存進錢包，之後可以拿來兌換收藏鳥。</p>
       <div class="trade-rows" id="tradeRows"></div>
-      <div class="row"><button class="pill" id="tradeAuto">自動挑選</button><span style="flex:1"></span><button class="pill" id="tradeCancel">取消</button><button class="pill primary" id="tradeGo">確認交換</button></div>
+      <div class="row"><button class="pill" id="tradeAuto">全部取消</button><span style="flex:1"></span><button class="pill" id="tradeCancel">取消</button><button class="pill primary" id="tradeGo">出售</button></div>
     </div>
   </div>
 </div>
@@ -222,6 +222,8 @@
       <input id="cheatLv" class="field" type="number" inputmode="numeric" min="0" max="100">
       <label for="cheatSeeds">種子數量</label>
       <input id="cheatSeeds" class="field" type="number" inputmode="numeric" min="0" max="9999999">
+      <label for="cheatCoins">鳥幣數量</label>
+      <input id="cheatCoins" class="field" type="number" inputmode="numeric" min="0" max="9999999">
       <button class="pill primary" type="submit">套用</button>
       <p class="note">前面的關卡會算成已過關；沒拿過星星的關卡會給三顆星。設定的關數比現在少的話，後面關卡的紀錄會清掉。</p>
     </form>
