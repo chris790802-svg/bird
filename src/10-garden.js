@@ -54,7 +54,7 @@ function addSeeds(n){ if(!n) return; gInit(); PROG.seeds+=n; saveProg(); }
 // ---------- 畫面 ----------
 let G={tab:'fac',edit:false,sel:null,timer:null,birds:[]};
 function openGarden(){
-  gInit(); G.edit=false; G.sel=null;
+  gInit(); G.edit=false; G.sel=null; $('trade').hidden=true;
   openSheet('garden'); gLayout(); gRender(); gList();
   const sc=$('yardScroll'), ground=PROG.gItems.filter(i=>!G_ITEMS[i.k]?.air);
   const cx=ground.length?ground.reduce((t,i)=>t+i.x,0)/ground.length:50;
@@ -78,7 +78,7 @@ function gRender(){
     el.style.zIndex=def.flat?1:def.air?2:Math.round(100-it.y);
     el.innerHTML=itemSVG(it.k); world.appendChild(el); gDrag(el,it);
   });
-  const birds=PROG.aviary.slice(-60);
+  const birds=PROG.aviary.slice(-80);
   G.birds=birds.map(t=>{ const b=document.createElement('span'); b.className='gb'; b.innerHTML=birdSVG(t);
     b.style.left=(30+RNG()*40)+'%'; b.style.bottom=(3+RNG()*30)+'%'; b.style.zIndex=200;
     b.onclick=()=>{ if(G.edit) return; chirp(t,.06); hop(b); }; world.appendChild(b); return b; });
@@ -140,6 +140,7 @@ function gList(){
   const card=(icon,name,sub,btn,disabled,fn)=>{ const d=document.createElement('div'); d.className='g-card';
     d.innerHTML=`<span class="g-ic">${icon}</span><b></b><span class="g-sub"></span><button class="pill small${disabled?'':' primary'}"></button>`;
     d.querySelector('b').textContent=name; d.querySelector('.g-sub').textContent=sub; const b=d.querySelector('button'); b.textContent=btn; b.disabled=disabled; b.onclick=fn; box.appendChild(d); };
+  if(G.tab==='trade'){ tradeList(box); return; }
   if(G.tab==='bag'){
     const ks=Object.keys(PROG.gBag).filter(k=>PROG.gBag[k]>0);
     if(!ks.length){ box.innerHTML='<p class="note">背包是空的。在「擺設」模式選取物品，按「收回背包」就會放到這裡。</p>'; return; }
@@ -160,5 +161,5 @@ function gList(){
       PROG.seeds-=it.cost; blip(880,.1,.04); toast(`兌換了${it.name}，拖曳可以調整位置`); gPlace(k); gList(); checkAch(); });
   });
 }
-document.querySelectorAll('.g-tab').forEach(b=>b.onclick=()=>{ G.tab=b.dataset.t; gList(); });
+document.querySelectorAll('.g-tab').forEach(b=>b.onclick=()=>{ G.tab=b.dataset.t; $('trade').hidden=true; gList(); });
 $('gEdit').onclick=()=>{ G.edit=!G.edit; if(!G.edit) G.sel=null; gRender(); };

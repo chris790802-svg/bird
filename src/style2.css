@@ -267,3 +267,34 @@ code{font-family:var(--f-num);font-weight:600;letter-spacing:.04em;color:var(--a
 .cheat{display:flex;flex-direction:column;gap:6px}
 .cheat label{font-size:.86rem}
 .cheat .pill{align-self:flex-start;margin-top:4px}
+
+/* 收藏鳥與換鳥 */
+.rtag{display:inline-block;font-size:.7rem;border-radius:999px;padding:1px 8px;font-weight:700;letter-spacing:.04em}
+.r-common{background:#e3eaf2;color:#4a5a6e}
+.r-rare{background:#d7f2e4;color:#1f6b45}
+.r-epic{background:#e9defb;color:#5b3aa0}
+.r-legend{background:linear-gradient(90deg,#ffe28a,#ffc24a);color:#6a4500}
+.dex-h{margin:6px 0 0;font-family:var(--f-display);font-weight:400;font-size:1rem;color:var(--accent);display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.dex-h span{font-size:.76rem;color:var(--muted);font-family:var(--f-body)}
+#dexBody{display:flex;flex-direction:column;gap:10px}
+.g-card .g-ic .pic{display:block;width:52px;height:52px}
+.g-card .g-ic .pic svg{width:100%;height:100%;overflow:visible}
+.garden-card{position:relative}
+.trade{position:absolute;inset:0;z-index:5;background:var(--surface);border-radius:26px;padding:16px;display:flex;flex-direction:column;gap:10px;animation:popin .25s ease-out}
+.trade-head{display:flex;gap:12px;align-items:center}
+.trade-head .pic{width:72px;height:72px;flex:none;display:block}
+.trade-head .pic svg{width:100%;height:100%;overflow:visible}
+.trade-head b{font-family:var(--f-display);font-weight:400;font-size:1.3rem}
+#tradeNeed{margin-top:4px}
+#tradeNeed.ok{color:var(--accent)}
+.trade-rows{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.trow{display:flex;align-items:center;gap:8px;background:var(--paper);border-radius:14px;padding:6px 10px}
+.trow .dot{position:relative;transform:none;width:30px;--n:1;flex:none}
+.trow .tn{flex:1;min-width:0;display:flex;flex-direction:column;font-size:.9rem;line-height:1.3}
+.trow .tn small{color:var(--muted);font-size:.74rem}
+.trow b{font-family:var(--f-num);min-width:1.6em;text-align:center}
+.step{font:inherit;font-family:var(--f-num);font-size:1.1rem;width:32px;height:32px;border-radius:50%;border:0;background:var(--surface);color:var(--accent);cursor:pointer;box-shadow:0 2px 0 var(--shadow)}
+.step:disabled{opacity:.35;cursor:default}
+#introRule .rtag{vertical-align:2px}
+#intro{z-index:26}
+#pw{z-index:24}

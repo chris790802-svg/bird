@@ -142,7 +142,7 @@
 
 <div class="sheet" id="intro" hidden role="dialog" aria-modal="true" aria-labelledby="intro-title">
   <div class="sheet-card intro-card">
-    <span class="eyebrow">新的鳥登場</span>
+    <span class="eyebrow" id="introKind">新的鳥登場</span>
     <span class="intro-bird" id="introBird"></span>
     <h3 id="intro-title"></h3>
     <p class="intro-rule" id="introRule"></p>
@@ -156,7 +156,7 @@
   <div class="sheet-card wide">
     <div class="sheet-top"><h3 id="dex-title">鳥類圖鑑</h3><button class="sheet-close" data-close="dex">關閉</button></div>
     <p class="note" id="dexNote"></p>
-    <div class="sheet-body dex-grid" id="dexBody"></div>
+    <div class="sheet-body" id="dexBody"></div>
   </div>
 </div>
 
@@ -178,10 +178,17 @@
       <button class="g-tab" role="tab" data-t="plant">植物</button>
       <button class="g-tab" role="tab" data-t="view">景觀</button>
       <button class="g-tab" role="tab" data-t="season">季節</button>
+      <button class="g-tab" role="tab" data-t="trade">換鳥</button>
       <button class="g-tab" role="tab" data-t="bag">背包</button>
     </div>
     <p class="note g-how">過關、解每日一題可以拿到種子：第一次過關 ★ 一顆 10 粒，每日一題 40 粒，自由練習 5 粒。</p>
     <div class="g-list" id="gList"></div>
+    <div class="trade" id="trade" hidden role="dialog" aria-labelledby="tradeName">
+      <div class="trade-head"><span class="pic" id="tradeBird"></span><div><b id="tradeName"></b> <span id="tradeTag"></span><p class="note" id="tradeNeed"></p></div></div>
+      <p class="note">選擇要拿哪些鳥去交換。交換出去的鳥會離開鳥園。</p>
+      <div class="trade-rows" id="tradeRows"></div>
+      <div class="row"><button class="pill" id="tradeAuto">自動挑選</button><span style="flex:1"></span><button class="pill" id="tradeCancel">取消</button><button class="pill primary" id="tradeGo">確認交換</button></div>
+    </div>
   </div>
 </div>
 
