@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="build" content="a4527702de">
+<meta name="build" content="9d780915ba">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="鳥巢數獨：用小鳥當線索的數字推理遊戲，100 關、8 種鳥規則、每日一題、圖鑑與鳥園。">
 <script>try{var t=JSON.parse(localStorage.getItem('kp4-prog')||'{}').theme;if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
@@ -575,6 +575,20 @@ body{height:100%;overflow:hidden;overscroll-behavior:none}
 #gZoomLbl{min-width:3.2em;text-align:center;font-family:var(--f-num);font-size:.8rem;color:var(--muted)}
 .yard-scroll{z-index:0}.g-fx{z-index:1}.zoom-ctl,.shop-fab{z-index:3}
 .zoom-ctl{top:10px;bottom:auto}
+
+/* 鳥園土地變大：天空 30%、草地 70% */
+.yard-world{background:linear-gradient(var(--g-sky1),var(--g-sky2) 29%,var(--g-grass1) 29%,var(--g-grass2))}
+.g-orb{top:4%}
+.g-hills{bottom:70%;height:7%}
+.g-path{position:absolute;left:0;right:0;bottom:0;width:100%;height:70%;background:none;border-radius:0;filter:none;opacity:.7}
+.g-tuft,.g-flower,.g-stone{position:absolute;transform:translateX(-50%);pointer-events:none}
+.g-tuft{width:calc(var(--ys)*14px);height:calc(var(--ys)*8px);background:radial-gradient(ellipse at 50% 100%,var(--g-hill1) 60%,transparent 62%);opacity:.9}
+.g-tuft::before,.g-tuft::after{content:"";position:absolute;bottom:0;width:30%;height:140%;border-radius:50% 50% 0 0;background:var(--g-hill1)}
+.g-tuft::before{left:18%;transform:rotate(-14deg)}.g-tuft::after{right:18%;transform:rotate(14deg)}
+.g-flower{width:calc(var(--ys)*7px);aspect-ratio:1;border-radius:50%;box-shadow:0 0 0 calc(var(--ys)*1.5px) rgba(255,255,255,.6)}
+.g-flower.f0{background:#ff9fc0}.g-flower.f1{background:#ffe066}.g-flower.f2{background:#fff}.g-flower.f3{background:#b9a6ff}
+.g-stone{width:calc(var(--ys)*12px);height:calc(var(--ys)*7px);border-radius:50%;background:#b8c2c8;opacity:.8}
+.yard-world.season-winter .g-flower{display:none}
 </style>
 </head>
 <body>
@@ -2045,14 +2059,20 @@ const G_SEASONS={
 const itemSVG=(k,cls='')=>{const it=G_ITEMS[k]; return `<svg viewBox="${it.vb}" class="${cls}" aria-hidden="true">${it.svg}</svg>`;};
 
 // ---------- 存檔資料與舊版轉換 ----------
+function gMigrate(){
+  if(PROG.gV>=2) return;
+  (PROG.gItems||[]).forEach(it=>{ const air=G_ITEMS[it.k]&&G_ITEMS[it.k].air;
+    it.y=air?AIR_LO+Math.max(0,Math.min(1,(it.y-48)/38))*(AIR_HI-AIR_LO):Math.max(0,Math.min(GROUND,it.y*GROUND/38)); });
+  PROG.gV=2; saveProg();
+}
 function gInit(){
-  if(PROG.seeds!==undefined) return;
-  PROG.seeds=totalStars()*10; PROG.gItems=[]; PROG.gBag={}; PROG.gSeasons=[]; PROG.gSeason=null; PROG.gNext=1;
+  if(PROG.seeds!==undefined){ gMigrate(); return; }
+  PROG.gV=2; PROG.seeds=totalStars()*10; PROG.gItems=[]; PROG.gBag={}; PROG.gSeasons=[]; PROG.gSeason=null; PROG.gNext=1;
   const st=totalStars();
   // 以前靠星星解鎖的裝飾直接送給你，另外附一個花圃
-  [[5,'feeder',14,10],[20,'bath',40,6],[45,'birdhouse',72,14],[80,'sakura',6,26],[130,'windmill',58,30],[200,'rainbow',30,62]]
+  [[5,'feeder',38,34],[20,'bath',50,24],[45,'birdhouse',62,38],[80,'sakura',30,48],[130,'windmill',68,50],[200,'rainbow',48,80]]
     .forEach(([need,k,x,y])=>{ if(st>=need) PROG.gItems.push({id:PROG.gNext++,k,x,y}); });
-  PROG.gItems.push({id:PROG.gNext++,k:'flowers',x:46,y:4},{id:PROG.gNext++,k:'mushroom',x:54,y:12});
+  PROG.gItems.push({id:PROG.gNext++,k:'flowers',x:46,y:30},{id:PROG.gNext++,k:'mushroom',x:54,y:36});
   saveProg();
 }
 function addSeeds(n){ if(!n) return; gInit(); PROG.seeds+=n; saveProg(); }
@@ -2064,18 +2084,23 @@ function openGarden(){
   openSheet('garden'); gLayout(); gRender();
   const sc=$('yardScroll'), ground=PROG.gItems.filter(i=>!G_ITEMS[i.k]?.air);
   const cx=ground.length?ground.reduce((t,i)=>t+i.x,0)/ground.length:50;
-  sc.scrollLeft=Math.max(0,cx/100*sc.scrollWidth-sc.clientWidth/2); sc.scrollTop=sc.scrollHeight;
+  const cy=ground.length?ground.reduce((t,i)=>t+i.y,0)/ground.length:30;
+  const world=$('yard');
+  sc.scrollLeft=Math.max(0,cx/100*world.clientWidth-sc.clientWidth/2);
+  sc.scrollTop=Math.max(0,(1-cy/100)*world.clientHeight-sc.clientHeight*.62);
   clearInterval(G.timer); G.timer=setInterval(gTick,800);
 }
 // ---------- 縮放：z=1 是原本大小，最小可以縮到整座鳥園剛好放進畫面（全景） ----------
 const Z_MAX=2.2;
-function zBase(){ const sc=$('yardScroll'); const w=sc.clientWidth||360, h=sc.clientHeight||300; return {w:Math.max(900,w*3),h,fw:w,fh:h}; }
-function zMin(){ const b=zBase(); return b.fw/b.w; }
+// 鳥園土地：寬、高各是畫面的 3 倍；天空佔上面 30%，下面 70% 都是可以擺東西的草地
+const G_K=3, GROUND=68, AIR_LO=73, AIR_HI=94;
+function zBase(){ const sc=$('yardScroll'); const fw=sc.clientWidth||360, fh=sc.clientHeight||300; return {w:fw*G_K,h:fh*G_K,fw,fh}; }
+function zMin(){ const b=zBase(); return Math.min(b.fw/b.w,b.fh/b.h); }
 function gLayout(){
   const b=zBase(), world=$('yard');
   G.z=Math.max(zMin(),Math.min(Z_MAX,G.z??(PROG.gZoom||1)));
   world.style.width=(b.w*G.z)+'px'; world.style.height=(b.h*G.z)+'px';
-  world.style.setProperty('--ys',(b.h*G.z/320).toFixed(3));
+  world.style.setProperty('--ys',(b.fh*G.z/320).toFixed(3));
   const zm=$('gZoomLbl'); if(zm) zm.textContent=G.z<=zMin()+.001?'全景':Math.round(G.z*100)+'%';
   $('gZoomOut').disabled=G.z<=zMin()+.001; $('gZoomIn').disabled=G.z>=Z_MAX-.001;
   $('gPano').textContent=G.z<=zMin()+.001?'放大':'全景';
@@ -2109,7 +2134,7 @@ addEventListener('resize',()=>{ if(!$('garden').hidden) gLayout(); });
 function gRender(){
   const world=$('yard'), season=PROG.gSeason;
   world.className='yard-world'+(season?' season-'+season:'')+(G.edit?' editing':'');
-  world.innerHTML='<span class="g-orb"></span><svg class="g-hills" viewBox="0 0 300 40" preserveAspectRatio="none"><path d="M0 40 L0 22 Q30 6 60 18 T120 14 T190 20 T250 10 T300 18 L300 40 Z" fill="var(--g-hill2)"/><path d="M0 40 L0 30 Q40 18 90 28 T180 26 T260 30 T300 26 L300 40 Z" fill="var(--g-hill1)"/></svg><div class="g-path"></div>';
+  world.innerHTML='<span class="g-orb"></span><svg class="g-hills" viewBox="0 0 300 40" preserveAspectRatio="none"><path d="M0 40 L0 22 Q30 6 60 18 T120 14 T190 20 T250 10 T300 18 L300 40 Z" fill="var(--g-hill2)"/><path d="M0 40 L0 30 Q40 18 90 28 T180 26 T260 30 T300 26 L300 40 Z" fill="var(--g-hill1)"/></svg><svg class="g-path" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M-5 78 C15 60 25 92 45 72 S75 40 105 58" fill="none" stroke="var(--g-path)" stroke-width="5" stroke-linecap="round"/><path d="M40 74 C46 58 58 50 62 30 S70 10 66 -4" fill="none" stroke="var(--g-path)" stroke-width="3.6" stroke-linecap="round"/></svg>'+gGroundDeco();
   PROG.gItems.forEach(it=>{
     const def=G_ITEMS[it.k]; if(!def) return;
     const el=document.createElement('div'); el.className='g-item'+(G.sel===it.id?' sel':''); el.dataset.id=it.id;
@@ -2119,7 +2144,7 @@ function gRender(){
   });
   const birds=PROG.aviary.slice(-80);
   G.birds=birds.map(t=>{ const b=document.createElement('span'); b.className='gb'; b.innerHTML=birdSVG(t);
-    b.style.left=(30+RNG()*40)+'%'; b.style.bottom=(3+RNG()*30)+'%'; b.style.zIndex=200;
+    b.style.left=(20+RNG()*60)+'%'; b.style.bottom=(4+RNG()*(GROUND-10))+'%'; b.style.zIndex=200;
     b.onclick=()=>{ if(G.edit) return; chirp(t,.06); hop(b); }; world.appendChild(b); return b; });
   if(!birds.length) world.insertAdjacentHTML('beforeend','<div class="g-empty">還沒有鳥住進來。第一次過關就會孵出一隻！</div>');
   // 季節效果
@@ -2131,6 +2156,16 @@ function gRender(){
   $('gEdit').textContent=G.edit?'完成擺設':'擺設'; $('gEdit').setAttribute('aria-pressed',G.edit);
   gBar();
 }
+let G_DECO=null;
+function gGroundDeco(){
+  if(G_DECO) return G_DECO;
+  const r=mulberry32(77); let h='';
+  for(let k=0;k<90;k++){ const x=(r()*98+1).toFixed(1), y=(r()*(GROUND-2)+1).toFixed(1), t=r();
+    if(t<.62) h+=`<span class="g-tuft" style="left:${x}%;bottom:${y}%"></span>`;
+    else if(t<.9) h+=`<span class="g-flower f${k%4}" style="left:${x}%;bottom:${y}%"></span>`;
+    else h+=`<span class="g-stone" style="left:${x}%;bottom:${y}%"></span>`; }
+  return G_DECO=h;
+}
 function hop(b){ if(RM) return; b.classList.remove('hop'); void b.offsetWidth; b.classList.add('hop'); }
 function gTick(){
   if($('garden').hidden){ clearInterval(G.timer); return; }
@@ -2140,7 +2175,7 @@ function gTick(){
   else{ let x,y;
     const ground=PROG.gItems.filter(it=>!G_ITEMS[it.k].air);
     if(r<.6&&ground.length){ const it=ground[rnd(ground.length)]; x=it.x+(RNG()-.5)*4; y=it.y+(G_ITEMS[it.k].flat?3:1); }
-    else { x=3+RNG()*94; y=3+RNG()*30; }
+    else { x=3+RNG()*94; y=3+RNG()*(GROUND-6); }
     b.classList.toggle('flip',x<parseFloat(b.style.left)); b.style.left=x+'%'; b.style.bottom=y+'%'; }
 }
 function gBar(){
@@ -2159,7 +2194,7 @@ function gDrag(el,it){
     let moved=false;
     G.sel=it.id; document.querySelectorAll('.g-item.sel').forEach(n=>n.classList.remove('sel')); el.classList.add('sel'); gBar();
     const mv=ev=>{ const dx=(ev.clientX-sx)/W*100, dy=-(ev.clientY-sy)/H*100; if(Math.abs(ev.clientX-sx)+Math.abs(ev.clientY-sy)>4) moved=true;
-      it.x=Math.max(1,Math.min(97,x0+dx)); it.y=def.air?Math.max(48,Math.min(86,y0+dy)):Math.max(0,Math.min(38,y0+dy));
+      it.x=Math.max(1,Math.min(97,x0+dx)); it.y=def.air?Math.max(AIR_LO,Math.min(AIR_HI,y0+dy)):Math.max(0,Math.min(GROUND,y0+dy));
       el.style.left=it.x+'%'; el.style.bottom=it.y+'%'; if(!def.flat&&!def.air) el.style.zIndex=Math.round(100-it.y); };
     const up=()=>{ el.removeEventListener('pointermove',mv); el.removeEventListener('pointerup',up); el.removeEventListener('pointercancel',up); if(moved) saveProg(); };
     el.addEventListener('pointermove',mv); el.addEventListener('pointerup',up); el.addEventListener('pointercancel',up);
@@ -2168,7 +2203,8 @@ function gDrag(el,it){
 function gPlace(k){
   const sc=$('yardScroll'), world=$('yard'), def=G_ITEMS[k];
   const x=Math.max(2,Math.min(95,(sc.scrollLeft+sc.clientWidth/2)/world.clientWidth*100-(G.z<.6?0:3)));
-  const it={id:PROG.gNext++,k,x,y:def.air?62+RNG()*14:6+RNG()*20};
+  const vy=100-(sc.scrollTop+sc.clientHeight*.6)/world.clientHeight*100;
+  const it={id:PROG.gNext++,k,x,y:def.air?AIR_LO+RNG()*(AIR_HI-AIR_LO):Math.max(2,Math.min(GROUND-4,vy))};
   PROG.gItems.push(it); G.edit=true; G.sel=it.id; saveProg(); gRender();
 }
 
