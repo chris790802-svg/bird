@@ -54,19 +54,52 @@ function addSeeds(n){ if(!n) return; gInit(); PROG.seeds+=n; saveProg(); }
 // ---------- 畫面 ----------
 let G={tab:'fac',edit:false,sel:null,timer:null,birds:[]};
 function openGarden(){
-  gInit(); G.edit=false; G.sel=null; $('trade').hidden=true;
+  gInit(); G.edit=false; G.sel=null; G.z=null; $('trade').hidden=true;
   openSheet('garden'); gLayout(); gRender();
   const sc=$('yardScroll'), ground=PROG.gItems.filter(i=>!G_ITEMS[i.k]?.air);
   const cx=ground.length?ground.reduce((t,i)=>t+i.x,0)/ground.length:50;
-  sc.scrollLeft=Math.max(0,cx/100*sc.scrollWidth-sc.clientWidth/2);
+  sc.scrollLeft=Math.max(0,cx/100*sc.scrollWidth-sc.clientWidth/2); sc.scrollTop=sc.scrollHeight;
   clearInterval(G.timer); G.timer=setInterval(gTick,800);
 }
+// ---------- 縮放：z=1 是原本大小，最小可以縮到整座鳥園剛好放進畫面（全景） ----------
+const Z_MAX=2.2;
+function zBase(){ const sc=$('yardScroll'); const w=sc.clientWidth||360, h=sc.clientHeight||300; return {w:Math.max(900,w*3),h,fw:w,fh:h}; }
+function zMin(){ const b=zBase(); return b.fw/b.w; }
 function gLayout(){
-  const sc=$('yardScroll'), h=sc.clientHeight||300, w=sc.clientWidth||360;
-  const world=$('yard'); world.style.width=Math.max(900,w*3)+'px';
-  world.style.setProperty('--ys',(h/320).toFixed(3));
+  const b=zBase(), world=$('yard');
+  G.z=Math.max(zMin(),Math.min(Z_MAX,G.z??(PROG.gZoom||1)));
+  world.style.width=(b.w*G.z)+'px'; world.style.height=(b.h*G.z)+'px';
+  world.style.setProperty('--ys',(b.h*G.z/320).toFixed(3));
+  const zm=$('gZoomLbl'); if(zm) zm.textContent=G.z<=zMin()+.001?'全景':Math.round(G.z*100)+'%';
+  $('gZoomOut').disabled=G.z<=zMin()+.001; $('gZoomIn').disabled=G.z>=Z_MAX-.001;
+  $('gPano').textContent=G.z<=zMin()+.001?'放大':'全景';
+}
+// 以畫面上的某一點（預設正中央）為中心縮放，縮放後那一點還在原處
+function gZoom(z,cx,cy){
+  const sc=$('yardScroll'), world=$('yard');
+  const r=sc.getBoundingClientRect(); cx=cx??r.left+r.width/2; cy=cy??r.top+r.height/2;
+  const wr=world.getBoundingClientRect();
+  const fx=(cx-wr.left)/wr.width, fy=(cy-wr.top)/wr.height;
+  G.z=z; gLayout(); PROG.gZoom=G.z; saveProg();
+  const nr=world.getBoundingClientRect();
+  sc.scrollLeft+= (nr.left+fx*nr.width)-cx; sc.scrollTop+= (nr.top+fy*nr.height)-cy;
 }
 addEventListener('resize',()=>{ if(!$('garden').hidden) gLayout(); });
+(function zoomInput(){
+  const sc=$('yardScroll');
+  $('gZoomIn').onclick=()=>gZoom(G.z*1.35);
+  $('gZoomOut').onclick=()=>gZoom(G.z/1.35);
+  $('gPano').onclick=()=>gZoom(G.z<=zMin()+.001?1:zMin());
+  // 電腦：觸控板捏合或 Ctrl＋滾輪
+  sc.addEventListener('wheel',e=>{ if(!e.ctrlKey) return; e.preventDefault(); gZoom(G.z*Math.exp(-e.deltaY*.01),e.clientX,e.clientY); },{passive:false});
+  // 手機：兩指捏合
+  let pinch=null;
+  const mid=t=>({x:(t[0].clientX+t[1].clientX)/2,y:(t[0].clientY+t[1].clientY)/2,d:Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY)});
+  sc.addEventListener('touchstart',e=>{ if(e.touches.length===2){ const m=mid(e.touches); pinch={z:G.z,d:m.d}; } },{passive:true});
+  sc.addEventListener('touchmove',e=>{ if(!pinch||e.touches.length!==2) return; e.preventDefault(); const m=mid(e.touches); gZoom(pinch.z*m.d/pinch.d,m.x,m.y); },{passive:false});
+  sc.addEventListener('touchend',e=>{ if(e.touches.length<2) pinch=null; });
+  document.addEventListener('gesturestart',e=>{ if(!$('garden').hidden) e.preventDefault(); });
+})();
 function gRender(){
   const world=$('yard'), season=PROG.gSeason;
   world.className='yard-world'+(season?' season-'+season:'')+(G.edit?' editing':'');
@@ -110,7 +143,7 @@ function gBar(){
     bar.innerHTML=it?`<span>已選：<b>${G_ITEMS[it.k].name}</b>，拖曳可以移動</span><button class="pill small" id="gStore">收回背包</button>`
       :'<span>拖曳物品就能移動位置。點一下可以選取。</span>';
     const s=$('gStore'); if(s) s.onclick=()=>{ PROG.gItems=PROG.gItems.filter(i=>i.id!==it.id); PROG.gBag[it.k]=(PROG.gBag[it.k]||0)+1; G.sel=null; saveProg(); gRender(); gList(); toast(`${G_ITEMS[it.k].name}收回背包了`); };
-  } else bar.innerHTML=`<span>住了 <b>${PROG.aviary.length}</b> 隻鳥・擺了 <b>${PROG.gItems.length}</b> 樣東西。左右滑動可以逛整座鳥園。</span>`;
+  } else bar.innerHTML=`<span>住了 <b>${PROG.aviary.length}</b> 隻鳥・擺了 <b>${PROG.gItems.length}</b> 樣東西。兩指捏合可以放大縮小，按「全景」看整座鳥園。</span>`;
 }
 // 擺設模式：拖曳移動
 function gDrag(el,it){
@@ -128,7 +161,7 @@ function gDrag(el,it){
 }
 function gPlace(k){
   const sc=$('yardScroll'), world=$('yard'), def=G_ITEMS[k];
-  const x=Math.max(2,Math.min(95,(sc.scrollLeft+sc.clientWidth/2)/world.clientWidth*100-3));
+  const x=Math.max(2,Math.min(95,(sc.scrollLeft+sc.clientWidth/2)/world.clientWidth*100-(G.z<.6?0:3)));
   const it={id:PROG.gNext++,k,x,y:def.air?62+RNG()*14:6+RNG()*20};
   PROG.gItems.push(it); G.edit=true; G.sel=it.id; saveProg(); gRender();
 }

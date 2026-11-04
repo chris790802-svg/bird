@@ -352,3 +352,14 @@ body{height:100%;overflow:hidden;overscroll-behavior:none}
 .shop-card .sheet-top{gap:8px}
 .shop-card .sheet-top h3{flex:1}
 #shop{z-index:22}
+
+/* 鳥園縮放 */
+.yard-scroll{overflow:auto;display:flex;flex-direction:column;background:linear-gradient(var(--g-sky1),var(--g-sky2));touch-action:pan-x pan-y}
+.yard-world{flex:none;height:100%;margin-top:auto}
+.zoom-ctl{position:absolute;z-index:3;left:10px;bottom:10px;display:flex;align-items:center;gap:2px;background:var(--surface);border-radius:999px;padding:3px;box-shadow:0 4px 0 var(--shadow),0 6px 18px rgba(0,0,0,.12)}
+.zoom-ctl button{font:inherit;font-family:var(--f-num);font-size:1.15rem;width:34px;height:34px;border:0;border-radius:50%;background:var(--paper);color:var(--accent);cursor:pointer}
+.zoom-ctl button:disabled{opacity:.35;cursor:default}
+.zoom-ctl .pano{width:auto;padding:0 12px;border-radius:999px;font-family:var(--f-body);font-size:.84rem;background:var(--accent);color:var(--accent-ink);margin-left:4px}
+#gZoomLbl{min-width:3.2em;text-align:center;font-family:var(--f-num);font-size:.8rem;color:var(--muted)}
+.yard-scroll{z-index:0}.g-fx{z-index:1}.zoom-ctl,.shop-fab{z-index:3}
+.zoom-ctl{top:10px;bottom:auto}
