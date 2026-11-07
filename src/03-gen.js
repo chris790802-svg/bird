@@ -141,7 +141,13 @@ const CHAPTERS=[
 ];
 const LEVELS=200;
 function chapterOf(L){return CHAPTERS.find(c=>L>=c.from&&L<=c.to)}
-function levelSpec(L){const ch=chapterOf(L), t=ch.to===ch.from?1:(L-ch.from)/(ch.to-ch.from); return {...ch.spec(t,L),t,chapter:CHAPTERS.indexOf(ch)+1};}
+// 有「區塊」規則（鳥巢區域、鳥群總和、雁群斜線）的關卡，開局只給少量數字；只有鳥規則的關卡維持原本
+const isBlock=sp=>!!(sp.reg||sp.cage||sp.diag);
+function levelSpec(L){
+  const ch=chapterOf(L), t=ch.to===ch.from?1:(L-ch.from)/(ch.to-ch.from), sp={...ch.spec(t,L),t,chapter:CHAPTERS.indexOf(ch)+1};
+  if(isBlock(sp)){ const few=sp.n<=8?2:3; sp.keep=0; sp.minGiven=few; sp.maxGiven=few+2; }
+  return sp;
+}
 const LEVEL_CACHE=new Map();
 // 難度＝解題過程中「卡住、需要進階推理」的次數；每一章從 0 慢慢升高，後面的章節最高點也比較高
 const diffOf=P=>P.grade.adv;
@@ -156,16 +162,18 @@ function generateLevel(L){
   const sp=levelSpec(L), K=sp.n<=7?8:6, target=levelTarget(L), seed=L*7919+2026;
   let best=null;
   // 都太簡單的話多試幾題（最多 4 倍）
-  for(let k=0;k<K*4&&(k<K||diffOf(best)<target-1.5);k++){
+  const cap=sp.maxGiven??Infinity, over=P=>Math.max(0,P.givens.filter(Boolean).length-cap);
+  const worse=(P,Q)=>over(P)!==over(Q)?over(P)>over(Q):Math.abs(diffOf(P)-target)>Math.abs(diffOf(Q)-target);
+  for(let k=0;k<K*4&&(k<K||over(best)>0||Math.abs(diffOf(best)-target)>2);k++){
     RNG=mulberry32(seed+k*104729);
-    try{ const P=buildPuzzle(sp); P.grade=gradePuzzle(P); easeTo(P,target);
-      if(!best||Math.abs(diffOf(P)-target)<Math.abs(diffOf(best)-target)) best=P; } finally{ RNG=Math.random; }
+    try{ const P=buildPuzzle(sp); P.grade=gradePuzzle(P); easeTo(P,target,cap);
+      if(!best||worse(best,P)) best=P; } finally{ RNG=Math.random; }
   }
   best.label={kind:'level',L}; LEVEL_CACHE.set(L,best); return best;
 }
 // 太難的話，在需要「進階推理」的那一步直接給出數字，一次一格，直到接近目標難度
-function easeTo(P,target){
-  for(let k=0;k<60&&diffOf(P)>target+.5;k++){
+function easeTo(P,target,cap=Infinity){
+  for(let k=0;k<60&&diffOf(P)>target+.5&&P.givens.filter(Boolean).length<cap;k++){
     const r=logicSolve(P,P.givens); const st=r.steps.find(s=>s.tech>=3);
     if(!st) break;
     P.givens[st.i]=st.v; P.grade=gradePuzzle(P);
