@@ -93,10 +93,24 @@ function renderBirdInfo(){
   const box=$('birdChip'); box.innerHTML='';
   list.forEach(t=>{ const sp=SPECIES[t], b=document.createElement('button'); b.className='bird-btn';
     b.innerHTML=birdDot(t)+`<span>${sp.name}</span>`; b.setAttribute('aria-label',sp.name+'的規則');
-    b.onclick=()=>{ toast(`${sp.name}：${sp.rule}${sp.note!==undefined?sp.note:sp.full?'（全部畫出）':t==='O'?'':'（只畫一部分）'}。例 ${sp.ex}`,t); chirp(t,.04); };
+    b.onclick=()=>{ openRules(t); chirp(t,.04); };
     box.appendChild(b); });
   box.classList.toggle('compact',list.length>3);
   birdify(box);
+}
+// 這一關所有鳥的規則（點任何一隻鳥打開，點到的那隻會標出來）
+function ruleNote(t){ const sp=SPECIES[t]; return sp.note!==undefined?sp.note:sp.full?'（全部畫出）':t==='O'?'':'（只畫一部分）'; }
+function openRules(focus){
+  const list=birdsIn(S.P), box=$('rulesList'); box.innerHTML='';
+  const base=document.createElement('div'); base.className='rule-item';
+  base.innerHTML=`<span class="rule-pic grid-ic" aria-hidden="true"></span><div><b>基本規則</b><p>每一列、每一行都要剛好填入 1 到 ${N}，不能重複。</p></div>`;
+  box.appendChild(base);
+  list.forEach(t=>{ const sp=SPECIES[t], d=document.createElement('div'); d.className='rule-item'+(t===focus?' on':'');
+    d.innerHTML=`<span class="rule-pic">${sp.svg}</span><div><b></b><p class="r"></p><p class="ex"></p></div>`;
+    d.querySelector('b').textContent=sp.name; d.querySelector('.r').textContent=sp.rule+ruleNote(t)+'。';
+    d.querySelector('.ex').textContent=sp.ex?'例如：'+sp.ex:''; box.appendChild(d); });
+  openSheet('rules');
+  const on=box.querySelector('.on'); if(on) on.scrollIntoView({block:'nearest'});
 }
 
 // ---------- 檢查衝突 ----------

@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="build" content="f836286a08">
+<meta name="build" content="adfce9b00e">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="鳥巢數獨：用小鳥當線索的數字推理遊戲，100 關、8 種鳥規則、每日一題、圖鑑與鳥園。">
 <script>try{var t=JSON.parse(localStorage.getItem('kp4-prog')||'{}').theme;if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
@@ -616,6 +616,20 @@ body{height:100%;overflow:hidden;overscroll-behavior:none}
 .g-fall{animation:g-fall-w 1s linear infinite;stroke-dasharray:6 6}
 @keyframes g-fall-w{to{stroke-dashoffset:-12}}
 .birdrow > .chip{flex:none;white-space:nowrap}
+
+/* 小鳥規則按鈕：太多時換到第二行，不再被切掉 */
+.birdrow{align-items:flex-start}
+.bird-btns{flex:1;flex-wrap:wrap;overflow:visible}
+.birdrow > .chip{margin-top:2px}
+.rules-list{gap:8px}
+.rule-item{display:flex;gap:12px;align-items:flex-start;background:var(--paper);border-radius:16px;padding:10px 12px;border:2px solid transparent}
+.rule-item.on{border-color:var(--accent);background:var(--accent-soft)}
+.rule-item .rule-pic{flex:none;width:44px;height:44px;display:block}
+.rule-item .rule-pic svg{width:100%;height:100%;overflow:visible}
+.rule-item b{font-family:var(--f-display);font-weight:400;font-size:1.05rem}
+.rule-item p{margin:2px 0 0;font-size:.88rem}
+.rule-item p.ex{color:var(--muted);font-size:.8rem}
+.grid-ic{border-radius:10px;background:linear-gradient(var(--line),var(--line)) 33% 0/2px 100% no-repeat,linear-gradient(var(--line),var(--line)) 66% 0/2px 100% no-repeat,linear-gradient(var(--line),var(--line)) 0 33%/100% 2px no-repeat,linear-gradient(var(--line),var(--line)) 0 66%/100% 2px no-repeat,var(--surface)}
 </style>
 </head>
 <body>
@@ -891,6 +905,13 @@ body{height:100%;overflow:hidden;overscroll-behavior:none}
     <div class="ad-prog"><i id="adBar"></i></div>
     <p class="ad-left" id="adLeft" aria-live="polite"></p>
     <div class="row ad-btns"><button class="pill" id="adSkip">跳過（不會恢復提示）</button><button class="pill primary" id="adDone" hidden>領取 1 次提示</button></div>
+  </div>
+</div>
+
+<div class="sheet" id="rules" hidden role="dialog" aria-modal="true" aria-labelledby="rules-title">
+  <div class="sheet-card">
+    <div class="sheet-top"><h3 id="rules-title">這一關的規則</h3><button class="sheet-close" data-close="rules">關閉</button></div>
+    <div class="sheet-body rules-list" id="rulesList"></div>
   </div>
 </div>
 
@@ -1730,10 +1751,24 @@ function renderBirdInfo(){
   const box=$('birdChip'); box.innerHTML='';
   list.forEach(t=>{ const sp=SPECIES[t], b=document.createElement('button'); b.className='bird-btn';
     b.innerHTML=birdDot(t)+`<span>${sp.name}</span>`; b.setAttribute('aria-label',sp.name+'的規則');
-    b.onclick=()=>{ toast(`${sp.name}：${sp.rule}${sp.note!==undefined?sp.note:sp.full?'（全部畫出）':t==='O'?'':'（只畫一部分）'}。例 ${sp.ex}`,t); chirp(t,.04); };
+    b.onclick=()=>{ openRules(t); chirp(t,.04); };
     box.appendChild(b); });
   box.classList.toggle('compact',list.length>3);
   birdify(box);
+}
+// 這一關所有鳥的規則（點任何一隻鳥打開，點到的那隻會標出來）
+function ruleNote(t){ const sp=SPECIES[t]; return sp.note!==undefined?sp.note:sp.full?'（全部畫出）':t==='O'?'':'（只畫一部分）'; }
+function openRules(focus){
+  const list=birdsIn(S.P), box=$('rulesList'); box.innerHTML='';
+  const base=document.createElement('div'); base.className='rule-item';
+  base.innerHTML=`<span class="rule-pic grid-ic" aria-hidden="true"></span><div><b>基本規則</b><p>每一列、每一行都要剛好填入 1 到 ${N}，不能重複。</p></div>`;
+  box.appendChild(base);
+  list.forEach(t=>{ const sp=SPECIES[t], d=document.createElement('div'); d.className='rule-item'+(t===focus?' on':'');
+    d.innerHTML=`<span class="rule-pic">${sp.svg}</span><div><b></b><p class="r"></p><p class="ex"></p></div>`;
+    d.querySelector('b').textContent=sp.name; d.querySelector('.r').textContent=sp.rule+ruleNote(t)+'。';
+    d.querySelector('.ex').textContent=sp.ex?'例如：'+sp.ex:''; box.appendChild(d); });
+  openSheet('rules');
+  const on=box.querySelector('.on'); if(on) on.scrollIntoView({block:'nearest'});
 }
 
 // ---------- 檢查衝突 ----------

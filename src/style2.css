@@ -404,3 +404,17 @@ body{height:100%;overflow:hidden;overscroll-behavior:none}
 .g-fall{animation:g-fall-w 1s linear infinite;stroke-dasharray:6 6}
 @keyframes g-fall-w{to{stroke-dashoffset:-12}}
 .birdrow > .chip{flex:none;white-space:nowrap}
+
+/* 小鳥規則按鈕：太多時換到第二行，不再被切掉 */
+.birdrow{align-items:flex-start}
+.bird-btns{flex:1;flex-wrap:wrap;overflow:visible}
+.birdrow > .chip{margin-top:2px}
+.rules-list{gap:8px}
+.rule-item{display:flex;gap:12px;align-items:flex-start;background:var(--paper);border-radius:16px;padding:10px 12px;border:2px solid transparent}
+.rule-item.on{border-color:var(--accent);background:var(--accent-soft)}
+.rule-item .rule-pic{flex:none;width:44px;height:44px;display:block}
+.rule-item .rule-pic svg{width:100%;height:100%;overflow:visible}
+.rule-item b{font-family:var(--f-display);font-weight:400;font-size:1.05rem}
+.rule-item p{margin:2px 0 0;font-size:.88rem}
+.rule-item p.ex{color:var(--muted);font-size:.8rem}
+.grid-ic{border-radius:10px;background:linear-gradient(var(--line),var(--line)) 33% 0/2px 100% no-repeat,linear-gradient(var(--line),var(--line)) 66% 0/2px 100% no-repeat,linear-gradient(var(--line),var(--line)) 0 33%/100% 2px no-repeat,linear-gradient(var(--line),var(--line)) 0 66%/100% 2px no-repeat,var(--surface)}
