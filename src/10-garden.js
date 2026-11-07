@@ -29,6 +29,14 @@ const G_ITEMS={
   balloon:{name:'熱氣球',cat:'view',cost:260,w:46,air:true,vb:'0 0 40 62',svg:'<path d="M20 2 C4 2 0 18 8 32 L14 42 L26 42 L32 32 C40 18 36 2 20 2 Z" fill="#ff7aa2"/><path d="M20 2 C14 2 12 18 14 32 L16 42 L24 42 L26 32 C28 18 26 2 20 2 Z" fill="#ffd93a"/><line x1="15" y1="42" x2="16" y2="50" stroke="#7a4d30"/><line x1="25" y1="42" x2="24" y2="50" stroke="#7a4d30"/><rect x="14" y="50" width="12" height="9" rx="2" fill="#a26a3f"/>'},
   cloud:{name:'雲朵',cat:'view',cost:40,w:74,air:true,vb:'0 0 60 26',svg:'<path d="M10 24 Q0 24 2 16 Q4 9 12 11 Q14 2 25 3 Q34 1 38 9 Q46 5 52 11 Q60 13 58 20 Q57 24 50 24 Z" fill="#fff" opacity=".95"/>'},
   rainbow:{name:'彩虹',cat:'view',cost:350,w:230,air:true,vb:'0 0 200 100',svg:'<g fill="none" stroke-width="7" opacity=".75">'+['#ff6b6b','#ffb347','#ffe066','#7bd88f','#6cb5ff','#b28dff'].map((c,k)=>`<path d="M${10+k*7} 100 A${90-k*7} ${90-k*7} 0 0 1 ${190-k*7} 100" stroke="${c}"/>`).join('')+'</g>'},
+  // ---- 擴建區：湖邊（第 101 關解鎖）、山林（第 151 關解鎖） ----
+  lotus:{name:'荷花',cat:'plant',cost:70,w:42,req:'lake',vb:'0 0 40 26',svg:'<ellipse cx="20" cy="21" rx="19" ry="5" fill="#4e9a52"/><path d="M20 21 L20 16" stroke="#3c7d40" stroke-width="1.5"/><path d="M20 4 Q14 12 20 17 Q26 12 20 4 Z" fill="#ff9fc0"/><path d="M12 9 Q12 16 20 17 Q16 11 12 9 Z" fill="#ffb7cf"/><path d="M28 9 Q28 16 20 17 Q24 11 28 9 Z" fill="#ffb7cf"/>'},
+  reeds:{name:'蘆葦',cat:'plant',cost:50,w:36,req:'lake',vb:'0 0 30 60',svg:[4,10,16,22,27].map((x,k)=>`<path d="M${x} 60 Q${x+(k%2?3:-3)} 30 ${x+(k%2?1:-1)} ${8+k*3}" stroke="#7a8f4a" stroke-width="1.6" fill="none"/><ellipse cx="${x+(k%2?1:-1)}" cy="${12+k*3}" rx="2" ry="6" fill="#8a5a3b"/>`).join('')},
+  boat:{name:'小船',cat:'view',cost:160,w:76,flat:true,req:'lake',vb:'0 0 70 30',svg:'<path d="M4 16 L66 16 L58 28 L12 28 Z" fill="#c98b55"/><path d="M4 16 L66 16 L64 19 L6 19 Z" fill="#a26a3f"/><line x1="34" y1="16" x2="34" y2="0" stroke="#7a4d30" stroke-width="2"/><path d="M35 2 L52 14 L35 14 Z" fill="#fff"/><path d="M33 4 L20 14 L33 14 Z" fill="#ff8f4f"/>'},
+  pavilion:{name:'涼亭',cat:'fac',cost:280,w:96,req:'mount',vb:'0 0 80 70',svg:'<path d="M4 22 Q40 -8 76 22 Z" fill="#c0392b"/><path d="M2 22 L78 22 L74 27 L6 27 Z" fill="#8e2a20"/><rect x="12" y="27" width="5" height="36" fill="#a8774d"/><rect x="63" y="27" width="5" height="36" fill="#a8774d"/><rect x="37.5" y="27" width="5" height="36" fill="#a8774d"/><rect x="6" y="61" width="68" height="8" rx="2" fill="#b8c2c8"/><circle cx="40" cy="3" r="3" fill="#f5b82e"/>'},
+  waterfall:{name:'瀑布',cat:'view',cost:320,w:84,req:'mount',vb:'0 0 80 80',svg:'<path d="M0 80 L6 20 Q14 4 26 10 L30 80 Z" fill="#8a9398"/><path d="M80 80 L74 18 Q64 2 52 10 L50 80 Z" fill="#7c858a"/><rect x="28" y="10" width="24" height="62" fill="#bfe3f7"/><path d="M32 12 v58 M40 10 v62 M47 12 v58" stroke="#fff" stroke-width="2" opacity=".8" class="g-fall"/><ellipse cx="40" cy="74" rx="30" ry="6" fill="#7cc4f0"/><ellipse cx="40" cy="72" rx="16" ry="3" fill="#fff" opacity=".7"/>'},
+  rope:{name:'吊橋',cat:'view',cost:240,w:116,req:'mount',vb:'0 0 110 40',svg:'<rect x="4" y="6" width="4" height="30" fill="#7a5034"/><rect x="102" y="6" width="4" height="30" fill="#7a5034"/><path d="M6 8 Q55 34 104 8" stroke="#a26a3f" stroke-width="1.6" fill="none"/><path d="M6 22 Q55 40 104 22" stroke="#7a5034" stroke-width="3" fill="none"/>'+[16,28,40,52,64,76,88].map(x=>`<line x1="${x}" y1="${8+26*(1-Math.pow((x-55)/49,2))*.55}" x2="${x}" y2="${22+16*(1-Math.pow((x-55)/49,2))*.55}" stroke="#a26a3f" stroke-width="1"/>`).join('')},
+  goldnest:{name:'金色鳥巢',cat:'view',cost:0,w:64,hidden:true,vb:'0 0 60 40',svg:'<ellipse cx="30" cy="30" rx="27" ry="9" fill="#b8860b"/><path d="M4 26 Q30 46 56 26 Q56 18 30 20 Q4 18 4 26 Z" fill="#f2c230"/><path d="M8 26 Q30 38 52 26 M10 30 Q30 40 50 30" stroke="#ffe48a" stroke-width="2" fill="none"/><ellipse cx="22" cy="20" rx="6" ry="7.5" fill="#fffaf0"/><ellipse cx="34" cy="19" rx="6" ry="7.5" fill="#cfe6fa"/><path d="M27 4 l2 5 5 .4 -4 3 1.4 5 -4.4 -2.8 -4.4 2.8 1.4 -5 -4 -3 5 -.4 Z" fill="#ffd23a"/>'},
 };
 const G_SEASONS={
   spring:{name:'春天・櫻花雨',cost:300,desc:'粉紅色的花瓣慢慢飄落'},
@@ -36,6 +44,9 @@ const G_SEASONS={
   winter:{name:'冬天・下雪',cost:300,desc:'白雪覆蓋，雪花片片落下'},
   firefly:{name:'夏夜・螢火蟲',cost:400,desc:'天色變暗，螢火蟲在草地上發光'},
 };
+const hasLake=()=>PROG.max>100||!!PROG.stars[100], hasMount=()=>PROG.max>150||!!PROG.stars[150];
+const ZONE_REQ={lake:{ok:hasLake,text:'第 101 關後解鎖湖邊區'},mount:{ok:hasMount,text:'第 151 關後解鎖山林區'}};
+function giveGoldNest(){ gInit(); if(PROG.gItems.some(i=>i.k==='goldnest')) return; PROG.gItems.push({id:PROG.gNext++,k:'goldnest',x:50,y:40}); saveProg(); }
 const itemSVG=(k,cls='')=>{const it=G_ITEMS[k]; return `<svg viewBox="${it.vb}" class="${cls}" aria-hidden="true">${it.svg}</svg>`;};
 
 // ---------- 存檔資料與舊版轉換 ----------
@@ -46,8 +57,8 @@ function gMigrate(){
   PROG.gV=2; saveProg();
 }
 function gInit(){
-  if(PROG.seeds!==undefined){ gMigrate(); return; }
-  PROG.gV=2; PROG.seeds=totalStars()*10; PROG.gItems=[]; PROG.gBag={}; PROG.gSeasons=[]; PROG.gSeason=null; PROG.gNext=1;
+  if(PROG.seeds!==undefined&&Array.isArray(PROG.gItems)){ PROG.gBag=PROG.gBag||{}; PROG.gSeasons=PROG.gSeasons||[]; PROG.gNext=PROG.gNext||PROG.gItems.length+1; gMigrate(); return; }
+  PROG.gV=2; PROG.seeds=PROG.seeds??totalStars()*10; PROG.gItems=[]; PROG.gBag={}; PROG.gSeasons=[]; PROG.gSeason=null; PROG.gNext=1;
   const st=totalStars();
   // 以前靠星星解鎖的裝飾直接送給你，另外附一個花圃
   [[5,'feeder',38,34],[20,'bath',50,24],[45,'birdhouse',62,38],[80,'sakura',30,48],[130,'windmill',68,50],[200,'rainbow',48,80]]
@@ -115,6 +126,8 @@ function gRender(){
   const world=$('yard'), season=PROG.gSeason;
   world.className='yard-world'+(season?' season-'+season:'')+(G.edit?' editing':'');
   world.innerHTML='<span class="g-orb"></span><svg class="g-hills" viewBox="0 0 300 40" preserveAspectRatio="none"><path d="M0 40 L0 22 Q30 6 60 18 T120 14 T190 20 T250 10 T300 18 L300 40 Z" fill="var(--g-hill2)"/><path d="M0 40 L0 30 Q40 18 90 28 T180 26 T260 30 T300 26 L300 40 Z" fill="var(--g-hill1)"/></svg><svg class="g-path" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M-5 78 C15 60 25 92 45 72 S75 40 105 58" fill="none" stroke="var(--g-path)" stroke-width="5" stroke-linecap="round"/><path d="M40 74 C46 58 58 50 62 30 S70 10 66 -4" fill="none" stroke="var(--g-path)" stroke-width="3.6" stroke-linecap="round"/></svg>'+gGroundDeco();
+  if(hasMount()) world.insertAdjacentHTML('afterbegin','<svg class="g-mount" viewBox="0 0 200 60" preserveAspectRatio="none"><path d="M0 60 L30 18 L48 34 L78 4 L104 30 L126 12 L156 36 L176 20 L200 40 L200 60 Z" fill="var(--g-mount)"/><path d="M78 4 L70 15 L78 13 L86 16 Z M126 12 L120 20 L127 19 L133 22 Z M30 18 L24 27 L31 25 L36 26 Z" fill="#fff" opacity=".85"/></svg>');
+  if(hasLake()) world.insertAdjacentHTML('beforeend','<svg class="g-lake" viewBox="0 0 100 50" preserveAspectRatio="none"><path d="M6 26 C4 8 30 2 52 6 C80 10 98 16 94 30 C90 46 60 48 38 46 C16 44 8 40 6 26 Z" fill="var(--g-water)"/><path d="M20 22 q6 -3 12 0 M50 16 q6 -3 12 0 M62 34 q6 -3 12 0" stroke="#fff" stroke-width=".8" fill="none" opacity=".7"/></svg>');
   PROG.gItems.forEach(it=>{
     const def=G_ITEMS[it.k]; if(!def) return;
     const el=document.createElement('div'); el.className='g-item'+(G.sel===it.id?' sel':''); el.dataset.id=it.id;
@@ -214,8 +227,10 @@ function gList(){
     if(PROG.gSeason) card('<span class="g-season s-none"></span>','一般天氣','不使用季節效果','使用',false,()=>{ PROG.gSeason=null; saveProg(); gRender(); gList(); });
     return;
   }
-  Object.entries(G_ITEMS).filter(([,it])=>it.cat===G.tab).forEach(([k,it])=>{
+  Object.entries(G_ITEMS).filter(([,it])=>it.cat===G.tab&&!it.hidden).forEach(([k,it])=>{
     const n=PROG.gItems.filter(i=>i.k===k).length+(PROG.gBag[k]||0);
+    const lock=it.req&&!ZONE_REQ[it.req].ok();
+    if(lock){ card(itemSVG(k),it.name,ZONE_REQ[it.req].text,'未解鎖',true,()=>{}); return; }
     card(itemSVG(k),it.name,`${it.cost} 顆種子`+(n?`・已有 ${n} 個`:''),'兌換',PROG.seeds<it.cost,()=>{
       PROG.seeds-=it.cost; blip(880,.1,.04); toast(`兌換了${it.name}，拖曳可以調整位置`); placeFromShop(k); checkAch(); });
   });

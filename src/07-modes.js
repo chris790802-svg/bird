@@ -29,7 +29,7 @@ function cfgCode(cfg,seed,sol){return {n:cfg.n,tit:cfg.birds.has(2),owl:cfg.bird
 function startLevel(L){
   L=Math.max(1,Math.min(LEVELS,L)); S.levelNo=L; // 所有關卡都可以直接選
   const sp=levelSpec(L);
-  withLoading(sp.n,L===100?'帝雉之關準備中，請稍等幾秒…':'出題中…',()=>startPuzzle(generateLevel(L),'level'));
+  withLoading(sp.n,'出題中…',()=>startPuzzle(generateLevel(L),'level'));
 }
 function openMap(){
   $('mapBody').innerHTML=CHAPTERS.map((c,ci)=>`<div class="chap"><h4>${birdDot(c.bird)}第 ${ci+1} 章・${c.name}<span>第 ${c.from}–${c.to} 關</span></h4><div class="lvgrid">`+
@@ -217,7 +217,8 @@ const MODES={
     win(){ const L=S.levelNo, st=starsFor(S.hints), first=!PROG.stars[L], gain=Math.max(0,st-(PROG.stars[L]||0))*10;
       PROG.stars[L]=Math.max(PROG.stars[L]||0,st); PROG.max=Math.max(PROG.max,Math.min(LEVELS,L+1));
       const hatched=first?hatch(L===100?'E':undefined):undefined;
-      return {title:L===100?'全部 100 關破關！':`第 ${L} 關過關！`,stars:st,msg:`用時 ${fmt(S.elapsed)}・${hintTxt()}`+(st<3?'・不用提示可以拿三顆星':''),
+      if(first&&L===LEVELS) giveGoldNest();
+      return {title:L===LEVELS?`全部 ${LEVELS} 關破關！鳥園多了一個金色鳥巢`:L===100?'前 100 關破關！帝雉現身':`第 ${L} 關過關！`,stars:st,msg:`用時 ${fmt(S.elapsed)}・${hintTxt()}`+(st<3?'・不用提示可以拿三顆星':''),
         hatched,seeds:gain,next:L<LEVELS,againText:'再玩一次'}; }},
   daily:{start:startDaily,newText:'重玩',onNew:()=>{ resetPlay(); },
     win(){ const key=S.P.label.key, st=starsFor(S.hints), rec=PROG.daily[key], first=!rec;
@@ -260,7 +261,7 @@ const MODE_NAME={level:'闖關',daily:'每日一題',free:'自由練習',studio:
 function syncPanels(){
   const m=S.mode;
   let sub=MODE_NAME[m];
-  if(m==='level'){ const sp=levelSpec(S.levelNo); sub=`第 ${S.levelNo} 關・${CHAPTERS[sp.chapter-1].name}`+(PROG.stars[S.levelNo]?' '+'★'.repeat(PROG.stars[S.levelNo]):''); }
+  if(m==='level'){ const sp=levelSpec(S.levelNo); sub=`第 ${S.levelNo} 關・${CHAPTERS[sp.chapter-1].name}・難度 ${nestRating(generateLevel(S.levelNo))}`+(PROG.stars[S.levelNo]?' '+'★'.repeat(PROG.stars[S.levelNo]):''); }
   else if(m==='daily'){ const k=todayKey(); sub=`${dailySpec(k).weekend?'週末大盤':'每日一題'}・${+k.slice(5,7)}/${+k.slice(8)}`; }
   else if(m==='free'&&S.P) sub=`自由練習・${N}×${N}・${DIFFS[FREE.diff].name}`;
   $('hudSub').textContent=sub;
@@ -270,9 +271,10 @@ function syncPanels(){
   $('hint').disabled=m==='race';
   if(m==='level'){ const L=S.levelNo, sp=levelSpec(L), ch=CHAPTERS[sp.chapter-1];
     $('stageCh').textContent=`第 ${sp.chapter} 章・${ch.name}`; $('stageNo').textContent=L;
-    $('stageTag').textContent=`${sp.n}×${sp.n}`+(L===ch.to?'・本章最終關':''); $('stageStars').innerHTML=PROG.stars[L]?starHTML(PROG.stars[L]):'';
+    const rate=nestRating(generateLevel(L));
+    $('stageTag').innerHTML=`${sp.n}×${sp.n}`+(L===ch.to?'・本章最終關':'')+`・難度 <span class="nests" aria-label="難度 ${rate}，滿分 5">${[1,2,3,4,5].map(k=>`<i class="${k<=rate?'on':''}"></i>`).join('')}</span>`;
     $('prevLv').disabled=L<=1; $('nextLv').disabled=L>=LEVELS;
-    const done=Object.keys(PROG.stars).length; $('progN').textContent=done; $('progBar').style.width=done/LEVELS*100+'%'; }
+    const done=Object.keys(PROG.stars).length; $('progN').textContent=done; $('progMax').textContent=LEVELS; $('progBar').style.width=done/LEVELS*100+'%'; }
   if(m==='daily'){ dailyInfo(); loadLeader(); }
   if(m==='free') $('freeCode').textContent=S.extra&&S.extra.code&&S.P&&S.P.label.kind==='custom'?S.extra.code:'—';
   if(m==='race'){ $('raceOff').hidden=!!RACE; $('raceOn').hidden=!RACE; }

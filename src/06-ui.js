@@ -3,11 +3,11 @@ const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const S={mode:'level',levelNo:1,P:null,vals:[],notes:[],xnotes:[],sel:-1,noteMode:false,xMode:false,hist:[],t0:0,elapsed:0,done:false,hints:0,usedNotes:false,
   editing:false,editVals:[],paused:false,prevLines:null};
 let N=6,NN=36;
-const boardEl=$('board'); let cells=[],edgeEls=[],owlEls=[],HINT=null;
+const boardEl=$('board'); let cells=[],edgeEls=[],owlEls=[],gtEls=[],eggEls=[],cageEls=[],HINT=null;
 const posName=i=>`第 ${(i/N|0)+1} 列第 ${i%N+1} 格`;
 const listJoin=a=>a.join('、');
 
-function rawPuzzle(P){const {n,tit,h,v,owls,sol,givens,label}=P; return {n,tit,h,v,owls,sol,givens,label};}
+function rawPuzzle(P){const {n,tit,h,v,owls,sol,givens,label,reg,diag,gt,egg,cages}=P; return {n,tit,h,v,owls,sol,givens,label,reg,diag,gt,egg,cages};}
 function setPuzzle(P){prep(P); S.P=P; N=P.n; NN=N*N;}
 function resetPlay(){
   S.vals=S.P.givens.slice(); S.notes=Array(NN).fill(0); S.xnotes=Array(NN).fill(0); S.hist=[]; S.sel=S.vals.indexOf(0);
@@ -17,7 +17,7 @@ function resetPlay(){
 
 // ---------- 畫棋盤 ----------
 function buildBoard(){
-  boardEl.innerHTML=''; cells=[]; edgeEls=[]; owlEls=[];
+  boardEl.innerHTML=''; cells=[]; edgeEls=[]; owlEls=[]; gtEls=[]; eggEls=[]; cageEls=[];
   boardEl.style.setProperty('--n',N);
   $('total').textContent=NN; document.querySelectorAll('.nmax').forEach(e=>e.textContent=N);
   for(let i=0;i<NN;i++){
@@ -34,8 +34,39 @@ function buildBoard(){
     for(let r=0;r<N-1;r++) for(let c=0;c<N;c++) add(P.v[r][c],(c+.5)/N*100,(r+1)/N*100,r*N+c,(r+1)*N+c);
     (P.owls||[]).forEach((o,k)=>{ const d=document.createElement('span'); d.className='owl'; d.innerHTML=birdSVG('O')+`<b>${o.s}</b>`;
       d.style.left=(o.c+1)/N*100+'%'; d.style.top=(o.r+1)/N*100+'%'; boardEl.appendChild(d); owlEls.push({el:d,cells:P.ow[k].cells,s:o.s}); });
+    drawExtras(P);
   }
   buildKeys(); renderBirdInfo(); requestAnimationFrame(fitLayout);
+}
+// ---- 101 關以後的線索：鳥巢、斜線、鳥群（畫在一張透明的圖層上）、啄木鳥、鳥蛋 ----
+function drawExtras(P){
+  const rc=i=>[i/N|0,i%N], seg=(x1,y1,x2,y2,cls)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="${cls}" vector-effect="non-scaling-stroke"/>`;
+  let svg='';
+  if(P.reg){
+    cells.forEach((d,i)=>d.dataset.reg=P.reg[i]);
+    for(let i=0;i<NN;i++){ const [r,c]=rc(i);
+      if(c<N-1&&P.reg[i]!==P.reg[i+1]) svg+=seg(c+1,r,c+1,r+1,'ov-reg');
+      if(r<N-1&&P.reg[i]!==P.reg[i+N]) svg+=seg(c,r+1,c+1,r+1,'ov-reg'); }
+  }
+  if(P.diag) svg+=seg(0,0,N,N,'ov-diag')+seg(N,0,0,N,'ov-diag');
+  (P.cages||[]).forEach((cg,k)=>{ const set=new Set(cg.cells), d=.1;
+    for(const i of cg.cells){ const [r,c]=rc(i), L=c>0&&set.has(i-1), R=c<N-1&&set.has(i+1), T=r>0&&set.has(i-N), B=r<N-1&&set.has(i+N);
+      const x0=c+(L?0:d), x1=c+1-(R?0:d), y0=r+(T?0:d), y1=r+1-(B?0:d);
+      if(!T) svg+=seg(x0,r+d,x1,r+d,'ov-cage'); if(!B) svg+=seg(x0,r+1-d,x1,r+1-d,'ov-cage');
+      if(!L) svg+=seg(c+d,y0,c+d,y1,'ov-cage'); if(!R) svg+=seg(c+1-d,y0,c+1-d,y1,'ov-cage'); }
+    const first=Math.min(...cg.cells), [r,c]=rc(first), lab=document.createElement('span');
+    lab.className='cage-sum'; lab.textContent=cg.s; lab.style.left=(c+.06)/N*100+'%'; lab.style.top=(r+.04)/N*100+'%';
+    boardEl.appendChild(lab); cageEls.push({el:lab,cells:cg.cells,s:cg.s}); });
+  if(svg){ const ov=document.createElementNS('http://www.w3.org/2000/svg','svg'); ov.setAttribute('class','board-ov');
+    ov.setAttribute('viewBox',`0 0 ${N} ${N}`); ov.setAttribute('preserveAspectRatio','none'); ov.innerHTML=svg; boardEl.appendChild(ov); }
+  // 啄木鳥：嘴巴指向數字比較大的那一格
+  (P.gt||[]).forEach(([hi,lo])=>{ const [r1,c1]=rc(hi),[r2,c2]=rc(lo), d=document.createElement('span'); d.className='dot peck';
+    d.innerHTML=birdSVG('woodpecker'); d.style.left=((c1+c2)/2+.5)/N*100+'%'; d.style.top=((r1+r2)/2+.5)/N*100+'%';
+    d.firstChild.style.transform=c1>c2?'none':c1<c2?'scaleX(-1)':r1>r2?'rotate(90deg)':'rotate(-90deg)';
+    boardEl.appendChild(d); gtEls.push({el:d,hi,lo}); });
+  // 鳥蛋：白蛋奇數、藍蛋偶數
+  if(P.egg) P.egg.forEach((e,i)=>{ if(!e) return; const [r,c]=rc(i), d=document.createElement('span'); d.className='bd-egg '+(e===1?'odd':'even');
+    d.title=e===1?'白蛋：奇數':'藍蛋：偶數'; d.style.left=(c+.8)/N*100+'%'; d.style.top=(r+.78)/N*100+'%'; boardEl.appendChild(d); eggEls.push({el:d,i,e}); });
 }
 // ---- 讓整個遊戲剛好放進一個畫面：依螢幕高度調整棋盤大小 ----
 function fitLayout(){
@@ -62,7 +93,7 @@ function renderBirdInfo(){
   const box=$('birdChip'); box.innerHTML='';
   list.forEach(t=>{ const sp=SPECIES[t], b=document.createElement('button'); b.className='bird-btn';
     b.innerHTML=birdDot(t)+`<span>${sp.name}</span>`; b.setAttribute('aria-label',sp.name+'的規則');
-    b.onclick=()=>{ toast(`${sp.name}：${sp.rule}${sp.full?'（全部畫出）':t==='O'?'':'（只畫一部分）'}。例 ${sp.ex}`,t); chirp(t,.04); };
+    b.onclick=()=>{ toast(`${sp.name}：${sp.rule}${sp.note!==undefined?sp.note:sp.full?'（全部畫出）':t==='O'?'':'（只畫一部分）'}。例 ${sp.ex}`,t); chirp(t,.04); };
     box.appendChild(b); });
   box.classList.toggle('compact',list.length>3);
   birdify(box);
@@ -71,8 +102,13 @@ function renderBirdInfo(){
 // ---------- 檢查衝突 ----------
 function conflicts(){
   const bad=new Set(), badE=new Set(), badO=new Set(), v=S.vals;
-  for(let i=0;i<NN;i++){ if(!v[i]) continue; const r=i/N|0,c=i%N;
-    for(let k=0;k<N;k++){const a=r*N+k,b=k*N+c; if(a!==i&&v[a]===v[i])bad.add(i); if(b!==i&&v[b]===v[i])bad.add(i);} }
+  // 列、行、鳥巢、斜線裡有重複的數字
+  for(const U of S.P.units){ const seen={}; for(const i of U.cells) if(v[i]){ (seen[v[i]]=seen[v[i]]||[]).push(i); }
+    for(const k in seen) if(seen[k].length>1) seen[k].forEach(i=>bad.add(i)); }
+  gtEls.forEach(g=>{ const ok=!(v[g.hi]&&v[g.lo])||v[g.hi]>v[g.lo]; g.el.classList.toggle('bad',!ok); if(!ok){bad.add(g.hi);bad.add(g.lo);} });
+  eggEls.forEach(g=>{ const ok=!v[g.i]||(v[g.i]%2===1)===(g.e===1); g.el.classList.toggle('bad',!ok); if(!ok) bad.add(g.i); });
+  cageEls.forEach(g=>{ const vals=g.cells.map(i=>v[i]).filter(Boolean), dup=new Set(vals).size!==vals.length, sum=vals.reduce((a,b)=>a+b,0);
+    const ok=!dup&&sum<=g.s&&(vals.length<g.cells.length||sum===g.s); g.el.classList.toggle('bad',!ok); if(!ok) g.cells.forEach(i=>{ if(v[i]) bad.add(i); }); });
   edgeEls.forEach((e,k)=>{const a=v[e.a],b=v[e.b]; if(a&&b&&!allowPair(e.t,a,b,N,S.P.tit)){bad.add(e.a);bad.add(e.b);badE.add(k);}});
   // 沒有鳥的邊：不可以是鸚鵡或山雀的關係
   for(let i=0;i<NN;i++) if(v[i]) for(const [j,t] of S.P.nb[i]) if(t===0&&j>i&&v[j]&&!allowPair(0,v[i],v[j],N,S.P.tit)){bad.add(i);bad.add(j);}
@@ -192,16 +228,20 @@ function findHint(){
 }
 function explain(st){
   const P=S.P, g=S.vals, i=st.i, v=st.v, r=i/N|0, c=i%N;
+  const unitName=(k,idx)=>k==='row'?`第 ${idx+1} 列`:k==='col'?`第 ${idx+1} 行`:k==='reg'?'這個鳥巢':'這條斜線';
   if(st.info.kind==='hidden'){
-    const unit=st.info.unit==='row'?`第 ${st.info.idx+1} 列`:`第 ${st.info.idx+1} 行`;
-    return `${unit}裡，數字 ${v} 只有一個地方能放，就是${posName(i)}。其他空格放 ${v} 都會跟同列、同行或旁邊的鳥衝突。`+(st.tech>=3?'（要先想想鄰格還可能填什麼。）':'');
+    return `${unitName(st.info.unit,st.info.idx)}裡，數字 ${v} 只有一個地方能放，就是${posName(i)}。其他空格放 ${v} 都會跟同列、同行、同一個鳥巢或旁邊的線索衝突。`+(st.tech>=3?'（要先想想鄰格還可能填什麼。）':'');
   }
-  const rowV=range(N).map(k=>g[r*N+k]).filter(Boolean).sort((a,b)=>a-b);
-  const colV=range(N).map(k=>g[k*N+c]).filter(x=>x&&!rowV.includes(x)).sort((a,b)=>a-b);
-  const parts=[];
-  if(rowV.length) parts.push(`同一列已經有 ${listJoin(rowV)}`);
-  if(colV.length) parts.push(`同一行還有 ${listJoin(colV)}`);
-  const used=new Set([...rowV,...colV]);
+  const parts=[], used=new Set();
+  const kindLabel={row:'同一列',col:'同一行',reg:'同一個鳥巢',diag:'同一條斜線'};
+  for(const u of P.cu[i]){ const U=P.units[u]; const vs=U.cells.map(j=>g[j]).filter(x=>x&&!used.has(x)).sort((a,b)=>a-b);
+    if(!vs.length) continue; vs.forEach(x=>used.add(x)); parts.push(`${kindLabel[U.kind]}${parts.length?'還':'已經'}有 ${listJoin(vs)}`); }
+  if(P.egg&&P.egg[i]){ const ex=range(N).map(k=>k+1).filter(x=>!used.has(x)&&(x%2===1)!==(P.egg[i]===1)); if(ex.length){ ex.forEach(x=>used.add(x)); parts.push(`這格有${P.egg[i]===1?'白蛋，只能是奇數':'藍蛋，只能是偶數'}`); } }
+  for(const [j,sg] of P.gtOf[i]){ const w=g[j]; if(!w) continue;
+    const ex=range(N).map(k=>k+1).filter(x=>!used.has(x)&&(sg>0?x<=w:x>=w)); if(!ex.length) continue; ex.forEach(x=>used.add(x));
+    parts.push(sg>0?`小啄木的嘴指向這格，所以要比旁邊的 ${w} 大`:`小啄木的嘴指向旁邊的 ${w}，所以這格要比 ${w} 小`); }
+  for(const k of P.cellCg[i]){ const cg=P.cg[k], m=cageMask(cg,i,g,N,P.full);
+    const ex=range(N).map(x=>x+1).filter(x=>!used.has(x)&&!(m>>(x-1)&1)); if(ex.length){ ex.forEach(x=>used.add(x)); parts.push(`鳥群的總和是 ${cg.s}，排除了 ${listJoin(ex)}`); } }
   for(const [j,t] of P.nb[i]){ const w=g[j]; if(!w) continue;
     const ex=range(N).map(k=>k+1).filter(x=>!used.has(x)&&!allowPair(t,x,w,N,P.tit));
     if(!ex.length) continue; ex.forEach(x=>used.add(x));

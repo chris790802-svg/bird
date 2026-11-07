@@ -35,7 +35,7 @@ function maybeIntro(P,then){
 function showIntro(){
   const t=introQueue.shift(), sp=SPECIES[t]; $('introKind').textContent='新的鳥登場'; $('introOk').textContent='知道了，開始';
   $('introBird').innerHTML=sp.svg; $('intro-title').textContent=sp.name+(sp.role?`（${sp.role}）`:'');
-  $('introRule').textContent=(t==='O'?'':'站在兩格之間：')+sp.rule;
+  $('introRule').textContent=(sp.place!==undefined?sp.place:t==='O'?'':'站在兩格之間：')+sp.rule;
   $('introEx').textContent=sp.ex?'例如 '+sp.ex:'';
   $('introFact').textContent=sp.fact;
   PROG.seen.push(t); saveProg(); chirp(t,.06);
@@ -82,7 +82,7 @@ const ACH=[
   {id:'streak7',name:'一週不間斷', desc:'每日一題連續 7 天', ok:()=>bestStreak()>=7},
   {id:'weekend',name:'週末大盤', desc:'解開一次週末大盤', ok:()=>!!PROG.c.weekend},
   {id:'dex5',  name:'賞鳥新手', desc:'圖鑑收集 5 種鳥', ok:()=>PROG.seen.length>=5},
-  {id:'dexall',name:'賞鳥達人', desc:'認識全部 9 種規則鳥', ok:()=>SPECIES_ORDER.every(t=>PROG.seen.includes(t))},
+  {id:'dexall',name:'賞鳥達人', desc:'認識全部 14 種規則鳥', ok:()=>SPECIES_ORDER.every(t=>PROG.seen.includes(t))},
   {id:'coll1', name:'第一位新朋友', desc:'第一次用鳥換到收藏鳥', ok:()=>COLLECT_ORDER.some(k=>PROG.seen.includes(k))},
   {id:'coll8', name:'野鳥收藏家', desc:'收集 8 種收藏鳥', ok:()=>COLLECT_ORDER.filter(k=>PROG.seen.includes(k)).length>=8},
   {id:'legend',name:'傳說現身', desc:'換到一隻傳說等級的鳥', ok:()=>COLLECT_ORDER.some(k=>COLLECT[k].rarity==='legend'&&PROG.seen.includes(k))},
@@ -91,6 +91,8 @@ const ACH=[
   {id:'deco10',name:'鳥園設計師', desc:'鳥園裡擺了 10 樣東西', ok:()=>(PROG.gItems||[]).length>=10},
   {id:'l50',   name:'過半', desc:'通過第 50 關', ok:()=>!!PROG.stars[50]},
   {id:'l100',  name:'帝雉現身', desc:'通過第 100 關', ok:()=>!!PROG.stars[100]},
+  {id:'l150',  name:'候鳥的旅程', desc:'通過第 150 關', ok:()=>!!PROG.stars[150]},
+  {id:'l200',  name:'百鳥齊鳴', desc:'通過第 200 關', ok:()=>!!PROG.stars[200]},
 ];
 function checkAch(quiet){
   for(const a of ACH) if(!PROG.ach[a.id]&&a.ok()){ PROG.ach[a.id]=Date.now(); saveProg(); if(!quiet){ toast(`達成成就「${a.name}」`,2); blip(880,.12,.04); } }

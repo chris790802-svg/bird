@@ -1,6 +1,6 @@
 // ===================== 11 收藏鳥：用孵出的鳥換收藏鳥 =====================
 // 孵出來的規則鳥，各自值多少「鳥幣」：越後面章節的鳥越值錢
-const BIRD_VALUE={1:1,2:2,3:3,4:4,5:5,O:6,6:7,7:8};
+const BIRD_VALUE={1:1,2:2,3:3,4:4,5:5,O:6,6:7,7:8,weaver:9,woodpecker:10,quail:11,goose:12,starling:13};
 const RARITY={
   common:{name:'普通',cost:8,cls:'r-common'},
   rare:{name:'稀有',cost:16,cls:'r-rare'},
@@ -81,7 +81,7 @@ let SELL=null;
 function tradeList(box){
   const head=document.createElement('div'); head.className='wallet';
   head.innerHTML=`<span class="coin-ic" aria-hidden="true"></span><span>鳥幣錢包 <b>${coins()}</b></span><button class="pill small primary" id="sellOpen">出售鳥，兌換鳥幣</button>`+
-    `<p class="note">孵出來的鳥可以出售換鳥幣，越後面章節的鳥越值錢：鸚鵡 1、山雀 2、綠繡眼 3、翠鳥 4、麻雀 5、領角鴞 6、藍鵲 7、五色鳥 8。你鳥園裡可以出售的鳥共值 ${aviaryValue()} 鳥幣。</p>`;
+    `<p class="note">孵出來的鳥可以出售換鳥幣，越後面章節的鳥越值錢：鸚鵡 1、山雀 2、綠繡眼 3、翠鳥 4、麻雀 5、領角鴞 6、藍鵲 7、五色鳥 8，101 關以後的織布鳥 9、小啄木 10、鵪鶉 11、鴻雁 12、灰椋鳥 13。你鳥園裡可以出售的鳥共值 ${aviaryValue()} 鳥幣。</p>`;
   box.appendChild(head); head.querySelector('#sellOpen').onclick=openSell;
   COLLECT_ORDER.forEach(k=>{ const sp=COLLECT[k], have=PROG.aviary.filter(t=>t===k).length, cost=costOf(k), ok=coins()>=cost;
     const d=document.createElement('div'); d.className='g-card';
