@@ -14,7 +14,9 @@ function buildPuzzle(spec,givenSol){
   const sync=()=>{P.owls=allOwls.filter(o=>o.on).map(({r,c,s})=>({r,c,s})); prep(P);};
   sync();
   // 1. 先拿掉開局數字（所有部分線索都在）
-  let grid=sol.slice(), givens=NN; const target=Math.round(NN*spec.keep);
+  // 開局至少要給幾個數字：6×6、7×7 三個，8×8 四個，9×9 六個
+  const floor=spec.minGiven??Math.max(3,Math.round(NN*0.07));
+  let grid=sol.slice(), givens=NN; const target=Math.max(floor,Math.round(NN*spec.keep));
   for(const i of shuffle(range(NN))){
     if(givens<=target) break;
     const k=grid[i]; grid[i]=0;
@@ -33,8 +35,20 @@ function buildPuzzle(spec,givenSol){
     if(countSolutions(P,grid)===1) cnt[it.t]--;
     else { if(it.kind==='o') it.o.on=true; else P[it.kind][it.r][it.c]=it.t; sync(); }
   }
+  // 3. 一定要能「純推理」解開：卡住的話，在最關鍵的格子補一個數字（優先補在旁邊有鳥的格子）
+  logicRepair(P,grid);
   P.givens=grid;
   return P;
+}
+function logicRepair(P,grid){
+  for(let k=0;k<60;k++){
+    const r=logicSolve(P,grid); if(r.solved) return;
+    let best=-1,bs=99;
+    for(let i=0;i<P.NN;i++) if(!r.g[i]){
+      const c=r.C?popc(r.C[i]):P.n, nearBird=P.nb[i].some(([,t])=>t>0)||P.cellOw[i].length>0;
+      const s=c-(nearBird?.6:0)+RNG()*.3; if(s<bs){bs=s;best=i;} }
+    if(best<0) return; grid[best]=P.sol[best];
+  }
 }
 function birdsIn(P){
   const s=new Set(); P.h.flat().concat(P.v.flat()).forEach(t=>t&&s.add(t)); if(P.owls&&P.owls.length) s.add('O');
