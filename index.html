@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="build" content="7f76e4ec04">
+<meta name="build" content="c46d115984">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="鳥巢數獨：用小鳥當線索的數字推理遊戲，100 關、8 種鳥規則、每日一題、圖鑑與鳥園。">
 <script>try{var t=JSON.parse(localStorage.getItem('kp4-prog')||'{}').theme;if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
@@ -943,7 +943,7 @@ function allowTable(n,tit){
 // 題目物件：{n,tit,h,v,owls,sol,givens} 再加上 101 關以後的線索（都可以沒有）：
 //   reg   鳥巢區域：長度 NN 的陣列，每格屬於第幾個巢（每個巢也要 1 到 N 各一次）
 //   diag  雁群斜線：true 時兩條對角線也要 1 到 N 各一次
-//   gt    啄木鳥箭頭：[[大的格子, 小的格子], ...]
+//   gt    樹鵲箭頭：[[大的格子, 小的格子], ...]
 //   egg   鳥蛋：長度 NN 的陣列，0 沒有、1 白蛋（奇數）、2 藍蛋（偶數）
 //   cages 鳥群總和：[{cells:[...], s:總和}, ...]，群裡的數字不能重複
 // prep 補上推理用的結構（不存檔）
@@ -1192,7 +1192,7 @@ function buildPuzzle(spec,givenSol){
   const allOwls=[], allGt=[], allEgg=[], allCg=[];
   if(spec.owl) for(let r=0;r<n-1;r++) for(let c=0;c<n-1;c++) if(RNG()<0.5)
     allOwls.push({r,c,s:sol[r*n+c]+sol[r*n+c+1]+sol[(r+1)*n+c]+sol[(r+1)*n+c+1],on:true});
-  if(spec.gt){ // 啄木鳥只站在沒有其他鳥的邊上
+  if(spec.gt){ // 樹鵲只站在沒有其他鳥的邊上
     for(let r=0;r<n;r++) for(let c=0;c<n-1;c++) if(!P.h[r][c]&&RNG()<spec.gt){const a=r*n+c,b=a+1; allGt.push({p:sol[a]>sol[b]?[a,b]:[b,a],on:true});}
     for(let r=0;r<n-1;r++) for(let c=0;c<n;c++) if(!P.v[r][c]&&RNG()<spec.gt){const a=r*n+c,b=a+n; allGt.push({p:sol[a]>sol[b]?[a,b]:[b,a],on:true});}
   }
@@ -1290,7 +1290,7 @@ const CHAPTERS=[
     return {n:9,tit:true,partial:mix,owl:L%4===0,keep:lerp(.14,0,t)};}},
   // ---- 101 關以後：每章一種新線索，先從 6×6 教起 ----
   {name:'織布鳥的鳥巢',bird:'weaver',from:101,to:112,spec:(t,L)=>L<=106?{n:6,tit:false,reg:true,keep:lerp(.45,.12,t*2)}:{n:7,tit:true,reg:true,keep:lerp(.22,.04,(t-.5)*2)}},
-  {name:'小啄木的樹林',bird:'woodpecker',from:113,to:124,spec:(t,L)=>L<=118?{n:6,tit:false,gt:.6,minK:{W:9},keep:lerp(.35,.08,t*2)}:{n:7,tit:true,gt:.5,minK:{W:11},keep:lerp(.2,.03,(t-.5)*2)}},
+  {name:'樹鵲的樹林',bird:'woodpecker',from:113,to:124,spec:(t,L)=>L<=118?{n:6,tit:false,gt:.6,minK:{W:9},keep:lerp(.35,.08,t*2)}:{n:7,tit:true,gt:.5,minK:{W:11},keep:lerp(.2,.03,(t-.5)*2)}},
   {name:'鵪鶉的蛋',bird:'quail',from:125,to:136,spec:(t,L)=>L<=130?{n:6,tit:false,egg:.6,minK:{EG:10},keep:lerp(.35,.08,t*2)}:{n:7,tit:true,egg:.5,partial:[3],minK:{EG:14},keep:lerp(.2,.03,(t-.5)*2)}},
   {name:'鴻雁的天空',bird:'goose',from:137,to:148,spec:(t,L)=>L<=142?{n:6,tit:false,diag:true,keep:lerp(.4,.1,t*2)}:{n:8,tit:true,diag:true,keep:lerp(.18,.03,(t-.5)*2)}},
   {name:'灰椋鳥的鳥群',bird:'starling',from:149,to:160,spec:(t,L)=>L<=154?{n:6,tit:false,cage:.8,minK:{K:5},keep:lerp(.3,.06,t*2)}:{n:7,tit:true,cage:.7,minK:{K:7},keep:lerp(.18,.03,(t-.5)*2)}},
@@ -1468,10 +1468,11 @@ const SPECIES={
      fact:'雄鳥會用草葉一根一根編織出吊掛在樹枝上的精巧鳥巢，巢編得漂亮，才會吸引母鳥。',
      svg:svgWrap(TAIL.replace('FILL','#d9a91f')+BODY.replace('FILL','#f2c230')+`<path d="M5 13.4 Q8.6 17.6 13.4 16.4" stroke="#b8860b" stroke-width="1" fill="none"/><path d="M11.4 4.4 Q17.4 4.4 18.4 9.4 Q16.6 13 12.6 12.4 Q10.4 10.4 11.4 4.4 Z" fill="#1b1b1b"/><circle cx="14.4" cy="7.8" r="1.25" fill="#c0392b"/><circle cx="14.5" cy="7.8" r=".6" class="eye-k"/><path d="M17.6 8 L21.4 9.4 L17.8 11 Z" fill="#555"/>`),
      call:[[2400,3200,.05],[3000,2200,.05],[2600,3400,.06]]},
-  woodpecker:{key:'woodpecker',name:'小啄木',role:'啄木鳥箭頭',place:'',rule:'站在兩格之間，嘴巴指向數字比較大的那一格',ex:'嘴巴朝右，右邊的數字比較大',note:'（只畫一部分）',
-     fact:'台灣最小的啄木鳥，常在都市公園的樹幹上邊爬邊敲，發出「篤篤篤」的聲音，找藏在樹皮裡的蟲吃。',
-     svg:svgWrap(TAIL.replace('FILL','#6b5440')+BODY.replace('FILL','#7a6250')+`<path d="M4 11 h5 M3.4 13.4 h6 M4.4 15.8 h5.4" stroke="#fff" stroke-width="1.1" stroke-linecap="round"/><path d="M8.4 4 Q14 1.6 17.6 6.4 Q13 6 8.4 6.6 Z" fill="#8a8f96"/><path d="M10.4 7 Q15.6 6.4 18 8.6 Q17 12.6 12.6 12.8 Q10 11.2 10.4 7 Z" fill="#fff"/><path d="M11 10.2 Q14 10.8 17 10.2" stroke="#6b5440" stroke-width="1" fill="none"/>${'<circle cx="14.2" cy="8" r=".95" class="eye-k"/>'}<path d="M17.8 8.2 L22.8 9 L17.9 9.9 Z" fill="#3a3a3a"/>`),
-     call:[[900,880,.03],[900,880,.03],[900,880,.03],[900,880,.03],[900,880,.03]],wave:'square',gap:.03},
+  // 內部代號維持 woodpecker，讓舊存檔的圖鑑和鳥園繼續有效；畫面上是樹鵲
+  woodpecker:{key:'woodpecker',name:'樹鵲',role:'樹鵲箭頭',place:'',rule:'站在兩格之間，嘴巴指向數字比較大的那一格',ex:'嘴巴朝右，右邊的數字比較大',note:'（只畫一部分）',
+     fact:'和台灣藍鵲是親戚，都屬於鴉科。尾巴又黑又長，叫聲響亮多變，常成小群在低海拔的樹林和公園裡活動。',
+     svg:svgWrap(`<path d="M3.4 12 L-7.6 15.2 L-7.2 17 L3.6 16 Z" fill="#1f1f1f" class="ln"/><path d="M-2 13.8 L-7.4 15.4 L-7.2 17 L-2 16 Z" fill="#8a8f96"/>`+BODY.replace('FILL','#9a6a45')+`<ellipse cx="10.8" cy="15.2" rx="5.8" ry="3.4" fill="#c9c4bc"/><path d="M3.6 9.6 Q5.6 7 9 7.8 Q7.6 11 8.6 13.8 Q5 13.6 3.6 9.6 Z" fill="#1f1f1f"/><rect x="5.2" y="10.2" width="2.6" height="1.6" rx=".6" fill="#fff"/><path d="M8.6 3.4 Q14.4 1.6 18.2 6.8 Q17.4 11.6 13.2 12.4 Q9.6 9 8.6 3.4 Z" fill="#8a8f96"/><path d="M12.8 5.6 Q17 5 18.4 7.8 Q17.8 11.6 14.2 12.2 Q12.4 9 12.8 5.6 Z" fill="#1f1f1f"/>${'<circle cx="14.6" cy="7.6" r="1" fill="#e9e3d6"/><circle cx="14.7" cy="7.6" r=".55" class="eye-k"/>'}<path d="M17.8 7.8 L21.6 9 L17.9 10.4 Z" fill="#111"/>`),
+     call:[[1100,1500,.07],[1500,900,.09],[1200,1700,.07],[1600,1000,.1]],wave:'triangle',gap:.04},
   quail:{key:'quail',name:'鵪鶉',role:'鳥蛋',place:'',rule:'格子角落的白蛋代表這格是奇數，藍蛋代表這格是偶數',ex:'白蛋：1、3、5…；藍蛋：2、4、6…',note:'（只放了一部分）',
      fact:'圓滾滾、尾巴很短，喜歡躲在草叢裡走來走去，不太愛飛。牠的蛋小小的，上面有一點一點的褐色斑紋。',
      svg:svgWrap(BODY.replace('FILL','#b48a5e')+`<ellipse cx="10.4" cy="15" rx="6" ry="3.4" fill="#e3c9a2"/><circle cx="6" cy="12" r=".8" fill="#5a3e2b"/><circle cx="8.4" cy="14.4" r=".8" fill="#5a3e2b"/><circle cx="5.6" cy="15" r=".7" fill="#5a3e2b"/><circle cx="11" cy="16.6" r=".7" fill="#5a3e2b"/><path d="M8.6 4.6 Q13.6 2.4 17.4 6.8" stroke="#5a3e2b" stroke-width="1.6" fill="none"/><path d="M11.4 9.2 Q14.6 8.6 17.6 9.4" stroke="#fff" stroke-width="1" fill="none"/><circle cx="14.4" cy="7.4" r=".95" class="eye-k"/><path d="M17.6 7.6 L19.8 8.4 L17.7 9.2 Z" fill="#555"/>`),
@@ -1605,7 +1606,7 @@ const ACH=[
   {id:'coll1', name:'第一位新朋友', desc:'第一次用鳥換到收藏鳥', ok:()=>COLLECT_ORDER.some(k=>PROG.seen.includes(k))},
   {id:'coll8', name:'野鳥收藏家', desc:'收集 8 種收藏鳥', ok:()=>COLLECT_ORDER.filter(k=>PROG.seen.includes(k)).length>=8},
   {id:'legend',name:'傳說現身', desc:'換到一隻傳說等級的鳥', ok:()=>COLLECT_ORDER.some(k=>COLLECT[k].rarity==='legend'&&PROG.seen.includes(k))},
-  {id:'collall',name:'鳥類收藏大全', desc:'收集全部 18 種收藏鳥', ok:()=>COLLECT_ORDER.every(k=>PROG.seen.includes(k))},
+  {id:'collall',name:'鳥類收藏大全', desc:'收集全部 19 種收藏鳥', ok:()=>COLLECT_ORDER.every(k=>PROG.seen.includes(k))},
   {id:'yard20',name:'熱鬧的鳥園', desc:'鳥園裡住了 20 隻鳥', ok:()=>PROG.aviary.length>=20},
   {id:'deco10',name:'鳥園設計師', desc:'鳥園裡擺了 10 樣東西', ok:()=>(PROG.gItems||[]).length>=10},
   {id:'l50',   name:'過半', desc:'通過第 50 關', ok:()=>!!PROG.stars[50]},
@@ -1666,7 +1667,7 @@ function buildBoard(){
   }
   buildKeys(); renderBirdInfo(); requestAnimationFrame(fitLayout);
 }
-// ---- 101 關以後的線索：鳥巢、斜線、鳥群（畫在一張透明的圖層上）、啄木鳥、鳥蛋 ----
+// ---- 101 關以後的線索：鳥巢、斜線、鳥群（畫在一張透明的圖層上）、樹鵲、鳥蛋 ----
 function drawExtras(P){
   const rc=i=>[i/N|0,i%N], seg=(x1,y1,x2,y2,cls)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="${cls}" vector-effect="non-scaling-stroke"/>`;
   let svg='';
@@ -1687,7 +1688,7 @@ function drawExtras(P){
     boardEl.appendChild(lab); cageEls.push({el:lab,cells:cg.cells,s:cg.s}); });
   if(svg){ const ov=document.createElementNS('http://www.w3.org/2000/svg','svg'); ov.setAttribute('class','board-ov');
     ov.setAttribute('viewBox',`0 0 ${N} ${N}`); ov.setAttribute('preserveAspectRatio','none'); ov.innerHTML=svg; boardEl.appendChild(ov); }
-  // 啄木鳥：嘴巴指向數字比較大的那一格
+  // 樹鵲：嘴巴指向數字比較大的那一格
   (P.gt||[]).forEach(([hi,lo])=>{ const [r1,c1]=rc(hi),[r2,c2]=rc(lo), d=document.createElement('span'); d.className='dot peck';
     d.innerHTML=birdSVG('woodpecker'); d.style.left=((c1+c2)/2+.5)/N*100+'%'; d.style.top=((r1+r2)/2+.5)/N*100+'%';
     d.firstChild.style.transform=c1>c2?'none':c1<c2?'scaleX(-1)':r1>r2?'rotate(90deg)':'rotate(-90deg)';
@@ -1867,7 +1868,7 @@ function explain(st){
   if(P.egg&&P.egg[i]){ const ex=range(N).map(k=>k+1).filter(x=>!used.has(x)&&(x%2===1)!==(P.egg[i]===1)); if(ex.length){ ex.forEach(x=>used.add(x)); parts.push(`這格有${P.egg[i]===1?'白蛋，只能是奇數':'藍蛋，只能是偶數'}`); } }
   for(const [j,sg] of P.gtOf[i]){ const w=g[j]; if(!w) continue;
     const ex=range(N).map(k=>k+1).filter(x=>!used.has(x)&&(sg>0?x<=w:x>=w)); if(!ex.length) continue; ex.forEach(x=>used.add(x));
-    parts.push(sg>0?`小啄木的嘴指向這格，所以要比旁邊的 ${w} 大`:`小啄木的嘴指向旁邊的 ${w}，所以這格要比 ${w} 小`); }
+    parts.push(sg>0?`樹鵲的嘴指向這格，所以要比旁邊的 ${w} 大`:`樹鵲的嘴指向旁邊的 ${w}，所以這格要比 ${w} 小`); }
   for(const k of P.cellCg[i]){ const cg=P.cg[k], m=cageMask(cg,i,g,N,P.full);
     const ex=range(N).map(x=>x+1).filter(x=>!used.has(x)&&!(m>>(x-1)&1)); if(ex.length){ ex.forEach(x=>used.add(x)); parts.push(`鳥群的總和是 ${cg.s}，排除了 ${listJoin(ex)}`); } }
   for(const [j,t] of P.nb[i]){ const w=g[j]; if(!w) continue;
@@ -2595,6 +2596,9 @@ const COLLECT={
   pitta:{name:'八色鳥',rarity:'epic',fact:'羽毛有綠、藍、紅、黃、黑等好多種顏色，所以叫八色鳥。夏天才會飛來台灣繁殖，數量很稀少。',
     svg:svgWrap(`<path d="M3 12.6 L-1.4 14.4 L-1 15.6 L3.2 16.4 Z" fill="#e23b2e" class="ln"/>`+B_('#4caf50')+`<ellipse cx="11" cy="15.2" rx="6" ry="3.4" fill="#f1e3b6"/><ellipse cx="11.4" cy="17.6" rx="2.6" ry="1.2" fill="#e23b2e"/><path d="M4 11 Q5 8.4 8 8.6 Q7 11 8.4 13 Q5.4 13.4 4 11 Z" fill="#3fa1e6"/><path d="M5.6 6.6 Q10 2.6 17.4 6.6 Q18 10 15.4 11 Q10 10.6 5.6 6.6 Z" fill="#1b1b1b"/><path d="M7.4 5.4 Q11.4 3.2 16 5" stroke="#e9c477" stroke-width="1.2" fill="none"/>${EW(14,8)}<path d="M17.8 8.4 L20.6 9.2 L17.9 10 Z" fill="#222"/>`),
     call:[[1700,1500,.12],[1900,1600,.14]],wave:'sine',gap:.1},
+  myna:{name:'八哥',rarity:'epic',fact:'台灣原生的八哥全身烏黑，額頭有一撮豎起的羽毛，嘴巴是象牙白色，飛起來時翅膀會露出一塊白斑。近年外來的白尾八哥、家八哥越來越多，原生八哥在野外反而少見了。',
+    svg:svgWrap(T_('#1b1b1b')+B_('#222')+`<path d="M5 13.4 Q8.6 17.6 13.4 16.4" stroke="#555" stroke-width="1" fill="none"/><path d="M4.4 11.4 Q6 9.6 8.4 10.2 Q7.8 12 8.6 13.4 Q5.6 13.4 4.4 11.4 Z" fill="#fff"/><path d="M15.4 5.4 Q15 1.4 17.6 .4 Q17 3.4 18 6.2 Z" fill="#1b1b1b" class="ln"/><circle cx="14.2" cy="7.6" r="1.25" fill="#f2d34a"/><circle cx="14.3" cy="7.6" r=".6" class="eye-k"/><path d="M17.6 7.8 L21.4 8.9 L17.8 10.2 Z" fill="#efe6c8"/>`),
+    call:[[1600,2400,.06],[2400,1500,.07],[1800,2800,.05],[2600,1700,.08]]},
   spoonbill:{name:'黑面琵鷺',rarity:'epic',fact:'黑色的臉加上扁平像飯匙的長嘴。每年冬天飛到台南曾文溪口過冬，全世界的數量曾經只剩幾百隻。',
     svg:svgWrap(T_('#fff')+B_('#fff')+`<path d="M5 13.4 Q8.6 17.6 13.4 16.4" class="wing-w"/><path d="M8.6 3.2 Q4.6 1.2 1.6 3.2 Q5 3.4 8 5" fill="#fff" class="ln"/><path d="M12 6 Q15.6 4.6 18 7 Q18 10.4 14.8 10.8 Q12 10 12 6 Z" fill="#1b1b1b"/>${EW(14.4,7.6)}<path d="M17.6 7.6 L23 8.2 Q25.6 8.6 25 10.4 Q24 11.6 22.6 10.6 L17.6 9.8 Z" fill="#1b1b1b"/><ellipse cx="13.6" cy="13.2" rx="2.4" ry="1.4" fill="#f3d36b"/>`),
     call:[[300,280,.2]],wave:'sawtooth'},
@@ -2619,7 +2623,7 @@ let SELL=null;
 function tradeList(box){
   const head=document.createElement('div'); head.className='wallet';
   head.innerHTML=`<span class="coin-ic" aria-hidden="true"></span><span>鳥幣錢包 <b>${coins()}</b></span><button class="pill small primary" id="sellOpen">出售鳥，兌換鳥幣</button>`+
-    `<p class="note">孵出來的鳥可以出售換鳥幣，越後面章節的鳥越值錢：鸚鵡 1、山雀 2、綠繡眼 3、翠鳥 4、麻雀 5、領角鴞 6、藍鵲 7、五色鳥 8，101 關以後的織布鳥 9、小啄木 10、鵪鶉 11、鴻雁 12、灰椋鳥 13。你鳥園裡可以出售的鳥共值 ${aviaryValue()} 鳥幣。</p>`;
+    `<p class="note">孵出來的鳥可以出售換鳥幣，越後面章節的鳥越值錢：鸚鵡 1、山雀 2、綠繡眼 3、翠鳥 4、麻雀 5、領角鴞 6、藍鵲 7、五色鳥 8，101 關以後的織布鳥 9、樹鵲 10、鵪鶉 11、鴻雁 12、灰椋鳥 13。你鳥園裡可以出售的鳥共值 ${aviaryValue()} 鳥幣。</p>`;
   box.appendChild(head); head.querySelector('#sellOpen').onclick=openSell;
   COLLECT_ORDER.forEach(k=>{ const sp=COLLECT[k], have=PROG.aviary.filter(t=>t===k).length, cost=costOf(k), ok=coins()>=cost;
     const d=document.createElement('div'); d.className='g-card';

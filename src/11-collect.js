@@ -57,6 +57,9 @@ const COLLECT={
   pitta:{name:'八色鳥',rarity:'epic',fact:'羽毛有綠、藍、紅、黃、黑等好多種顏色，所以叫八色鳥。夏天才會飛來台灣繁殖，數量很稀少。',
     svg:svgWrap(`<path d="M3 12.6 L-1.4 14.4 L-1 15.6 L3.2 16.4 Z" fill="#e23b2e" class="ln"/>`+B_('#4caf50')+`<ellipse cx="11" cy="15.2" rx="6" ry="3.4" fill="#f1e3b6"/><ellipse cx="11.4" cy="17.6" rx="2.6" ry="1.2" fill="#e23b2e"/><path d="M4 11 Q5 8.4 8 8.6 Q7 11 8.4 13 Q5.4 13.4 4 11 Z" fill="#3fa1e6"/><path d="M5.6 6.6 Q10 2.6 17.4 6.6 Q18 10 15.4 11 Q10 10.6 5.6 6.6 Z" fill="#1b1b1b"/><path d="M7.4 5.4 Q11.4 3.2 16 5" stroke="#e9c477" stroke-width="1.2" fill="none"/>${EW(14,8)}<path d="M17.8 8.4 L20.6 9.2 L17.9 10 Z" fill="#222"/>`),
     call:[[1700,1500,.12],[1900,1600,.14]],wave:'sine',gap:.1},
+  myna:{name:'八哥',rarity:'epic',fact:'台灣原生的八哥全身烏黑，額頭有一撮豎起的羽毛，嘴巴是象牙白色，飛起來時翅膀會露出一塊白斑。近年外來的白尾八哥、家八哥越來越多，原生八哥在野外反而少見了。',
+    svg:svgWrap(T_('#1b1b1b')+B_('#222')+`<path d="M5 13.4 Q8.6 17.6 13.4 16.4" stroke="#555" stroke-width="1" fill="none"/><path d="M4.4 11.4 Q6 9.6 8.4 10.2 Q7.8 12 8.6 13.4 Q5.6 13.4 4.4 11.4 Z" fill="#fff"/><path d="M15.4 5.4 Q15 1.4 17.6 .4 Q17 3.4 18 6.2 Z" fill="#1b1b1b" class="ln"/><circle cx="14.2" cy="7.6" r="1.25" fill="#f2d34a"/><circle cx="14.3" cy="7.6" r=".6" class="eye-k"/><path d="M17.6 7.8 L21.4 8.9 L17.8 10.2 Z" fill="#efe6c8"/>`),
+    call:[[1600,2400,.06],[2400,1500,.07],[1800,2800,.05],[2600,1700,.08]]},
   spoonbill:{name:'黑面琵鷺',rarity:'epic',fact:'黑色的臉加上扁平像飯匙的長嘴。每年冬天飛到台南曾文溪口過冬，全世界的數量曾經只剩幾百隻。',
     svg:svgWrap(T_('#fff')+B_('#fff')+`<path d="M5 13.4 Q8.6 17.6 13.4 16.4" class="wing-w"/><path d="M8.6 3.2 Q4.6 1.2 1.6 3.2 Q5 3.4 8 5" fill="#fff" class="ln"/><path d="M12 6 Q15.6 4.6 18 7 Q18 10.4 14.8 10.8 Q12 10 12 6 Z" fill="#1b1b1b"/>${EW(14.4,7.6)}<path d="M17.6 7.6 L23 8.2 Q25.6 8.6 25 10.4 Q24 11.6 22.6 10.6 L17.6 9.8 Z" fill="#1b1b1b"/><ellipse cx="13.6" cy="13.2" rx="2.4" ry="1.4" fill="#f3d36b"/>`),
     call:[[300,280,.2]],wave:'sawtooth'},
@@ -81,7 +84,7 @@ let SELL=null;
 function tradeList(box){
   const head=document.createElement('div'); head.className='wallet';
   head.innerHTML=`<span class="coin-ic" aria-hidden="true"></span><span>鳥幣錢包 <b>${coins()}</b></span><button class="pill small primary" id="sellOpen">出售鳥，兌換鳥幣</button>`+
-    `<p class="note">孵出來的鳥可以出售換鳥幣，越後面章節的鳥越值錢：鸚鵡 1、山雀 2、綠繡眼 3、翠鳥 4、麻雀 5、領角鴞 6、藍鵲 7、五色鳥 8，101 關以後的織布鳥 9、小啄木 10、鵪鶉 11、鴻雁 12、灰椋鳥 13。你鳥園裡可以出售的鳥共值 ${aviaryValue()} 鳥幣。</p>`;
+    `<p class="note">孵出來的鳥可以出售換鳥幣，越後面章節的鳥越值錢：鸚鵡 1、山雀 2、綠繡眼 3、翠鳥 4、麻雀 5、領角鴞 6、藍鵲 7、五色鳥 8，101 關以後的織布鳥 9、樹鵲 10、鵪鶉 11、鴻雁 12、灰椋鳥 13。你鳥園裡可以出售的鳥共值 ${aviaryValue()} 鳥幣。</p>`;
   box.appendChild(head); head.querySelector('#sellOpen').onclick=openSell;
   COLLECT_ORDER.forEach(k=>{ const sp=COLLECT[k], have=PROG.aviary.filter(t=>t===k).length, cost=costOf(k), ok=coins()>=cost;
     const d=document.createElement('div'); d.className='g-card';

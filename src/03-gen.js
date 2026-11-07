@@ -28,7 +28,7 @@ function buildPuzzle(spec,givenSol){
   const allOwls=[], allGt=[], allEgg=[], allCg=[];
   if(spec.owl) for(let r=0;r<n-1;r++) for(let c=0;c<n-1;c++) if(RNG()<0.5)
     allOwls.push({r,c,s:sol[r*n+c]+sol[r*n+c+1]+sol[(r+1)*n+c]+sol[(r+1)*n+c+1],on:true});
-  if(spec.gt){ // 啄木鳥只站在沒有其他鳥的邊上
+  if(spec.gt){ // 樹鵲只站在沒有其他鳥的邊上
     for(let r=0;r<n;r++) for(let c=0;c<n-1;c++) if(!P.h[r][c]&&RNG()<spec.gt){const a=r*n+c,b=a+1; allGt.push({p:sol[a]>sol[b]?[a,b]:[b,a],on:true});}
     for(let r=0;r<n-1;r++) for(let c=0;c<n;c++) if(!P.v[r][c]&&RNG()<spec.gt){const a=r*n+c,b=a+n; allGt.push({p:sol[a]>sol[b]?[a,b]:[b,a],on:true});}
   }
@@ -126,7 +126,7 @@ const CHAPTERS=[
     return {n:9,tit:true,partial:mix,owl:L%4===0,keep:lerp(.14,0,t)};}},
   // ---- 101 關以後：每章一種新線索，先從 6×6 教起 ----
   {name:'織布鳥的鳥巢',bird:'weaver',from:101,to:112,spec:(t,L)=>L<=106?{n:6,tit:false,reg:true,keep:lerp(.45,.12,t*2)}:{n:7,tit:true,reg:true,keep:lerp(.22,.04,(t-.5)*2)}},
-  {name:'小啄木的樹林',bird:'woodpecker',from:113,to:124,spec:(t,L)=>L<=118?{n:6,tit:false,gt:.6,minK:{W:9},keep:lerp(.35,.08,t*2)}:{n:7,tit:true,gt:.5,minK:{W:11},keep:lerp(.2,.03,(t-.5)*2)}},
+  {name:'樹鵲的樹林',bird:'woodpecker',from:113,to:124,spec:(t,L)=>L<=118?{n:6,tit:false,gt:.6,minK:{W:9},keep:lerp(.35,.08,t*2)}:{n:7,tit:true,gt:.5,minK:{W:11},keep:lerp(.2,.03,(t-.5)*2)}},
   {name:'鵪鶉的蛋',bird:'quail',from:125,to:136,spec:(t,L)=>L<=130?{n:6,tit:false,egg:.6,minK:{EG:10},keep:lerp(.35,.08,t*2)}:{n:7,tit:true,egg:.5,partial:[3],minK:{EG:14},keep:lerp(.2,.03,(t-.5)*2)}},
   {name:'鴻雁的天空',bird:'goose',from:137,to:148,spec:(t,L)=>L<=142?{n:6,tit:false,diag:true,keep:lerp(.4,.1,t*2)}:{n:8,tit:true,diag:true,keep:lerp(.18,.03,(t-.5)*2)}},
   {name:'灰椋鳥的鳥群',bird:'starling',from:149,to:160,spec:(t,L)=>L<=154?{n:6,tit:false,cage:.8,minK:{K:5},keep:lerp(.3,.06,t*2)}:{n:7,tit:true,cage:.7,minK:{K:7},keep:lerp(.18,.03,(t-.5)*2)}},

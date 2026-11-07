@@ -38,7 +38,7 @@ function buildBoard(){
   }
   buildKeys(); renderBirdInfo(); requestAnimationFrame(fitLayout);
 }
-// ---- 101 關以後的線索：鳥巢、斜線、鳥群（畫在一張透明的圖層上）、啄木鳥、鳥蛋 ----
+// ---- 101 關以後的線索：鳥巢、斜線、鳥群（畫在一張透明的圖層上）、樹鵲、鳥蛋 ----
 function drawExtras(P){
   const rc=i=>[i/N|0,i%N], seg=(x1,y1,x2,y2,cls)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="${cls}" vector-effect="non-scaling-stroke"/>`;
   let svg='';
@@ -59,7 +59,7 @@ function drawExtras(P){
     boardEl.appendChild(lab); cageEls.push({el:lab,cells:cg.cells,s:cg.s}); });
   if(svg){ const ov=document.createElementNS('http://www.w3.org/2000/svg','svg'); ov.setAttribute('class','board-ov');
     ov.setAttribute('viewBox',`0 0 ${N} ${N}`); ov.setAttribute('preserveAspectRatio','none'); ov.innerHTML=svg; boardEl.appendChild(ov); }
-  // 啄木鳥：嘴巴指向數字比較大的那一格
+  // 樹鵲：嘴巴指向數字比較大的那一格
   (P.gt||[]).forEach(([hi,lo])=>{ const [r1,c1]=rc(hi),[r2,c2]=rc(lo), d=document.createElement('span'); d.className='dot peck';
     d.innerHTML=birdSVG('woodpecker'); d.style.left=((c1+c2)/2+.5)/N*100+'%'; d.style.top=((r1+r2)/2+.5)/N*100+'%';
     d.firstChild.style.transform=c1>c2?'none':c1<c2?'scaleX(-1)':r1>r2?'rotate(90deg)':'rotate(-90deg)';
@@ -239,7 +239,7 @@ function explain(st){
   if(P.egg&&P.egg[i]){ const ex=range(N).map(k=>k+1).filter(x=>!used.has(x)&&(x%2===1)!==(P.egg[i]===1)); if(ex.length){ ex.forEach(x=>used.add(x)); parts.push(`這格有${P.egg[i]===1?'白蛋，只能是奇數':'藍蛋，只能是偶數'}`); } }
   for(const [j,sg] of P.gtOf[i]){ const w=g[j]; if(!w) continue;
     const ex=range(N).map(k=>k+1).filter(x=>!used.has(x)&&(sg>0?x<=w:x>=w)); if(!ex.length) continue; ex.forEach(x=>used.add(x));
-    parts.push(sg>0?`小啄木的嘴指向這格，所以要比旁邊的 ${w} 大`:`小啄木的嘴指向旁邊的 ${w}，所以這格要比 ${w} 小`); }
+    parts.push(sg>0?`樹鵲的嘴指向這格，所以要比旁邊的 ${w} 大`:`樹鵲的嘴指向旁邊的 ${w}，所以這格要比 ${w} 小`); }
   for(const k of P.cellCg[i]){ const cg=P.cg[k], m=cageMask(cg,i,g,N,P.full);
     const ex=range(N).map(x=>x+1).filter(x=>!used.has(x)&&!(m>>(x-1)&1)); if(ex.length){ ex.forEach(x=>used.add(x)); parts.push(`鳥群的總和是 ${cg.s}，排除了 ${listJoin(ex)}`); } }
   for(const [j,t] of P.nb[i]){ const w=g[j]; if(!w) continue;
